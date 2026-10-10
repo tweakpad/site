@@ -1,0 +1,68 @@
+---
+title: Input
+description: One native text input bound to Field behavior for labels, descriptions, errors and validation.
+tag: tp-input
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Input"
+  align="stretch"
+  code={`<tp-field label="Email" description="Used for receipts" style="max-inline-size:22rem">
+  <tp-input name="email" type="email" placeholder="you@example.com"></tp-input>
+</tp-field>`}
+/>
+
+## Usage
+
+Labels, descriptions and errors belong to `tp-field`; the Input owns the native editor. A standalone Input can take `label` for its accessible name, but a Field is the usual home.
+
+### Types
+
+`type` keeps native editing, affordances and validation for every host-supported input type.
+
+<Preview
+  title="Types"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-4);max-inline-size:22rem">
+  <tp-field label="Password">
+    <tp-input type="password" name="password" autocomplete="current-password"></tp-input>
+  </tp-field>
+  <tp-field label="Quantity">
+    <tp-input type="number" name="quantity" min="1" max="10" default-value="1"></tp-input>
+  </tp-field>
+  <tp-field label="Search">
+    <tp-input type="search" name="q" placeholder="Search projects"></tp-input>
+  </tp-field>
+</div>`}
+/>
+
+### Validation
+
+Native constraints such as `required`, `pattern` and `minlength` validate through the owning Field, which shows the error and wires `aria-describedby`. `error` and `invalid` set an explicit error from your own validation.
+
+<Preview
+  title="Error"
+  align="stretch"
+  code={`<tp-field label="Username" error="That username is taken." invalid style="max-inline-size:22rem">
+  <tp-input name="username" default-value="ada"></tp-input>
+</tp-field>`}
+/>
+
+### States
+
+<Preview
+  title="Disabled and read-only"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-4);max-inline-size:22rem">
+  <tp-field label="Workspace" disabled>
+    <tp-input default-value="tweakpad"></tp-input>
+  </tp-field>
+  <tp-field label="Project ID">
+    <tp-input readonly default-value="prj_8f2c41"></tp-input>
+  </tp-field>
+</div>`}
+/>
+
+Disabled omits the value from form data. Read-only keeps it, along with selection and focus.

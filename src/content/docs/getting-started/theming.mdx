@@ -1,0 +1,46 @@
+---
+title: Theming
+description: Light and dark modes, design tokens, and compact density.
+order: 3
+---
+
+import Code from '../../../components/Code.astro';
+import Preview from '../../../components/Preview.astro';
+
+## Light and dark
+
+Every color role is a `light-dark()` pair, so a theme follows the `color-scheme` of its element. `tp-theme-switcher` stores the choice and applies it to the document root, which is how the switcher in this site's header themes every demo on the page.
+
+<Preview
+  title="Theme switcher variants"
+  code={`<tp-theme-switcher></tp-theme-switcher>
+<tp-theme-switcher variant="button"></tp-theme-switcher>
+<tp-theme-switcher variant="group"></tp-theme-switcher>`}
+/>
+
+To avoid a flash of the wrong scheme, apply the stored preference from `<head>`:
+
+<Code code={`<script>
+  try {
+    const value = localStorage.getItem('tp-theme');
+    if (value === 'light' || value === 'dark') {
+      document.documentElement.style.colorScheme = value;
+      document.documentElement.dataset.theme = value;
+    }
+  } catch {}
+</script>`} />
+
+## Tokens
+
+Components read inherited `--tp-*` custom properties. Override a few roles on any subtree for a brand region, or replace the full set for a new theme.
+
+<Code language="css" code={`.brand-region {
+  --tp-primary: oklch(58% 0.22 275deg);
+  --tp-primary-foreground: white;
+  --tp-ring: oklch(67% 0.18 275deg);
+  --tp-radius: 0.75rem;
+}`} />
+
+## Density
+
+Spacing, control heights and icon sizes derive from one seed, `--tp-spacing`, and type from the `--tp-text-*` roles. Every preview on this site has a Default and Compact selector that applies a compact seed to that preview; the choice carries across previews and pages.

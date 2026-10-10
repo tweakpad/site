@@ -1,0 +1,27 @@
+---
+title: Introduction
+description: Accessible web components built with Lit, designed to work in any framework or none.
+order: 1
+---
+
+import Preview from '../../../components/Preview.astro';
+
+Tweakpad UI is a library of custom elements. Each component is a real HTML element, so the same markup works in plain HTML, Astro, React, Vue, Svelte or anything else that renders the DOM.
+
+<Preview
+  title="A first composition"
+  code={`<tp-field label="Email" description="We'll send a sign-in link.">
+  <tp-input name="email" type="email" placeholder="you@example.com"></tp-input>
+</tp-field>
+<tp-button>Continue</tp-button>`}
+/>
+
+## How the site is organized
+
+- **Docs** covers installation, theming and every foundational component, with live examples you can switch between default and compact density, and copy.
+- **Patterns** are recipes: complete compositions such as a sign-in screen or password recovery. They are not components; copy one and make it yours. Each component page links to the patterns that use it.
+- **Kits** extend the library for one kind of product, such as an audio editor or a trading terminal, with specialized controls, compositions and a theme of their own.
+
+## Principles
+
+Components own their accessibility semantics, keyboard behavior and states. Styling flows through inherited `--tp-*` design tokens, so a theme is a set of custom properties rather than overrides of component internals. The theme switcher in the header uses the library's own `tp-theme-switcher`, and switching it re-themes this whole site, demos included.

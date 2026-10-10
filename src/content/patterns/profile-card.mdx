@@ -1,0 +1,34 @@
+---
+title: Profile card
+description: A person, their role and a few numbers, with follow and message actions.
+category: Account
+order: 11
+featured: true
+components: [card, avatar, badge, button]
+example: |
+  <tp-card style="inline-size:min(100%, 20rem)">
+    <div style="display:grid;justify-items:center;gap:var(--tp-space-3);text-align:center">
+      <tp-avatar size="lg" fallback="GH" alt="Grace Hopper"></tp-avatar>
+      <div>
+        <strong style="display:block;font-size:var(--tp-text-lg)">Grace Hopper</strong>
+        <span style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">Compiler engineer · Arlington</span>
+      </div>
+      <div style="display:flex;gap:var(--tp-space-2)">
+        <tp-badge variant="secondary">Admin</tp-badge>
+        <tp-badge variant="outline">Available</tp-badge>
+      </div>
+    </div>
+    <tp-button slot="footer" variant="outline" style="flex:1">Message</tp-button>
+    <tp-button slot="footer" style="flex:1">Follow</tp-button>
+  </tp-card>
+---
+
+## How it's composed
+
+- **Avatar** shows initials until a photo loads, and names the person for assistive technology.
+- **Badge** pairs a role with a status without turning either into an action.
+- **Button** gives follow the primary weight and message the secondary.
+
+## Make it yours
+
+Open this in a Preview card when people hover a name, or add a row of counts under the badges.

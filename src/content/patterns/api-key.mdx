@@ -1,0 +1,35 @@
+---
+title: API key
+description: A secret key shown once, with a copy action, a warning and a way to roll it.
+category: Developer
+order: 12
+featured: true
+components: [card, alert, input-group, input, copy-button, button]
+example: |
+  <tp-card style="inline-size:min(100%, 28rem)">
+    <h2 slot="header">API key</h2>
+    <p slot="description">Use this key to authenticate requests from your server.</p>
+    <div style="display:grid;gap:var(--tp-space-4)">
+      <tp-alert severity="warning">
+        <span slot="title">Copy it now</span>
+        You won't be able to see this key again after you leave this page.
+      </tp-alert>
+      <tp-input-group>
+        <tp-input label="Secret key" readonly default-value="sk_live_4f2c9a81d7e3"></tp-input>
+        <tp-copy-button slot="action" value="sk_live_4f2c9a81d7e3" label="Copy secret key"></tp-copy-button>
+      </tp-input-group>
+    </div>
+    <tp-button slot="footer" variant="outline">Roll key</tp-button>
+    <tp-button slot="footer">Done</tp-button>
+  </tp-card>
+---
+
+## How it's composed
+
+- **Alert** explains the one-time reveal in the flow of the card, without interrupting with a dialog.
+- **Input group** pairs a read-only **Input** with a **Copy button** in its `action` slot; the input keeps the key selectable for people who copy by hand.
+- **Button** keeps rolling the key secondary to finishing.
+
+## Make it yours
+
+Confirm a roll with an Alert dialog, and mask the key after the first copy.

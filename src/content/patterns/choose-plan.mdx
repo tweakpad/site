@@ -1,0 +1,32 @@
+---
+title: Choose a plan
+description: Three plans as a radio group, with the price and what each includes, and one action to continue.
+category: Billing
+order: 6
+featured: true
+components: [card, radio-group, badge, button]
+example: |
+  <form style="inline-size:min(100%, 26rem)">
+    <tp-card>
+      <h2 slot="header">Choose a plan</h2>
+      <p slot="description">Change or cancel at any time.</p>
+      <tp-radio-group name="plan" default-value="pro" label="Plan" style="display:grid;gap:var(--tp-space-3)">
+        <tp-radio-group-item value="hobby">Hobby · Free, for personal projects</tp-radio-group-item>
+        <tp-radio-group-item value="pro">Pro · $12 a month, unlimited projects</tp-radio-group-item>
+        <tp-radio-group-item value="team">Team · $32 a month, shared workspaces</tp-radio-group-item>
+      </tp-radio-group>
+      <tp-badge slot="action" variant="secondary">Save 20% yearly</tp-badge>
+      <tp-button slot="footer" type="submit" style="inline-size:100%">Continue</tp-button>
+    </tp-card>
+  </form>
+---
+
+## How it's composed
+
+- **Radio group** gives the three plans one tab stop with arrow-key navigation, and submits the chosen `value` with the form.
+- **Badge** in the Card's `action` slot carries the yearly discount without competing with the title.
+- **Button** spans the footer so the single next step is unmistakable.
+
+## Make it yours
+
+Add a Toggle group above the plans for monthly and yearly billing, and update the prices when it changes.

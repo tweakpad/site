@@ -1,0 +1,66 @@
+---
+import { elementApi, uiVersion } from '../lib/manifest';
+
+interface Props {
+  tag: string;
+}
+const { tag } = Astro.props;
+const api = elementApi(tag);
+---
+
+{
+  api ? (
+    <div class="api-reference">
+      <div class="api">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Attribute</th>
+              <th scope="col">Type</th>
+              <th scope="col">Default</th>
+            </tr>
+          </thead>
+          <tbody>
+            {api.attributes.map((attribute) => (
+              <tr>
+                <td>
+                  <code>{attribute.name}</code>
+                </td>
+                <td>
+                  <code>{attribute.type}</code>
+                </td>
+                <td>{attribute.default ? <code>{attribute.default}</code> : '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {api.events.length > 0 && (
+        <p>
+          Events: {api.events.map((event, index) => (
+            <>
+              {index > 0 && ', '}
+              <code>{event}</code>
+            </>
+          ))}
+          .
+        </p>
+      )}
+      <p class="api-note">
+        Read from the <code>@tweakpad/ui@{uiVersion}</code> custom elements manifest for{' '}
+        <code>{api.className}</code>. Every element also accepts <code>motion-policy</code>.
+      </p>
+    </div>
+  ) : (
+    <p>
+      No manifest entry for <code>{tag}</code>.
+    </p>
+  )
+}
+
+<style>
+  .api-note {
+    color: var(--tp-muted-foreground);
+    font-size: 0.8125rem;
+  }
+</style>

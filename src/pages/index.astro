@@ -1,0 +1,123 @@
+---
+import PatternCanvas from '../components/PatternCanvas.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { uiVersion } from '../lib/manifest';
+import { url } from '../lib/url';
+
+const install = 'npm install @tweakpad/ui lit';
+---
+
+<BaseLayout title="Tweakpad UI" immersive>
+  <div class="home">
+    <PatternCanvas />
+    <section class="intro" aria-labelledby="intro-title">
+      <p class="eyebrow">Tweakpad UI {uiVersion}</p>
+      <h1 class="display intro__title" id="intro-title">
+        <tp-text-motion split="words lines" mask="lines" reveal="up" stagger="70">Interfaces,</tp-text-motion>
+        <tp-text-motion class="outline" split="words lines" mask="lines" reveal="up" stagger="70">
+          considered
+        </tp-text-motion>
+      </h1>
+      <p class="intro__lede">
+        Accessible web components, shown here in real compositions. Drag to explore, and use any of
+        them: every control is live.
+      </p>
+      <div class="intro__actions">
+        <tp-button href={url('/docs/getting-started/introduction')}>Get started</tp-button>
+        <tp-button variant="outline" href={url('/patterns')}>All patterns</tp-button>
+      </div>
+      <div class="install">
+        <code><span aria-hidden="true">$</span> {install}</code>
+        <tp-copy-button value={install} label="Copy install command"></tp-copy-button>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  :global(body.immersive) {
+    overflow: hidden;
+  }
+
+  .home {
+    position: relative;
+    block-size: calc(100dvh - var(--site-header-height));
+  }
+
+  .intro {
+    position: absolute;
+    inset-block-end: clamp(1rem, 3vw, 2rem);
+    inset-inline-start: clamp(1rem, 3vw, 2rem);
+    z-index: 2;
+    inline-size: min(28rem, calc(100% - 2rem));
+    padding: 1.5rem 1.5rem 1.25rem;
+    border: 1px solid var(--site-line);
+    border-radius: var(--tp-radius-2xl);
+    background: color-mix(in oklab, var(--tp-background) 86%, transparent);
+    backdrop-filter: blur(18px) saturate(1.3);
+    box-shadow: 0 30px 80px -30px color-mix(in oklab, black 35%, transparent);
+  }
+
+  .intro .eyebrow {
+    margin-block-end: 0.75rem;
+  }
+
+  .intro__title {
+    font-size: clamp(2.75rem, 6vw, 4.25rem);
+  }
+
+  .intro__lede {
+    margin: 1rem 0 0;
+    color: var(--tp-muted-foreground);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  /* The intro's actions stay monochrome; the library's brand color is the accent elsewhere. */
+  .intro__actions {
+    --tp-primary: var(--tp-foreground);
+    --tp-primary-foreground: var(--tp-background);
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-block-start: 1.25rem;
+  }
+
+  .install {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-block-start: 1rem;
+    padding: 0.25rem 0.25rem 0.25rem 0.85rem;
+    border: 1px solid var(--site-line);
+    border-radius: var(--tp-radius-lg);
+    background: var(--site-subtle);
+  }
+
+  .install code {
+    overflow: hidden;
+    font: 0.8125rem var(--tp-font-mono);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .install code span {
+    color: var(--tp-muted-foreground);
+  }
+
+  @media (width < 40rem) {
+    .intro {
+      inset-inline: 0.75rem;
+      inset-block-end: 0.75rem;
+      inline-size: auto;
+      padding: 1.1rem 1.1rem 1rem;
+    }
+
+    .intro__lede,
+    .install {
+      display: none;
+    }
+  }
+</style>

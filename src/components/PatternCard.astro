@@ -1,0 +1,16 @@
+---
+import type { PatternEntry } from '../lib/content';
+import { url } from '../lib/url';
+
+interface Props {
+  pattern: PatternEntry;
+}
+const { pattern } = Astro.props;
+---
+
+<a class="link-card" href={url(`/patterns/${pattern.id}`)}>
+  <span class="chip">{pattern.data.category}</span>
+  <h3>{pattern.data.title}</h3>
+  <p>{pattern.data.description}</p>
+  <span class="link-card__arrow" aria-hidden="true">→</span>
+</a>

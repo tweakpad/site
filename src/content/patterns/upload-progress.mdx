@@ -1,0 +1,37 @@
+---
+title: Upload progress
+description: A list of files uploading in parallel, each with its own progress and a finished state.
+category: Files
+order: 7
+featured: true
+components: [card, list-item, progress, badge, button]
+example: |
+  <tp-card style="inline-size:min(100%, 26rem)">
+    <h2 slot="header">Uploading 3 files</h2>
+    <p slot="description">You can keep working while these finish.</p>
+    <div style="display:grid;gap:var(--tp-space-4)">
+      <tp-progress value="100" label="brand-guidelines.pdf">
+        <span slot="label">brand-guidelines.pdf</span>
+      </tp-progress>
+      <tp-progress value="64" label="hero-video.mp4">
+        <span slot="label">hero-video.mp4</span>
+      </tp-progress>
+      <tp-progress value="12" label="photos.zip">
+        <span slot="label">photos.zip</span>
+      </tp-progress>
+    </div>
+    <tp-badge slot="action" variant="secondary">1 of 3 done</tp-badge>
+    <tp-button slot="footer" variant="outline">Cancel all</tp-button>
+    <tp-button slot="footer" variant="ghost">Hide</tp-button>
+  </tp-card>
+---
+
+## How it's composed
+
+- **Progress** bars each carry the file name as their label, so every bar is announced with what it measures.
+- **Badge** summarizes the batch in the Card's `action` slot.
+- **Button** keeps cancel and hide as quiet secondary actions; there is no primary action while files are uploading.
+
+## Make it yours
+
+Replace a finished bar with a List item and an open action, and show an error state with a retry for failed files.

@@ -1,0 +1,46 @@
+---
+title: Invite teammates
+description: Invite by email with a role picker, above the list of people who already have access.
+category: Team
+order: 5
+featured: true
+components: [card, field, input, native-select, button, list-item, avatar, badge]
+example: |
+  <tp-card style="inline-size:min(100%, 28rem)">
+    <h2 slot="header">Invite teammates</h2>
+    <p slot="description">Teammates can view and edit every project in this workspace.</p>
+    <form style="display:grid;grid-template-columns:1fr auto;align-items:end;gap:var(--tp-space-2)">
+      <tp-field label="Email">
+        <tp-input name="email" type="email" placeholder="name@company.com"></tp-input>
+      </tp-field>
+      <tp-native-select name="role" label="Role" default-value="member">
+        <option value="member">Member</option>
+        <option value="admin">Admin</option>
+      </tp-native-select>
+    </form>
+    <tp-list-item-group aria-label="People with access" style="margin-block-start:var(--tp-space-4)">
+      <tp-list-item description="ada@example.com">
+        <tp-avatar slot="media" fallback="AL" alt=""></tp-avatar>
+        Ada Lovelace
+        <tp-badge slot="actions" variant="secondary">Owner</tp-badge>
+      </tp-list-item>
+      <tp-list-item description="grace@example.com">
+        <tp-avatar slot="media" fallback="GH" alt=""></tp-avatar>
+        Grace Hopper
+        <tp-badge slot="actions" variant="outline">Admin</tp-badge>
+      </tp-list-item>
+    </tp-list-item-group>
+    <tp-button slot="footer" variant="outline">Copy invite link</tp-button>
+    <tp-button slot="footer">Send invite</tp-button>
+  </tp-card>
+---
+
+## How it's composed
+
+- **Field** and **Native select** sit in one grid row, aligned on their bottom edge so the controls line up even though only one has a visible label above it.
+- **List item** rows put the **Avatar** in `media` and the role **Badge** in `actions`; the Avatar's empty `alt` keeps the name from being read twice.
+- **Button** offers the link as the secondary path and the invite as the primary one.
+
+## Make it yours
+
+Accept several addresses at once, or replace the Badge with a role select for admins.

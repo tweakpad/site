@@ -1,0 +1,30 @@
+---
+title: Sound settings
+description: Volume sliders for each channel and a switch for spatial audio.
+category: Settings
+order: 10
+featured: true
+components: [card, slider, field, switch]
+example: |
+  <tp-card style="inline-size:min(100%, 24rem)">
+    <h2 slot="header">Sound</h2>
+    <p slot="description">Applies to this device only.</p>
+    <div style="display:grid;gap:var(--tp-space-5)">
+      <tp-slider label="Master" name="master" default-value="80"></tp-slider>
+      <tp-slider label="Music" name="music" default-value="55"></tp-slider>
+      <tp-slider label="Effects" name="effects" default-value="70"></tp-slider>
+      <tp-field orientation="horizontal" label="Spatial audio" description="Uses head tracking when available.">
+        <tp-switch name="spatial" default-checked></tp-switch>
+      </tp-field>
+    </div>
+  </tp-card>
+---
+
+## How it's composed
+
+- **Slider** carries its own label and value, and supports arrow keys, Page Up and Page Down, and Home and End.
+- **Field** with a **Switch** ends the group with the one on and off setting.
+
+## Make it yours
+
+Add a mute Toggle beside each Slider, or show the level on a meter while audio plays.

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <style>rect,.k{fill:#0a0a0a}path,circle{stroke:#fff}@media (prefers-color-scheme:dark){rect,.k{fill:#fff}path,circle{stroke:#0a0a0a}}</style>
+  <rect x="1" y="1" width="22" height="22" rx="6"/>
+  <path d="M6.5 8.5h11M6.5 15.5h11" stroke-width="1.6" stroke-linecap="round"/>
+  <circle cx="14.5" cy="8.5" r="2.1" fill="#6d5dfc" stroke-width="1.4"/>
+  <circle class="k" cx="9.5" cy="15.5" r="2.1" stroke-width="1.4"/>
+</svg>

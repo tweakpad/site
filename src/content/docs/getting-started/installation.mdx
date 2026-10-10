@@ -1,0 +1,45 @@
+---
+title: Installation
+description: Add the package, load the tokens, and register the elements.
+order: 2
+---
+
+import Code from '../../../components/Code.astro';
+
+## Install
+
+`lit` is a peer dependency, so your app shares one copy with the components.
+
+<Code language="bash" code={`npm install @tweakpad/ui lit`} />
+
+## Register the elements
+
+Import the design tokens once, then define every element. Registration is a side effect, so it belongs in your app's entry module.
+
+<Code language="typescript" code={`import '@tweakpad/ui/styles.css';
+import '@tweakpad/ui/register';`} />
+
+Then use the elements in your markup:
+
+<Code code={`<tp-field label="Email">
+  <tp-input name="email" type="email" required></tp-input>
+</tp-field>
+
+<tp-button type="submit">Continue</tp-button>`} />
+
+## Entry points
+
+| Import | Contents |
+| --- | --- |
+| `@tweakpad/ui` | Component classes and utilities, without side effects |
+| `@tweakpad/ui/register` | Defines every component |
+| `@tweakpad/ui/widgets` | Widget classes, such as the color picker |
+| `@tweakpad/ui/register/widgets` | Defines every widget |
+| `@tweakpad/ui/icons/<name>` | Individual icons |
+| `@tweakpad/ui/styles.css` | Design tokens and page defaults |
+
+Widgets are opt-in: neither `@tweakpad/ui` nor `@tweakpad/ui/register` includes them.
+
+## Browser support
+
+Current versions of Chrome, Edge, Firefox and Safari.

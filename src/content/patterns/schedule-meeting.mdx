@@ -1,0 +1,33 @@
+---
+title: Schedule a meeting
+description: Pick a day on the calendar and one of the open time slots beside it.
+category: Scheduling
+order: 9
+featured: true
+components: [card, calendar, toggle-group, button]
+example: |
+  <tp-card style="inline-size:min(100%, 34rem)">
+    <h2 slot="header">Book a demo</h2>
+    <p slot="description">30 minutes with our team. Times are in your time zone.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:var(--tp-space-6);align-items:flex-start">
+      <tp-calendar label="Date" name="date" default-value="2026-10-14"></tp-calendar>
+      <tp-toggle-group label="Time" orientation="vertical" variant="outline" default-value='["10:30"]' style="flex:1;min-inline-size:8rem">
+        <tp-toggle value="09:00">9:00 AM</tp-toggle>
+        <tp-toggle value="10:30">10:30 AM</tp-toggle>
+        <tp-toggle value="13:00">1:00 PM</tp-toggle>
+        <tp-toggle value="15:30">3:30 PM</tp-toggle>
+      </tp-toggle-group>
+    </div>
+    <tp-button slot="footer">Confirm Wednesday, 10:30 AM</tp-button>
+  </tp-card>
+---
+
+## How it's composed
+
+- **Calendar** owns date selection and keyboard navigation through the month.
+- **Toggle group** with `orientation="vertical"` lists the open slots for the chosen day, one selectable at a time.
+- **Button** repeats the full choice in its label, so confirming never needs a second look.
+
+## Make it yours
+
+Load the slots for the selected date, disable days with no availability, and wrap the slots under the Calendar on narrow screens.
