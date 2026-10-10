@@ -1,0 +1,38 @@
+---
+title: Send feedback
+description: A short rating and an open comment, the two questions that get answered most often.
+category: Forms
+order: 8
+featured: true
+components: [card, field, toggle-group, text-area, button]
+example: |
+  <form style="inline-size:min(100%, 26rem)">
+    <tp-card>
+      <h2 slot="header">How was your experience?</h2>
+      <p slot="description">Your answer goes straight to the product team.</p>
+      <div style="display:grid;gap:var(--tp-space-5)">
+        <tp-toggle-group label="Rating" variant="outline" default-value='["good"]' style="inline-size:100%">
+          <tp-toggle value="poor">Poor</tp-toggle>
+          <tp-toggle value="okay">Okay</tp-toggle>
+          <tp-toggle value="good">Good</tp-toggle>
+          <tp-toggle value="great">Great</tp-toggle>
+        </tp-toggle-group>
+        <tp-field label="What could be better?" description="Optional.">
+          <tp-text-area name="comment" rows="3"></tp-text-area>
+        </tp-field>
+      </div>
+      <tp-button slot="footer" variant="ghost">Not now</tp-button>
+      <tp-button slot="footer" type="submit">Send feedback</tp-button>
+    </tp-card>
+  </form>
+---
+
+## How it's composed
+
+- **Toggle group** in single mode is the rating: one tab stop, arrow keys between options, and a visible pressed state.
+- **Field** marks the comment as optional in its description instead of with an asterisk on the others.
+- **Button** lets people dismiss the prompt as easily as they answer it.
+
+## Make it yours
+
+Ask the comment question only after a low rating, or replace the words with a 1 to 5 scale.

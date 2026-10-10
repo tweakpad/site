@@ -1,5 +1,6 @@
 ---
 import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Preview from '../../components/Preview.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { componentsOf, sortedPatterns } from '../../lib/content';
 import { url } from '../../lib/url';
@@ -39,6 +40,7 @@ const others = (await sortedPatterns()).filter((pattern) => pattern.id !== entry
       }
     </div>
     <div class="prose pattern__body">
+      <Preview title={entry.data.title} code={entry.data.example} showCode />
       <Content />
     </div>
     {

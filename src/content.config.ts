@@ -22,6 +22,10 @@ const patterns = defineCollection({
     description: z.string(),
     order: z.number().default(100),
     category: z.string(),
+    /** Shown on the home page canvas. Only reviewed, real-scenario compositions are featured. */
+    featured: z.boolean().default(false),
+    /** The composition: rendered live on the pattern page and the home canvas, and the copyable code. */
+    example: z.string(),
     /** Docs component ids (for example `button`) this pattern is built from. */
     components: z.array(z.string()),
   }),

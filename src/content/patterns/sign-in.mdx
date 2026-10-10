@@ -3,36 +3,31 @@ title: Sign in
 description: Email and password sign-in with a remember-me option, a recovery link and a single primary action.
 category: Authentication
 order: 1
+featured: true
 components: [card, field, input, checkbox, button]
+example: |
+  <form style="inline-size:min(100%, 24rem)">
+    <tp-card>
+      <h2 slot="header">Welcome back</h2>
+      <p slot="description">Sign in to continue to your workspace.</p>
+      <div style="display:grid;gap:var(--tp-space-4)">
+        <tp-field label="Email">
+          <tp-input name="email" type="email" autocomplete="email" required></tp-input>
+        </tp-field>
+        <tp-field label="Password">
+          <tp-input name="password" type="password" autocomplete="current-password" required></tp-input>
+        </tp-field>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--tp-space-3)">
+          <tp-field label="Remember me" orientation="horizontal">
+            <tp-checkbox name="remember"></tp-checkbox>
+          </tp-field>
+          <tp-button variant="link" size="sm" href="#forgot-password">Forgot password?</tp-button>
+        </div>
+      </div>
+      <tp-button slot="footer" type="submit" style="inline-size:100%">Sign in</tp-button>
+    </tp-card>
+  </form>
 ---
-
-import Preview from '../../components/Preview.astro';
-
-<Preview
-  title="Sign in"
-  showCode
-  code={`<form style="inline-size:min(100%, 24rem)">
-<tp-card>
-  <h2 slot="header">Welcome back</h2>
-  <p slot="description">Sign in to continue to your workspace.</p>
-  <div style="display:grid;gap:var(--tp-space-4)">
-    <tp-field label="Email">
-      <tp-input name="email" type="email" autocomplete="email" required></tp-input>
-    </tp-field>
-    <tp-field label="Password">
-      <tp-input name="password" type="password" autocomplete="current-password" required></tp-input>
-    </tp-field>
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--tp-space-3)">
-      <tp-field label="Remember me" orientation="horizontal">
-        <tp-checkbox name="remember"></tp-checkbox>
-      </tp-field>
-      <tp-button variant="link" size="sm" href="#forgot-password">Forgot password?</tp-button>
-    </div>
-  </div>
-  <tp-button slot="footer" type="submit" style="inline-size:100%">Sign in</tp-button>
-</tp-card>
-</form>`}
-/>
 
 ## How it's composed
 
@@ -43,4 +38,4 @@ import Preview from '../../components/Preview.astro';
 
 ## Make it yours
 
-Replace the form's submit handling with your own, add a social sign-in row above the fields with outline Buttons, or swap the password for a one-time code with `tp-one-time-code-field`.
+Replace the form's submit handling with your own, add a social sign-in row above the fields with outline Buttons, or swap the password for a one-time code with the [Verify code](../verify-code) pattern.

@@ -4,13 +4,19 @@ import '../styles/site.css';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import { url } from '../lib/url';
+import { bodyFontFaces } from '../lib/fonts';
 
 interface Props {
   title: string;
   description?: string;
+  /** Full-viewport page with no footer, such as the home canvas. */
+  immersive?: boolean;
 }
-const { title, description = 'Accessible web components for interfaces that feel considered.' } =
-  Astro.props;
+const {
+  title,
+  description = 'Accessible web components for interfaces that feel considered.',
+  immersive = false,
+} = Astro.props;
 const fullTitle = title === 'Tweakpad UI' ? title : `${title} · Tweakpad UI`;
 ---
 
@@ -28,8 +34,9 @@ const fullTitle = title === 'Tweakpad UI' ? title : `${title} · Tweakpad UI`;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&display=swap"
     />
+    {bodyFontFaces.length > 0 && <style is:inline set:html={bodyFontFaces.join('\n')} />}
     <!--
       Applies the stored theme before first paint. Same storage key and logic as the library's
       theme switcher (applyColorSchemePreference), so the header control and the page agree.
@@ -44,13 +51,13 @@ const fullTitle = title === 'Tweakpad UI' ? title : `${title} · Tweakpad UI`;
       } catch {}
     </script>
   </head>
-  <body>
+  <body class:list={{ immersive }}>
     <a class="skip-link" href="#main">Skip to content</a>
     <Header />
     <main id="main">
       <slot />
     </main>
-    <Footer />
+    {!immersive && <Footer />}
     <script>
       import '@tweakpad/ui/register';
     </script>

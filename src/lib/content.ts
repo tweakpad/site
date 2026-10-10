@@ -46,3 +46,6 @@ export async function componentsOf(pattern: PatternEntry) {
     .map((id) => docs.find((entry) => entry.id === `components/${id}`))
     .filter((entry): entry is DocEntry => Boolean(entry));
 }
+
+export const featuredPatterns = async () =>
+  (await sortedPatterns()).filter((pattern) => pattern.data.featured);

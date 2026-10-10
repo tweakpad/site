@@ -18,8 +18,10 @@ Node 24 (see `.nvmrc`).
 | Path | Contents |
 | --- | --- |
 | `src/content/docs/` | Getting-started guides and one MDX page per component. A component page's `tag` frontmatter pulls its API table from the package's custom elements manifest. |
-| `src/content/patterns/` | Recipes composed from several components. `components` lists the component pages each one uses; those pages link back under "Related patterns". |
-| `src/content/kits/` | Kits for niche products (audio editor, trading terminal, graph editor). |
+| `src/content/patterns/` | Recipes composed from several components. `example` holds the composition, shown live on the pattern page; `featured` puts it on the home page canvas; `components` lists the component pages it uses, which link back under "Related patterns". |
+| `src/content/kits/` | Plans for kits for niche products (audio editor, trading terminal, graph editor). The Kits page shows a coming-soon message for now. |
+| `src/components/PatternCanvas.astro` | The home page: an endless, pannable grid of the featured pattern compositions. |
+| `public/fonts/` | Fivo Sans (SIL Open Font License, see `OFL.txt`), self-hosted for body text. Display type is Anton from Google Fonts. |
 | `src/components/Preview.astro` | Live example with a Default/Compact density selector and a Code toggle that shows the source in `tp-code-block`. |
 | `src/styles/site.css` | Site chrome and the black-and-white tuning of the library's tokens. |
 

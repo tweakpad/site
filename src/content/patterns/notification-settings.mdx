@@ -1,0 +1,36 @@
+---
+title: Notification settings
+description: Grouped switches for email and push notifications, each with a one-line explanation.
+category: Settings
+order: 4
+featured: true
+components: [card, field, switch]
+example: |
+  <tp-card style="inline-size:min(100%, 26rem)">
+    <h2 slot="header">Notifications</h2>
+    <p slot="description">Choose what we tell you about, and where.</p>
+    <div style="display:grid;gap:var(--tp-space-5)">
+      <tp-field orientation="horizontal" label="Mentions" description="When someone mentions you in a comment.">
+        <tp-switch name="mentions" default-checked></tp-switch>
+      </tp-field>
+      <tp-field orientation="horizontal" label="Pull requests" description="Reviews and merges on your work.">
+        <tp-switch name="reviews" default-checked></tp-switch>
+      </tp-field>
+      <tp-field orientation="horizontal" label="Weekly digest" description="A summary every Monday morning.">
+        <tp-switch name="digest"></tp-switch>
+      </tp-field>
+      <tp-field orientation="horizontal" label="Product news" description="New features, at most once a month.">
+        <tp-switch name="news"></tp-switch>
+      </tp-field>
+    </div>
+  </tp-card>
+---
+
+## How it's composed
+
+- **Field** with `orientation="horizontal"` puts the label and description on one side and the Switch on the other, and clicking the label toggles it.
+- **Switch** commits immediately, which suits settings that take effect without a save button.
+
+## Make it yours
+
+Save each change as it happens and confirm with a quiet toast, or add a Tabs row for Email, Push and In-app channels.

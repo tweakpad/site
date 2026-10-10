@@ -15,9 +15,10 @@
   --tp-muted-foreground: light-dark(#666, #8f8f8f);
   --tp-secondary: light-dark(#f0f0f0, #1f1f1f);
   --tp-border: light-dark(#e5e5e5, #262626);
-  --tp-font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --tp-font-sans: 'Fivo Sans', 'Geist', ui-sans-serif, system-ui, sans-serif;
   --tp-font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', monospace;
 
+  --site-font-display: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
   --site-subtle: light-dark(#fafafa, #0f0f0f);
   --site-line: light-dark(#ededed, #1c1c1c);
   --site-accent: light-dark(#5b4bf5, #9d91ff);
@@ -277,13 +278,23 @@ a {
 }
 
 .display {
-  max-inline-size: 20ch;
   margin: 0;
-  font-size: clamp(2.25rem, 5.5vw, 4rem);
-  font-weight: 600;
+  font-family: var(--site-font-display);
+  font-size: clamp(3rem, 8.5vw, 7rem);
+  font-weight: 400;
   line-height: 1.02;
-  letter-spacing: -0.045em;
-  text-wrap: balance;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+}
+
+.display > * {
+  display: block;
+}
+
+/* The outlined line: an accent stroke with no fill, after the reference type treatment. */
+.outline {
+  color: transparent;
+  -webkit-text-stroke: max(1px, 0.018em) var(--accent, var(--site-accent));
 }
 
 .lede {
@@ -435,10 +446,11 @@ a {
 
 .page-title {
   margin: 0;
-  font-size: clamp(1.875rem, 3.5vw, 2.5rem);
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.035em;
+  font-family: var(--site-font-display);
+  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  font-weight: 400;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .page-description {

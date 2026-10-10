@@ -1,18 +1,33 @@
 ---
+/**
+ * A section's opening: a solid display line over an outlined one, revealed with the library's
+ * Text motion.
+ */
 interface Props {
   eyebrow: string;
   title: string;
+  /** Second display line, drawn as an outline in the accent color. */
+  outline?: string;
   lede?: string;
-  /** Tints the eyebrow dot and the header glow, for example a kit's accent. */
+  /** Tints the eyebrow dot, the outline and the header glow, for example a kit's accent. */
   accent?: string;
 }
-const { eyebrow, title, lede, accent } = Astro.props;
+const { eyebrow, title, outline, lede, accent } = Astro.props;
 ---
 
 <section class="section-header" style={accent ? `--accent: ${accent}` : undefined}>
   <div class="container">
     <p class="eyebrow">{eyebrow}</p>
-    <h1 class="display">{title}</h1>
+    <h1 class="display">
+      <tp-text-motion split="words lines" mask="lines" reveal="up" stagger="60">{title}</tp-text-motion>
+      {
+        outline && (
+          <tp-text-motion class="outline" split="words lines" mask="lines" reveal="up" stagger="60">
+            {outline}
+          </tp-text-motion>
+        )
+      }
+    </h1>
     {lede && <p class="lede">{lede}</p>}
     <slot />
   </div>

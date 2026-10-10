@@ -1,5 +1,5 @@
 ---
-import { docsByGroup, sortedKits, sortedPatterns } from '../lib/content';
+import { docsByGroup, sortedPatterns } from '../lib/content';
 import { url } from '../lib/url';
 
 // The search index is the site's own page list, built once per page render.
@@ -26,11 +26,7 @@ const index = [
   {
     type: 'group',
     label: 'Kits',
-    items: (await sortedKits()).map((entry) => ({
-      value: url(`/kits/${entry.id}`),
-      label: entry.data.title,
-      keywords: entry.data.controls.map((control) => control.name),
-    })),
+    items: [{ value: url('/kits'), label: 'Kits (coming soon)', keywords: ['kit'] }],
   },
 ];
 ---

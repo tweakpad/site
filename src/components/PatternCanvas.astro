@@ -1,0 +1,409 @@
+---
+/**
+ * An endless, pannable canvas of live pattern compositions. Every featured pattern is rendered
+ * once on the server; the client lays them out in columns that wrap around in both directions,
+ * cloning compositions as needed to fill the viewport, so the grid has no edge.
+ */
+import { featuredPatterns } from '../lib/content';
+import { url } from '../lib/url';
+
+const patterns = await featuredPatterns();
+---
+
+<div
+  class="canvas"
+  data-canvas
+  tabindex="0"
+  role="region"
+  aria-label="Pattern canvas. Drag, scroll or use the arrow keys to explore."
+>
+  <div class="canvas__world" data-world>
+    {
+      patterns.map((pattern) => (
+        <article class="canvas__item" data-item data-pattern={pattern.id}>
+          <div class="canvas__composition" set:html={pattern.data.example} />
+          <a class="canvas__caption" href={url(`/patterns/${pattern.id}`)}>
+            <span>{pattern.data.title}</span>
+            <span class="canvas__category">{pattern.data.category}</span>
+            <span aria-hidden="true">→</span>
+          </a>
+        </article>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .canvas {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    background-image: radial-gradient(
+      color-mix(in oklab, var(--tp-foreground) 10%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: 24px 24px;
+    background-position: var(--grid-x, 0) var(--grid-y, 0);
+  }
+
+  .canvas:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .canvas[data-dragging] {
+    cursor: grabbing;
+  }
+
+  /* Before the script lays the canvas out (or without it), the compositions simply wrap. */
+  .canvas__world {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3.5rem;
+    padding: 2rem;
+  }
+
+  .canvas[data-ready] .canvas__world {
+    display: block;
+    padding: 0;
+  }
+
+  .canvas__item {
+    display: grid;
+    justify-items: center;
+    gap: 0.875rem;
+    inline-size: var(--column, 28rem);
+    user-select: text;
+    cursor: auto;
+  }
+
+  .canvas[data-ready] .canvas__item {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    will-change: transform;
+  }
+
+  .canvas__composition {
+    display: flex;
+    justify-content: center;
+    inline-size: 100%;
+  }
+
+  .canvas__composition > :global(*) {
+    box-shadow:
+      0 1px 0 color-mix(in oklab, var(--tp-foreground) 4%, transparent),
+      0 24px 60px -24px color-mix(in oklab, black 22%, transparent);
+    border-radius: var(--tp-radius-xl);
+  }
+
+  .canvas__caption {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.4rem 0.3rem 0.75rem;
+    border: 1px solid var(--site-line);
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--tp-background) 85%, transparent);
+    backdrop-filter: blur(8px);
+    color: var(--tp-foreground);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: none;
+    opacity: 0.7;
+    transition: opacity 200ms var(--site-ease);
+  }
+
+  .canvas__item:hover .canvas__caption,
+  .canvas__caption:focus-visible {
+    opacity: 1;
+  }
+
+  .canvas__category {
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: var(--tp-muted);
+    color: var(--tp-muted-foreground);
+    font: 500 0.6875rem var(--tp-font-mono);
+  }
+</style>
+
+<script>
+  const canvas = document.querySelector<HTMLElement>('[data-canvas]');
+  const world = canvas?.querySelector<HTMLElement>('[data-world]');
+
+  if (canvas && world) {
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const originals = [...world.querySelectorAll<HTMLElement>('[data-item]')];
+    const templates = originals.map((item) => item.cloneNode(true) as HTMLElement);
+
+    interface Placed {
+      element: HTMLElement;
+      column: number;
+      y: number;
+    }
+    let items: Placed[] = [];
+    let columns = 0;
+    let columnWidth = 0;
+    let columnHeights: number[] = [];
+    let stagger: number[] = [];
+    let margin = 0;
+    const GAP = 64;
+
+    const pan = { x: 0, y: 0 };
+    const velocity = { x: 0, y: 0 };
+    let drifting = !reduceMotion;
+    let frame = 0;
+
+    const mod = (value: number, size: number) => ((value % size) + size) % size;
+
+    /** Column width follows the viewport: one comfortable column on a phone, many on desktop. */
+    const measureColumn = () => Math.min(440, Math.max(300, canvas.clientWidth - 48));
+
+    const originalHeights = new Map<string, number>();
+
+    function build() {
+      columnWidth = measureColumn();
+      canvas!.style.setProperty('--column', `${columnWidth}px`);
+      for (const original of originals) {
+        originalHeights.set(original.dataset.pattern ?? '', original.offsetHeight);
+      }
+      columns = Math.max(3, Math.ceil(canvas!.clientWidth / columnWidth) + 2);
+      stagger = Array.from({ length: columns }, (_, index) => (index % 2 ? 0.42 : 0) * 600);
+
+      // Keep the server-rendered originals; drop earlier clones.
+      for (const element of world!.querySelectorAll<HTMLElement>('[data-item][data-clone]')) {
+        element.remove();
+      }
+      const pool = [...originals];
+      let next = 0;
+      const take = () => {
+        const source = next < pool.length ? pool[next] : undefined;
+        const index = next % templates.length;
+        next += 1;
+        if (source) return source;
+        const clone = templates[index].cloneNode(true) as HTMLElement;
+        clone.dataset.clone = '';
+        world!.append(clone);
+        return clone;
+      };
+
+      // Deal compositions round-robin so neighbouring columns differ, then top up short columns.
+      items = [];
+      const perColumn: HTMLElement[][] = Array.from({ length: columns }, () => []);
+      const minimum = Math.max(2, Math.ceil(templates.length / columns));
+      for (let row = 0; row < minimum; row += 1) {
+        for (let column = 0; column < columns; column += 1) perColumn[column].push(take());
+      }
+      perColumn.forEach((elements, column) =>
+        elements.forEach((element) => items.push({ element, column, y: 0 })),
+      );
+      // A column wraps seamlessly only when it is taller than the viewport plus one item. Clones
+      // render asynchronously, so size them from their server-rendered original.
+      const estimate = (element: HTMLElement) =>
+        originalHeights.get(element.dataset.pattern ?? '') ?? element.offsetHeight;
+      const tallest = Math.max(...originalHeights.values()) + GAP;
+      const heights = Array.from({ length: columns }, () => 0);
+      for (const item of items) heights[item.column] += estimate(item.element) + GAP;
+      for (let column = 0; column < columns; column += 1) {
+        while (heights[column] < canvas!.clientHeight + tallest * 2) {
+          const element = take();
+          items.push({ element, column, y: 0 });
+          heights[column] += estimate(element) + GAP;
+        }
+      }
+      layout();
+    }
+
+    /** Stacks each column from measured heights; called again whenever a composition resizes. */
+    function layout() {
+      columnHeights = Array.from({ length: columns }, () => 0);
+      let tallest = 0;
+      for (const item of items) {
+        const height = item.element.offsetHeight;
+        tallest = Math.max(tallest, height);
+        item.y = columnHeights[item.column];
+        columnHeights[item.column] += height + GAP;
+      }
+      margin = tallest + GAP;
+      render();
+    }
+
+    function render() {
+      const width = columns * (columnWidth + GAP);
+      for (const item of items) {
+        const x = mod(item.column * (columnWidth + GAP) + pan.x, width) - (columnWidth + GAP);
+        const y = mod(item.y + stagger[item.column] + pan.y, columnHeights[item.column]) - margin;
+        item.element.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      }
+      canvas!.style.setProperty('--grid-x', `${pan.x}px`);
+      canvas!.style.setProperty('--grid-y', `${pan.y}px`);
+    }
+
+    function tick() {
+      frame = 0;
+      if (drifting) {
+        pan.x -= 0.25;
+        pan.y -= 0.12;
+      } else if (Math.abs(velocity.x) > 0.05 || Math.abs(velocity.y) > 0.05) {
+        pan.x += velocity.x;
+        pan.y += velocity.y;
+        velocity.x *= 0.94;
+        velocity.y *= 0.94;
+      } else {
+        render();
+        return;
+      }
+      render();
+      frame = requestAnimationFrame(tick);
+    }
+    const run = () => {
+      if (!frame) frame = requestAnimationFrame(tick);
+    };
+    const stopDrift = () => {
+      drifting = false;
+    };
+
+    // Drag to pan, from anywhere that is not a control.
+    // Library elements that are surfaces rather than controls; dragging over them pans.
+    const surfaces = new Set([
+      'TP-CARD',
+      'TP-LIST-ITEM-GROUP',
+      'TP-LIST-ITEM',
+      'TP-PROGRESS',
+      'TP-BADGE',
+      'TP-AVATAR',
+      'TP-ALERT',
+    ]);
+    const isControl = (target: Element) => {
+      if (target.closest('a, button, input, textarea, select, label, [contenteditable]')) return true;
+      for (let node: Element | null = target; node && node !== canvas; node = node.parentElement) {
+        if (node.tagName.startsWith('TP-') && !surfaces.has(node.tagName)) return true;
+      }
+      return false;
+    };
+    let drag: { id: number; x: number; y: number; time: number } | null = null;
+    canvas.addEventListener('pointerdown', (event) => {
+      stopDrift();
+      if (event.button !== 0) return;
+      // Text and card surfaces inside a composition still drag; controls keep the pointer.
+      if (isControl(event.target as Element)) return;
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, time: event.timeStamp };
+      velocity.x = velocity.y = 0;
+      canvas.setPointerCapture(event.pointerId);
+      canvas.dataset.dragging = '';
+      event.preventDefault();
+    });
+    canvas.addEventListener('pointermove', (event) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      const dx = event.clientX - drag.x;
+      const dy = event.clientY - drag.y;
+      const dt = Math.max(1, event.timeStamp - drag.time);
+      pan.x += dx;
+      pan.y += dy;
+      velocity.x = (dx / dt) * 16;
+      velocity.y = (dy / dt) * 16;
+      drag = { id: drag.id, x: event.clientX, y: event.clientY, time: event.timeStamp };
+      render();
+    });
+    const release = (event: PointerEvent) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      drag = null;
+      delete canvas.dataset.dragging;
+      if (reduceMotion) velocity.x = velocity.y = 0;
+      run();
+    };
+    canvas.addEventListener('pointerup', release);
+    canvas.addEventListener('pointercancel', release);
+
+    // Wheel and trackpad pan in both directions.
+    canvas.addEventListener(
+      'wheel',
+      (event) => {
+        stopDrift();
+        event.preventDefault();
+        const scale = event.deltaMode === 1 ? 16 : 1;
+        pan.x -= (event.shiftKey ? event.deltaY : event.deltaX) * scale;
+        pan.y -= (event.shiftKey ? 0 : event.deltaY) * scale;
+        render();
+      },
+      { passive: false },
+    );
+
+    // Arrow keys pan while the canvas itself has focus.
+    canvas.addEventListener('keydown', (event) => {
+      if (event.target !== canvas) return;
+      const step = event.shiftKey ? 240 : 80;
+      const moves: Record<string, [number, number]> = {
+        ArrowLeft: [step, 0],
+        ArrowRight: [-step, 0],
+        ArrowUp: [0, step],
+        ArrowDown: [0, -step],
+      };
+      const move = moves[event.key];
+      if (!move) return;
+      event.preventDefault();
+      stopDrift();
+      pan.x += move[0];
+      pan.y += move[1];
+      render();
+    });
+
+    // Tabbing into a composition that is partly off screen brings it into view.
+    canvas.addEventListener('focusin', (event) => {
+      stopDrift();
+      const item = (event.target as Element).closest<HTMLElement>('[data-item]');
+      if (!item) return;
+      const box = item.getBoundingClientRect();
+      const frameBox = canvas.getBoundingClientRect();
+      const pad = 32;
+      if (box.left < frameBox.left + pad) pan.x += frameBox.left + pad - box.left;
+      else if (box.right > frameBox.right - pad)
+        pan.x -= Math.min(box.right - frameBox.right + pad, box.left - frameBox.left - pad);
+      if (box.top < frameBox.top + pad) pan.y += frameBox.top + pad - box.top;
+      else if (box.bottom > frameBox.bottom - pad)
+        pan.y -= Math.min(box.bottom - frameBox.bottom + pad, box.top - frameBox.top - pad);
+      render();
+    });
+    canvas.addEventListener('pointerenter', (event) => {
+      if (event.pointerType === 'mouse') stopDrift();
+    });
+
+    // Demo forms show their states but never leave the page.
+    canvas.addEventListener('submit', (event) => event.preventDefault());
+
+    const resizeObserver = new ResizeObserver(() => layout());
+    let resizeTimer = 0;
+    addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        build();
+        observe();
+      }, 150);
+    });
+    const observe = () => {
+      resizeObserver.disconnect();
+      for (const item of items) resizeObserver.observe(item.element);
+    };
+
+    const start = async () => {
+      await Promise.all(
+        ['tp-card', 'tp-button', 'tp-field', 'tp-input'].map((tag) =>
+          customElements.whenDefined(tag),
+        ),
+      );
+      await document.fonts.ready;
+      canvas.dataset.ready = '';
+      build();
+      // Start with the first composition a little in from the top-left corner.
+      pan.x = Math.min(160, canvas.clientWidth * 0.08) + columnWidth + GAP;
+      pan.y = margin + 96;
+      render();
+      observe();
+      run();
+    };
+    start();
+  }
+</script>
