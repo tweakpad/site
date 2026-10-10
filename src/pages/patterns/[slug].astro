@@ -1,0 +1,109 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { componentsOf, sortedPatterns } from '../../lib/content';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('patterns');
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props as { entry: CollectionEntry<'patterns'> };
+const { Content } = await render(entry);
+const documented = new Set((await componentsOf(entry)).map((doc) => doc.id));
+const others = (await sortedPatterns()).filter((pattern) => pattern.id !== entry.id);
+---
+
+<BaseLayout title={entry.data.title} description={entry.data.description}>
+  <div class="container pattern">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href={url('/patterns')}>Patterns</a>
+      <span aria-hidden="true">/</span>
+      <span>{entry.data.category}</span>
+    </nav>
+    <h1 class="page-title">{entry.data.title}</h1>
+    <p class="page-description">{entry.data.description}</p>
+    <div class="page-meta">
+      <span class="chip-label">Built with</span>
+      {
+        entry.data.components.map((id) =>
+          documented.has(`components/${id}`) ? (
+            <a class="chip" href={url(`/docs/components/${id}`)}>
+              {id}
+            </a>
+          ) : (
+            <span class="chip">{id}</span>
+          ),
+        )
+      }
+    </div>
+    <div class="prose pattern__body">
+      <Content />
+    </div>
+    {
+      others.length > 0 && (
+        <section class="pattern__more">
+          <h2>More patterns</h2>
+          <div class="card-grid">
+            {others.map((pattern) => (
+              <a class="link-card" href={url(`/patterns/${pattern.id}`)}>
+                <h3>{pattern.data.title}</h3>
+                <p>{pattern.data.description}</p>
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .pattern {
+    padding-block: 2.5rem 6rem;
+  }
+
+  .crumbs {
+    display: flex;
+    gap: 0.5rem;
+    margin-block-end: 1rem;
+    color: var(--tp-muted-foreground);
+    font-size: 0.8125rem;
+  }
+
+  .crumbs a {
+    text-decoration: none;
+  }
+
+  .crumbs a:hover {
+    color: var(--tp-foreground);
+  }
+
+  .chip-label {
+    align-self: center;
+    margin-inline-end: 0.25rem;
+    color: var(--tp-muted-foreground);
+    font-size: 0.8125rem;
+  }
+
+  .pattern__body {
+    max-inline-size: none;
+    margin-block-start: 2rem;
+  }
+
+  .pattern__body :global(> :not(.preview)) {
+    max-inline-size: 46rem;
+  }
+
+  .pattern__more {
+    margin-block-start: 4rem;
+  }
+
+  .pattern__more h2 {
+    margin: 0 0 1.25rem;
+    color: var(--tp-muted-foreground);
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+</style>

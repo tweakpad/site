@@ -1,0 +1,27 @@
+---
+import KitCard from '../../components/KitCard.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { sortedKits } from '../../lib/content';
+
+const kits = await sortedKits();
+---
+
+<BaseLayout title="Kits" description="Specialized controls, compositions and themes for niche products.">
+  <SectionHeader
+    eyebrow="Kits"
+    title="Built for one kind of product."
+    lede="Kits extend the foundation with controls that only make sense in a specific environment, composed into a ready-to-extend template with a theme of its own. They are still web components, kept apart from the foundational library."
+  />
+  <div class="container kits">
+    <div class="card-grid">
+      {kits.map((kit) => <KitCard kit={kit} />)}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .kits {
+    padding-block: 3rem 6rem;
+  }
+</style>

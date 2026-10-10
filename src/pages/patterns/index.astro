@@ -1,0 +1,50 @@
+---
+import PatternCard from '../../components/PatternCard.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { sortedPatterns } from '../../lib/content';
+
+const patterns = await sortedPatterns();
+const categories = [...new Set(patterns.map((pattern) => pattern.data.category))];
+---
+
+<BaseLayout title="Patterns" description="Recipes that compose Tweakpad components into complete screens.">
+  <SectionHeader
+    eyebrow="Patterns"
+    title="Recipes, not components."
+    lede="Complete compositions for the screens every product needs. Copy one, change what you need, and ship. Each pattern lists the components it is built from, and every component page links back here."
+  />
+  <div class="container patterns">
+    {
+      categories.map((category) => (
+        <section>
+          <h2>{category}</h2>
+          <div class="card-grid">
+            {patterns
+              .filter((pattern) => pattern.data.category === category)
+              .map((pattern) => (
+                <PatternCard pattern={pattern} />
+              ))}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .patterns {
+    padding-block: 3rem 6rem;
+  }
+
+  .patterns section + section {
+    margin-block-start: 3.5rem;
+  }
+
+  h2 {
+    margin: 0 0 1.25rem;
+    color: var(--tp-muted-foreground);
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+</style>

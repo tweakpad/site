@@ -1,0 +1,349 @@
+---
+import KitCard from '../components/KitCard.astro';
+import PatternCard from '../components/PatternCard.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { sortedKits, sortedPatterns } from '../lib/content';
+import { uiVersion } from '../lib/manifest';
+import { url } from '../lib/url';
+
+const patterns = (await sortedPatterns()).slice(0, 3);
+const kits = (await sortedKits()).slice(0, 3);
+const install = 'npm install @tweakpad/ui lit';
+---
+
+<BaseLayout title="Tweakpad UI">
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">Tweakpad UI {uiVersion}</p>
+      <h1 class="hero__title">Interfaces, considered.</h1>
+      <p class="lede">
+        Accessible web components with a quiet, precise design language. Real HTML elements that
+        work in any framework, themed with tokens, ready for the products you are building.
+      </p>
+      <div class="hero__actions">
+        <tp-button size="lg" href={url('/docs/getting-started/introduction')}>Get started</tp-button>
+        <tp-button size="lg" variant="outline" href={url('/docs')}>Browse components</tp-button>
+      </div>
+      <div class="install">
+        <code><span aria-hidden="true">$</span> {install}</code>
+        <tp-copy-button value={install} label="Copy install command"></tp-copy-button>
+      </div>
+    </div>
+  </section>
+
+  <section class="container showcase" aria-label="Live components">
+    <div class="tile tile--signin">
+      <tp-card>
+        <h2 slot="header">Create your account</h2>
+        <p slot="description">Start with a free workspace.</p>
+        <div class="stack">
+          <tp-field label="Name">
+            <tp-input name="name" default-value="Ada Lovelace"></tp-input>
+          </tp-field>
+          <tp-field label="Email">
+            <tp-input name="email" type="email" placeholder="you@example.com"></tp-input>
+          </tp-field>
+          <tp-field label="I agree to the terms" orientation="horizontal">
+            <tp-checkbox name="terms" default-checked></tp-checkbox>
+          </tp-field>
+        </div>
+        <tp-button slot="footer" variant="outline">Cancel</tp-button>
+        <tp-button slot="footer">Create account</tp-button>
+      </tp-card>
+    </div>
+
+    <div class="tile tile--buttons">
+      <span class="tile__label">Button</span>
+      <div class="row">
+        <tp-button>Publish</tp-button>
+        <tp-button variant="secondary">Preview</tp-button>
+        <tp-button variant="outline">Share</tp-button>
+        <tp-button variant="ghost">Cancel</tp-button>
+      </div>
+    </div>
+
+    <div class="tile tile--settings">
+      <span class="tile__label">Switch</span>
+      <div class="stack">
+        <tp-field orientation="horizontal" label="Notifications" description="Project updates.">
+          <tp-switch name="notifications" default-checked></tp-switch>
+        </tp-field>
+        <tp-field orientation="horizontal" label="Weekly digest" description="Every Monday.">
+          <tp-switch name="digest"></tp-switch>
+        </tp-field>
+      </div>
+    </div>
+
+    <div class="tile tile--slider">
+      <span class="tile__label">Slider · Progress</span>
+      <div class="stack">
+        <tp-slider label="Volume" name="volume" default-value="64"></tp-slider>
+        <tp-progress value="72" label="Upload progress">
+          <span slot="label">Uploading assets</span>
+        </tp-progress>
+      </div>
+    </div>
+
+    <div class="tile tile--calendar">
+      <span class="tile__label">Calendar</span>
+      <tp-calendar label="Date" name="date" default-value="2026-10-14"></tp-calendar>
+    </div>
+
+    <div class="tile tile--toggles">
+      <span class="tile__label">Tabs · Toggle group · Badge</span>
+      <div class="stack">
+        <tp-tabs default-value="overview" label="Project">
+          <button slot="tab" value="overview">Overview</button>
+          <button slot="tab" value="activity">Activity</button>
+          <button slot="tab" value="settings">Settings</button>
+          <span slot="indicator" aria-hidden="true"></span>
+          <p slot="panel" class="panel" {...{ value: "overview" }}>Three components shipped this week.</p>
+          <p slot="panel" class="panel" {...{ value: "activity" }}>Ada published the Sign in pattern.</p>
+          <p slot="panel" class="panel" {...{ value: "settings" }}>Workspace settings live here.</p>
+        </tp-tabs>
+        <tp-toggle-group label="Text formatting" multiple variant="outline" default-value='["bold"]'>
+          <tp-toggle value="bold">Bold</tp-toggle>
+          <tp-toggle value="italic">Italic</tp-toggle>
+          <tp-toggle value="underline">Underline</tp-toggle>
+        </tp-toggle-group>
+        <div class="row">
+          <tp-badge>New</tp-badge>
+          <tp-badge variant="secondary">12 unread</tp-badge>
+          <tp-badge variant="outline">Draft</tp-badge>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container band">
+    <header class="band__header">
+      <div>
+        <p class="eyebrow">Patterns</p>
+        <h2>Start from a recipe.</h2>
+      </div>
+      <a href={url('/patterns')}>All patterns →</a>
+    </header>
+    <div class="card-grid">
+      {patterns.map((pattern) => <PatternCard pattern={pattern} />)}
+    </div>
+  </section>
+
+  <section class="container band">
+    <header class="band__header">
+      <div>
+        <p class="eyebrow">Kits</p>
+        <h2>Go further, for one kind of product.</h2>
+      </div>
+      <a href={url('/kits')}>All kits →</a>
+    </header>
+    <div class="card-grid">
+      {kits.map((kit) => <KitCard kit={kit} />)}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: clamp(4rem, 12vw, 8.5rem) clamp(3rem, 7vw, 4.5rem);
+    background: radial-gradient(
+      70rem 26rem at 50% -10rem,
+      color-mix(in oklab, var(--site-accent) 10%, transparent),
+      transparent 70%
+    );
+    text-align: center;
+  }
+
+  /* The hero's actions stay monochrome; the library's brand color is the accent elsewhere. */
+  .hero__actions {
+    --tp-primary: var(--tp-foreground);
+    --tp-primary-foreground: var(--tp-background);
+  }
+
+  .hero .eyebrow {
+    justify-content: center;
+  }
+
+  .hero__title {
+    margin: 0 auto;
+    font-size: clamp(2.75rem, 9vw, 6rem);
+    font-weight: 600;
+    line-height: 0.98;
+    letter-spacing: -0.055em;
+  }
+
+  .hero .lede {
+    margin-inline: auto;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-block-start: 2.25rem;
+  }
+
+  .install {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-inline-size: 100%;
+    margin-block-start: 1.75rem;
+    padding: 0.3rem 0.3rem 0.3rem 1rem;
+    border: 1px solid var(--site-line);
+    border-radius: 999px;
+    background: var(--site-subtle);
+  }
+
+  .install code {
+    overflow: hidden;
+    font: 0.8125rem var(--tp-font-mono);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .install code span {
+    color: var(--tp-muted-foreground);
+  }
+
+  .showcase {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1rem;
+    padding-block: 1rem 6rem;
+  }
+
+  .tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-inline-size: 0;
+    padding: 2.5rem 1.75rem 1.75rem;
+    border: 1px solid var(--site-line);
+    border-radius: var(--tp-radius-2xl);
+    background: var(--tp-background);
+  }
+
+  .tile__label {
+    position: absolute;
+    inset-block-start: 1rem;
+    inset-inline-start: 1.25rem;
+    color: var(--tp-muted-foreground);
+    font: 500 0.6875rem var(--tp-font-mono);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .tile--signin {
+    grid-column: span 5;
+    grid-row: span 2;
+    padding: 1.75rem;
+    background:
+      radial-gradient(
+        30rem 20rem at 0% 100%,
+        color-mix(in oklab, var(--site-accent) 10%, transparent),
+        transparent 70%
+      ),
+      var(--site-subtle);
+  }
+
+  .tile--buttons {
+    grid-column: span 7;
+  }
+
+  .tile--settings,
+  .tile--slider {
+    grid-column: span 7;
+  }
+
+  .tile--settings {
+    grid-column: span 4;
+  }
+
+  .tile--slider {
+    grid-column: span 3;
+  }
+
+  .tile--calendar {
+    grid-column: span 5;
+    align-items: center;
+  }
+
+  .tile--toggles {
+    grid-column: span 7;
+  }
+
+  .panel {
+    margin: var(--tp-space-3) 0 0;
+    color: var(--tp-muted-foreground);
+    font-size: var(--tp-text-sm);
+  }
+
+  .stack {
+    display: grid;
+    gap: var(--tp-space-4);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--tp-space-2);
+  }
+
+  @media (width < 64rem) {
+    .tile--signin,
+    .tile--calendar {
+      grid-column: span 6;
+    }
+
+    .tile--buttons,
+    .tile--settings,
+    .tile--slider,
+    .tile--toggles {
+      grid-column: span 6;
+    }
+  }
+
+  @media (width < 40rem) {
+    .showcase > .tile {
+      grid-column: 1 / -1;
+      grid-row: auto;
+    }
+  }
+
+  .band {
+    padding-block: 2rem 5rem;
+  }
+
+  .band__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-block-end: 1.5rem;
+  }
+
+  .band__header h2 {
+    margin: 0;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+  }
+
+  .band__header .eyebrow {
+    margin-block-end: 0.6rem;
+  }
+
+  .band__header a {
+    flex: none;
+    color: var(--tp-muted-foreground);
+    font-size: var(--tp-text-sm);
+    text-decoration: none;
+  }
+
+  .band__header a:hover {
+    color: var(--tp-foreground);
+  }
+</style>

@@ -1,0 +1,61 @@
+---
+import type { MarkdownHeading } from 'astro';
+import BaseLayout from './BaseLayout.astro';
+import { docsByGroup } from '../lib/content';
+import { url } from '../lib/url';
+
+interface Props {
+  title: string;
+  description: string;
+  headings?: MarkdownHeading[];
+}
+const { title, description, headings = [] } = Astro.props;
+const groups = await docsByGroup();
+const current = Astro.url.pathname.replace(/\/$/, '');
+const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+---
+
+<BaseLayout title={title} description={description}>
+  <div class:list={['container', 'docs-shell', { 'docs-shell--toc': toc.length > 0 }]}>
+    <aside class="sidebar">
+      <nav aria-label="Documentation">
+        {
+          groups.map((group) => (
+            <section>
+              <h2>{group.label}</h2>
+              <ul>
+                {group.entries.map((entry) => {
+                  const href = url(`/docs/${entry.id}`);
+                  return (
+                    <li>
+                      <a href={href} aria-current={current === href ? 'page' : undefined}>
+                        {entry.data.title}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))
+        }
+      </nav>
+    </aside>
+    <article class="docs-main">
+      <slot />
+    </article>
+    {
+      toc.length > 0 && (
+        <aside class="toc">
+          <h2>On this page</h2>
+          <ul>
+            {toc.map((heading) => (
+              <li class={`depth-${heading.depth}`}>
+                <a href={`#${heading.slug}`}>{heading.text}</a>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )
+    }
+  </div>
+</BaseLayout>

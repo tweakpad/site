@@ -1,0 +1,52 @@
+---
+import type { KitEntry } from '../lib/content';
+import { url } from '../lib/url';
+
+interface Props {
+  kit: KitEntry;
+}
+const { kit } = Astro.props;
+---
+
+<a class="link-card kit-card" href={url(`/kits/${kit.id}`)} style={`--accent: ${kit.data.accent}`}>
+  <div class="kit-card__art" aria-hidden="true">
+    {kit.data.controls.map((_, index) => <span style={`--i: ${index}`} />)}
+  </div>
+  <span class="chip">{kit.data.status}</span>
+  <h3>{kit.data.title}</h3>
+  <p>{kit.data.description}</p>
+  <span class="link-card__arrow" aria-hidden="true">→</span>
+</a>
+
+<style>
+  .kit-card__art {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.4rem;
+    block-size: 7rem;
+    margin: -1.25rem -1.25rem 0.75rem;
+    padding: 1.25rem;
+    border-block-end: 1px solid var(--site-line);
+    border-start-start-radius: inherit;
+    border-start-end-radius: inherit;
+    background:
+      radial-gradient(
+        20rem 8rem at 20% 120%,
+        color-mix(in oklab, var(--accent) 22%, transparent),
+        transparent 70%
+      ),
+      var(--site-subtle);
+  }
+
+  .kit-card__art span {
+    flex: 1;
+    block-size: calc(30% + var(--i) * 18%);
+    border-radius: 0.3rem;
+    background: color-mix(in oklab, var(--accent) calc(35% + var(--i) * 15%), transparent);
+  }
+
+  .link-card__arrow {
+    inset-block-start: auto;
+    inset-block-end: 1.25rem;
+  }
+</style>

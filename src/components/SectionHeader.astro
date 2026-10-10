@@ -1,0 +1,19 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  lede?: string;
+  /** Tints the eyebrow dot and the header glow, for example a kit's accent. */
+  accent?: string;
+}
+const { eyebrow, title, lede, accent } = Astro.props;
+---
+
+<section class="section-header" style={accent ? `--accent: ${accent}` : undefined}>
+  <div class="container">
+    <p class="eyebrow">{eyebrow}</p>
+    <h1 class="display">{title}</h1>
+    {lede && <p class="lede">{lede}</p>}
+    <slot />
+  </div>
+</section>

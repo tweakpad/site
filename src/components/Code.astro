@@ -1,0 +1,23 @@
+---
+/** A standalone code sample in the library's Code block, with its copy action. */
+interface Props {
+  code: string;
+  language?: string;
+  label?: string;
+}
+const { code, language = 'html', label } = Astro.props;
+---
+
+<div class="code">
+  <tp-code-block language={language} label={label}>{code.trim()}</tp-code-block>
+</div>
+
+<style>
+  .code {
+    margin-block: 1rem 1.5rem;
+  }
+
+  .code tp-code-block {
+    display: block;
+  }
+</style>

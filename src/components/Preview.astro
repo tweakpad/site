@@ -1,0 +1,104 @@
+---
+/**
+ * A live example: the markup renders as-is on a canvas, and the same markup is the copyable code.
+ * Each preview has a Default/Compact density selector (shared by every preview on the page) and a
+ * Code toggle that reveals the source in the library's Code block, with its copy action.
+ */
+interface Props {
+  code: string;
+  title?: string;
+  /** `center` (default) for a single control, `start` or `stretch` for wider compositions. */
+  align?: 'center' | 'start' | 'stretch';
+  /** Opens with the code visible. */
+  showCode?: boolean;
+  language?: string;
+}
+
+const { code, title = 'Preview', align = 'center', showCode = false, language = 'html' } =
+  Astro.props;
+const source = code.trim();
+---
+
+<figure class="preview" data-preview data-density="default">
+  <div class="preview__bar">
+    <figcaption class="preview__title">{title}</figcaption>
+    <div class="preview__tools">
+      <tp-toggle-group
+        data-density-control
+        label="Density"
+        size="sm"
+        variant="outline"
+        default-value='["default"]'
+      >
+        <tp-toggle value="default">Default</tp-toggle>
+        <tp-toggle value="compact">Compact</tp-toggle>
+      </tp-toggle-group>
+      <tp-toggle data-code-control size="sm" variant="outline" default-pressed={showCode || undefined}>
+        Code
+      </tp-toggle>
+    </div>
+  </div>
+  <div class="preview__canvas" data-align={align} set:html={source} />
+  <div class="preview__code" hidden={!showCode} data-code>
+    <tp-code-block language={language} copyable>{source}</tp-code-block>
+  </div>
+</figure>
+
+<script>
+  import type { TpToggle, TpToggleGroup } from '@tweakpad/ui';
+
+  type Density = 'default' | 'compact';
+  const STORAGE_KEY = 'tp-site-density';
+
+  const readDensity = (): Density => {
+    try {
+      return localStorage.getItem(STORAGE_KEY) === 'compact' ? 'compact' : 'default';
+    } catch {
+      return 'default';
+    }
+  };
+
+  /** One density for every preview on the page, remembered across pages. */
+  function applyDensity(density: Density) {
+    for (const preview of document.querySelectorAll<HTMLElement>('[data-preview]')) {
+      preview.dataset.density = density;
+      const control = preview.querySelector<TpToggleGroup>('[data-density-control]');
+      if (control && control.value[0] !== density) control.setValue([density]);
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, density);
+    } catch {}
+  }
+
+  // Module scripts run in document order; the elements may not be defined yet.
+  await Promise.all([
+    customElements.whenDefined('tp-toggle-group'),
+    customElements.whenDefined('tp-toggle'),
+  ]);
+
+  for (const preview of document.querySelectorAll<HTMLElement>('[data-preview]')) {
+    // Demo forms validate and show their states, but never leave the page.
+    preview.addEventListener('submit', (event) => event.preventDefault());
+
+    const density = preview.querySelector<TpToggleGroup>('[data-density-control]');
+    density?.addEventListener('tp-value-change', (event) => {
+      if (event.target !== density) return;
+      const next = (event as CustomEvent<{ value: readonly string[] }>).detail.value[0];
+      // Pressing the selected option would clear a single-selection group; keep one selected.
+      if (next !== 'default' && next !== 'compact') {
+        event.preventDefault();
+        return;
+      }
+      queueMicrotask(() => applyDensity(next));
+    });
+
+    const codeToggle = preview.querySelector<TpToggle>('[data-code-control]');
+    const code = preview.querySelector<HTMLElement>('[data-code]');
+    codeToggle?.addEventListener('tp-value-change', (event) => {
+      if (event.target !== codeToggle || !code) return;
+      code.hidden = !(event as CustomEvent<{ value: boolean }>).detail.value;
+    });
+  }
+
+  if (readDensity() === 'compact') applyDensity('compact');
+</script>
