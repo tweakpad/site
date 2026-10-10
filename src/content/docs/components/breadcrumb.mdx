@@ -1,0 +1,74 @@
+---
+title: Breadcrumb
+description: The trail of ancestor pages leading to the current one, as native links in a navigation landmark.
+tag: tp-breadcrumb
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Breadcrumb"
+  code={`<tp-breadcrumb>
+  <a href="#breadcrumb-home">Home</a>
+  <a href="#breadcrumb-settings">Settings</a>
+  <a href="#breadcrumb-billing">Billing</a>
+  <span>Invoices</span>
+</tp-breadcrumb>`}
+/>
+
+## Usage
+
+Put each step as a direct child: native `<a>` links for ancestors and a plain element for the current page, which is marked with `aria-current="page"` automatically. Links keep their destinations, modified clicks and listeners, so no router is needed. Name the landmark with `label` when a page has more than one navigation.
+
+### Separator
+
+<Preview
+  title="Custom separator"
+  code={`<tp-breadcrumb label="File path" separator="/">
+  <a href="#breadcrumb-workspace">northwind</a>
+  <a href="#breadcrumb-repo">web-app</a>
+  <a href="#breadcrumb-src">src</a>
+  <span>README.md</span>
+</tp-breadcrumb>`}
+/>
+
+The default separator is a chevron that mirrors in right-to-left layouts. `separator` swaps it for text, such as a slash for file paths. Separators are hidden from assistive technology.
+
+### Collapsed ancestors
+
+<Preview
+  title="Collapsed with a menu"
+  code={`<tp-breadcrumb label="Documentation">
+  <a href="#breadcrumb-docs">Docs</a>
+  <tp-menu label="Hidden pages" placement="block-end start">
+    <tp-button slot="trigger" variant="ghost" size="icon-sm" aria-label="Show 3 hidden pages">
+      <svg slot="icon-start" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+    </tp-button>
+    <a href="#breadcrumb-guides" close-on-click>Guides</a>
+    <a href="#breadcrumb-data" close-on-click>Data</a>
+    <a href="#breadcrumb-fetching" close-on-click>Fetching</a>
+  </tp-menu>
+  <a href="#breadcrumb-caching">Caching</a>
+  <span>Revalidating</span>
+</tp-breadcrumb>`}
+/>
+
+Collapsing is up to you: replace the middle ancestors with a named Button that opens a Menu of the hidden links. If the omission doesn't need to be reachable, use a decorative mark with `aria-hidden="true"` and `data-breadcrumb-ellipsis` instead.
+
+### Wrapping
+
+<Preview
+  title="Long trail"
+  align="stretch"
+  code={`<div style="inline-size:100%;max-inline-size:20rem;margin-inline:auto">
+  <tp-breadcrumb label="Product category">
+    <a href="#breadcrumb-shop">Shop</a>
+    <a href="#breadcrumb-home-office">Home office</a>
+    <a href="#breadcrumb-desks">Desks</a>
+    <a href="#breadcrumb-standing">Standing desks</a>
+    <span>Oak electric standing desk, 160 cm</span>
+  </tp-breadcrumb>
+</div>`}
+/>
+
+In a narrow container the trail wraps instead of overflowing. Collapse ancestors when a wrapped trail would push content too far down.

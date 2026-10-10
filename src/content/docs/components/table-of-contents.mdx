@@ -1,0 +1,73 @@
+---
+title: Table of contents
+description: An "On this page" list of links that marks the section the reader has scrolled to.
+tag: tp-table-of-contents
+parts: [tp-table-of-contents-item]
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Table of contents"
+  align="stretch"
+  code={`<tp-scroll-area label="Integration guide" style="block-size:24rem">
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 11rem;gap:var(--tp-space-8);padding:var(--tp-space-6);align-items:start">
+    <article>
+      <h3 id="toc-demo-overview" style="margin-block:0 var(--tp-space-3)">Overview</h3>
+      <p style="margin-block:0 var(--tp-space-4)">Northwind Sync keeps customer records in your CRM and your billing system in step. Every change on either side becomes an event, and the sync service applies it to the other side within a few seconds.</p>
+      <p style="margin-block:0 var(--tp-space-4)">This guide walks through connecting both systems, choosing which fields to map, and rolling the integration out to your whole team without interrupting billing.</p>
+      <h3 id="toc-demo-connect" style="margin-block:0 var(--tp-space-3)">Connect accounts</h3>
+      <p style="margin-block:0 var(--tp-space-4)">Open Settings → Integrations and choose Northwind Sync. You will be asked to sign in to both systems with an administrator account; the service stores only scoped tokens, never passwords.</p>
+      <p style="margin-block:0 var(--tp-space-4)">Once both accounts are connected, a test record is created and deleted on each side to confirm permissions. If the check fails, the most common cause is a CRM role without API access.</p>
+      <h3 id="toc-demo-mapping" style="margin-block:0 var(--tp-space-3)">Field mapping</h3>
+      <p style="margin-block:0 var(--tp-space-4)">Standard fields such as company name, billing email and tax ID are mapped automatically. Custom fields appear in a second list where you choose a target and a direction.</p>
+      <p style="margin-block:0 var(--tp-space-4)">Use one-way mappings for values that have a single owner, such as plan tier from billing. Two-way mappings resolve conflicts by keeping the most recent edit.</p>
+      <h3 id="toc-demo-rollout" style="margin-block:0 var(--tp-space-3)">Rollout</h3>
+      <p style="margin-block:0 var(--tp-space-4)">Start with a single sales region. The sync dashboard shows applied, skipped and failed events per hour, so you can confirm the mapping before widening it.</p>
+      <p style="margin-block:0 var(--tp-space-4)">When the error rate stays under one percent for a week, enable the remaining regions. Historical records are backfilled overnight in batches of five thousand.</p>
+      <h3 id="toc-demo-troubleshooting" style="margin-block:0 var(--tp-space-3)">Troubleshooting</h3>
+      <p style="margin-block:0 var(--tp-space-4)">Failed events are retried with exponential backoff for up to 24 hours. After that they move to the review queue, where you can edit the payload and replay it.</p>
+      <p style="margin-block:0 var(--tp-space-4)">If records drift apart, run a reconciliation from the dashboard. It compares both systems field by field and lists every difference before changing anything.</p>
+      <div style="block-size:12rem"></div>
+    </article>
+    <aside style="position:sticky;top:0">
+      <tp-table-of-contents navigation="scroll">
+      <tp-table-of-contents-item href="#toc-demo-overview">Overview</tp-table-of-contents-item>
+      <tp-table-of-contents-item href="#toc-demo-connect">Connect accounts</tp-table-of-contents-item>
+      <tp-table-of-contents-item href="#toc-demo-mapping">Field mapping</tp-table-of-contents-item>
+      <tp-table-of-contents-item href="#toc-demo-rollout">Rollout</tp-table-of-contents-item>
+      <tp-table-of-contents-item href="#toc-demo-troubleshooting">Troubleshooting</tp-table-of-contents-item>
+      </tp-table-of-contents>
+    </aside>
+  </div>
+</tp-scroll-area>`}
+/>
+
+## Usage
+
+Each item names its target with `href="#id"`; the component never scans the page for headings. It finds the scroll container that holds every target, the document or a Scroll area as here, and marks the innermost target whose region crosses the reading line. Place it in a sticky column inside that same container.
+
+### Navigation
+
+Activating an item scrolls only the content's container and keeps that item current until the reader scrolls again. The default `navigation="fragment"` also records the target in the URL as a history entry, so Back returns to the previous section. Use `navigation="scroll"`, as these examples do, when your application routes on the fragment or the list sits in an embedded panel.
+
+### Depth and title
+
+<Preview
+  title="Nested items"
+  code={`<div style="inline-size:14rem">
+  <tp-table-of-contents label="In this guide" navigation="scroll">
+    <tp-table-of-contents-item href="#toc-demo-overview">Overview</tp-table-of-contents-item>
+    <tp-table-of-contents-item href="#toc-demo-connect">Connect accounts</tp-table-of-contents-item>
+    <tp-table-of-contents-item href="#toc-demo-mapping" depth="2">Field mapping</tp-table-of-contents-item>
+    <tp-table-of-contents-item href="#toc-demo-rollout" depth="2">Rollout</tp-table-of-contents-item>
+    <tp-table-of-contents-item href="#toc-demo-troubleshooting">Troubleshooting</tp-table-of-contents-item>
+  </tp-table-of-contents>
+</div>`}
+/>
+
+`depth` only indents an item; it is never used for tracking. `label` replaces the default "On this page" title, and a `title` slot accepts richer content. This list follows the article above: scroll it and both lists update.
+
+### Reading line
+
+The reading line defaults to the scroll container's `scroll-padding-block-start`, the same CSS you already use to clear a sticky header for anchor links, so a jump always lands on the item it marks. `activation-offset` overrides it with pixels or a percentage. For busy pages, `scroll-throttle` and `scroll-debounce` reduce how often the current item updates.

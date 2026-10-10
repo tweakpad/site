@@ -1,0 +1,125 @@
+---
+title: Slider
+description: One number or an ordered range of numbers, chosen by dragging or with the keyboard.
+tag: tp-slider
+parts: [tp-slider-thumb]
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Slider"
+  align="stretch"
+  script={`const volume = document.querySelector('#slider-demo-volume');
+volume.partContracts = {
+  'slider-output': { content: (state) => state.formattedValues[0] + '%' },
+};`}
+  code={`<tp-slider id="slider-demo-volume" label="Volume" name="volume" default-value="40" style="max-inline-size:22rem;margin-inline:auto"></tp-slider>`}
+/>
+
+## Usage
+
+Each value is a native range input inside a visual thumb, so keyboard, form and assistive-technology behavior come from the platform. `label` shows a visible label and names the control. A live readout is opt-in: give the `slider-output` part a `content` resolver, as above, and it shares the header with the label.
+
+### Range
+
+<Preview
+  title="Price range"
+  align="stretch"
+  script={`const price = document.querySelector('#slider-demo-price');
+price.format = { style: 'currency', currency: 'USD', maximumFractionDigits: 0 };
+price.partContracts = {
+  'slider-output': { content: (state) => state.formattedValues.join(' – ') },
+};`}
+  code={`<tp-slider id="slider-demo-price" label="Price" name="price" default-value="200 650" maximum="1000" step="25" min-steps-between-values="4" style="max-inline-size:22rem;margin-inline:auto"></tp-slider>`}
+/>
+
+A space-separated `default-value` creates one thumb per value. `min-steps-between-values` keeps thumbs apart, and `thumb-collision-behavior` chooses whether a thumb pushes, swaps with or stops at its neighbor. `format` takes `Intl.NumberFormatOptions` for the readout and the spoken value; the submitted value stays numeric.
+
+### Steps
+
+<Preview
+  title="Step and large step"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-6);max-inline-size:22rem;margin-inline:auto">
+  <tp-slider label="Team size" default-value="20" minimum="0" maximum="100" step="10"></tp-slider>
+  <tp-slider label="Opacity" default-value="0.8" minimum="0" maximum="1" step="0.01" large-step="0.1"></tp-slider>
+</div>`}
+/>
+
+Values snap to `step` from `minimum`. Arrow keys move one step; Page Up, Page Down and Shift with an arrow move by `large-step`. On wide tracks a smaller step makes dragging feel continuous.
+
+### Vertical
+
+<Preview
+  title="Vertical"
+  code={`<div style="display:flex;gap:var(--tp-space-8);block-size:12rem">
+  <tp-slider aria-label="Bass" orientation="vertical" default-value="60"></tp-slider>
+  <tp-slider aria-label="Mid" orientation="vertical" default-value="45"></tp-slider>
+  <tp-slider aria-label="Treble" orientation="vertical" default-value="70"></tp-slider>
+</div>`}
+/>
+
+Without a visible label, name each slider with `aria-label`. Vertical sliders use Up and Down.
+
+### Thumbs
+
+<Preview
+  title="Authored thumbs"
+  align="stretch"
+  code={`<tp-slider label="Working hours" default-value="9 17" minimum="0" maximum="24" style="max-inline-size:22rem;margin-inline:auto">
+  <tp-slider-thumb index="0" value-text="Start of day"></tp-slider-thumb>
+  <tp-slider-thumb index="1" value-text="End of day"></tp-slider-thumb>
+</tp-slider>`}
+/>
+
+Author `tp-slider-thumb` children when a thumb needs its own spoken text, a disabled state or a native input reference. Each needs a unique `index`; values still live on the Slider.
+
+### Forms
+
+<Preview
+  title="Field and form"
+  align="stretch"
+  code={`<tp-form style="max-inline-size:22rem;margin-inline:auto">
+  <tp-field label="Daily spend limit" description="Between $10 and $500.">
+    <tp-slider name="limit" minimum="10" maximum="500" step="10" default-value="120"></tp-slider>
+  </tp-field>
+  <div slot="actions">
+    <tp-button type="submit">Save limit</tp-button>
+    <tp-button type="reset" variant="outline">Reset</tp-button>
+  </div>
+</tp-form>`}
+/>
+
+The Slider is the one form participant: a range submits each value under the same `name`, and Reset restores `default-value`. A wrapping Field supplies the label and description.
+
+### States
+
+<Preview
+  title="Disabled and read-only"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-6);max-inline-size:22rem;margin-inline:auto">
+  <tp-slider label="Storage quota" default-value="50" disabled></tp-slider>
+  <tp-slider label="Recorded level" name="level" default-value="65" readonly></tp-slider>
+</div>`}
+/>
+
+Disabled sliders cannot be focused and submit nothing. Read-only thumbs stay focusable and submit their value, but cannot move.
+
+### Events
+
+<Preview
+  title="Change and commit"
+  align="stretch"
+  script={`const brightness = document.querySelector('#slider-demo-brightness');
+const status = document.querySelector('#slider-demo-status');
+brightness.addEventListener('tp-value-commit', (event) => {
+  status.textContent = 'Saved brightness ' + event.detail.value + '%';
+});`}
+  code={`<div style="display:grid;gap:var(--tp-space-3);max-inline-size:22rem;margin-inline:auto">
+  <tp-slider id="slider-demo-brightness" label="Brightness" default-value="70"></tp-slider>
+  <output id="slider-demo-status" aria-live="polite" style="color:var(--tp-muted-foreground)">Drag and release to save.</output>
+</div>`}
+/>
+
+`tp-value-change` fires on every proposed value while dragging and can be canceled. `tp-value-commit` fires once on release, or immediately for keyboard changes; use it for saving or other expensive work.

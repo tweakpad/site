@@ -1,0 +1,179 @@
+---
+title: Questionnaire
+description: An ordered native form that asks one question at a time, with choices, free text, skipping and submission.
+tag: tp-questionnaire
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Questionnaire"
+  code={`<div style="inline-size:28rem;max-inline-size:100%">
+  <tp-questionnaire id="questionnaire-hero" label="Project kickoff" shortcut-mode="letters"></tp-questionnaire>
+</div>`}
+  script={`const questionnaire = document.querySelector('#questionnaire-hero');
+questionnaire.questions = [
+  {
+    name: 'goal',
+    title: 'What should this project deliver first?',
+    description: 'Choose one, or describe something else.',
+    required: true,
+    choices: [
+      { value: 'onboarding', label: 'Faster onboarding', description: 'Get new accounts to their first project sooner.' },
+      { value: 'billing', label: 'Self-serve billing', description: 'Let admins change plans without contacting sales.' },
+      { value: 'reporting', label: 'Usage reports', description: 'Show teams where their seats and credits go.' },
+    ],
+    input: { label: 'Something else', placeholder: 'Describe another goal…' },
+  },
+  {
+    name: 'signals',
+    title: 'What should every status update include?',
+    description: 'Select all that apply, or skip this question.',
+    kind: 'multiple',
+    skippable: true,
+    choices: [
+      { value: 'progress', label: 'Progress' },
+      { value: 'decisions', label: 'Decisions' },
+      { value: 'risks', label: 'Risks' },
+      { value: 'next-step', label: 'Next step' },
+    ],
+  },
+  {
+    name: 'start',
+    title: 'When should work begin?',
+    required: true,
+    choices: [
+      { value: 'now', label: 'This week' },
+      { value: 'next-cycle', label: 'Next cycle' },
+      { value: 'backlog', label: 'Add it to the backlog' },
+    ],
+  },
+];
+questionnaire.actions = { submit: { label: 'Save plan' } };
+questionnaire.addEventListener('tp-submit', (event) => event.preventDefault());`}
+/>
+
+## Usage
+
+A Questionnaire walks people through a short, ordered set of questions, one at a time, inside a single native form. Use it for intake flows, setup wizards and feedback where focusing on one question beats a long page of fields. Questions are data: assign the `questions` property, then handle `tp-submit`. The host owns saving and sending the answers.
+
+### Answers
+
+Single-choice questions render native radios and `kind: 'multiple'` renders checkboxes. An `input` adds a freeform answer beside the choices, and a question without choices is a plain text question.
+
+<Preview
+  title="Choices and free text"
+  code={`<div style="inline-size:28rem;max-inline-size:100%">
+  <tp-questionnaire id="questionnaire-answers" label="Context sources"></tp-questionnaire>
+</div>`}
+  script={`const questionnaire = document.querySelector('#questionnaire-answers');
+questionnaire.questions = [
+  {
+    name: 'sources',
+    title: 'Which sources should the assistant read?',
+    description: 'Select every source it may use.',
+    kind: 'multiple',
+    required: true,
+    choices: [
+      { value: 'docs', label: 'Product docs', defaultChecked: true },
+      { value: 'tickets', label: 'Support tickets' },
+      { value: 'changelog', label: 'Changelog' },
+    ],
+    input: { label: 'Another source', placeholder: 'Paste a URL…', type: 'url' },
+  },
+  {
+    name: 'tone',
+    title: 'Describe the tone of its replies',
+    required: true,
+    input: { label: 'Tone', placeholder: 'Friendly, concise, no jargon…' },
+  },
+];
+questionnaire.addEventListener('tp-submit', (event) => event.preventDefault());`}
+/>
+
+### Skipping and validation
+
+`required` questions must be answered before Next. Optional questions can offer Skip with `skippable`; skipped answers are left out of the submitted data. `validate(answer)` returns an error message for answers that are present but wrong.
+
+<Preview
+  title="Skip and validate"
+  code={`<div style="inline-size:28rem;max-inline-size:100%">
+  <tp-questionnaire id="questionnaire-skip" label="Workspace setup"></tp-questionnaire>
+</div>`}
+  script={`const questionnaire = document.querySelector('#questionnaire-skip');
+questionnaire.questions = [
+  {
+    name: 'constraints',
+    title: 'Any constraints we should know about?',
+    description: 'Optional. Skip if there are none.',
+    skippable: true,
+    input: { label: 'Constraints', placeholder: 'Must stay on the EU region…' },
+  },
+  {
+    name: 'seats',
+    title: 'How many seats do you need?',
+    required: true,
+    input: { label: 'Seats', type: 'number', placeholder: '12' },
+    validate: (answer) => (Number(answer) > 500 ? 'For more than 500 seats, contact sales.' : null),
+  },
+];
+questionnaire.actions = { submit: { label: 'Create workspace' } };
+questionnaire.addEventListener('tp-submit', (event) => event.preventDefault());`}
+/>
+
+### Shortcuts
+
+`shortcut-mode="letters"` or `"numbers"` assigns a key to each enabled choice and shows it as a key hint. Pressing the key selects the answer; Enter confirms and moves on.
+
+<Preview
+  title="Number shortcuts"
+  code={`<div style="inline-size:28rem;max-inline-size:100%">
+  <tp-questionnaire id="questionnaire-shortcuts" label="Satisfaction survey" shortcut-mode="numbers"></tp-questionnaire>
+</div>`}
+  script={`const questionnaire = document.querySelector('#questionnaire-shortcuts');
+questionnaire.questions = [
+  {
+    name: 'satisfaction',
+    title: 'How satisfied are you with search?',
+    required: true,
+    choices: [
+      { value: 'very', label: 'Very satisfied' },
+      { value: 'somewhat', label: 'Somewhat satisfied' },
+      { value: 'neutral', label: 'Neutral' },
+      { value: 'unsatisfied', label: 'Unsatisfied' },
+    ],
+  },
+];
+questionnaire.actions = { submit: { label: 'Send feedback' } };
+questionnaire.addEventListener('tp-submit', (event) => event.preventDefault());`}
+/>
+
+### Submission
+
+`tp-submit` carries the logical `answers` and the native `FormData`. Prevent its default to handle the submission yourself instead of navigating.
+
+<Preview
+  title="Submit"
+  code={`<div style="display:grid;gap:var(--tp-space-4);inline-size:28rem;max-inline-size:100%">
+  <tp-questionnaire id="questionnaire-submit" label="Release review"></tp-questionnaire>
+  <output id="questionnaire-submit-output" style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)"></output>
+</div>`}
+  script={`const questionnaire = document.querySelector('#questionnaire-submit');
+const output = document.querySelector('#questionnaire-submit-output');
+questionnaire.questions = [
+  {
+    name: 'ready',
+    title: 'Is release 2.4 ready to ship?',
+    required: true,
+    choices: [
+      { value: 'yes', label: 'Ship it' },
+      { value: 'hold', label: 'Hold for fixes' },
+    ],
+  },
+];
+questionnaire.actions = { submit: { label: 'Submit review' } };
+questionnaire.addEventListener('tp-submit', (event) => {
+  event.preventDefault();
+  output.textContent = 'Submitted: ' + JSON.stringify(event.detail.answers);
+});`}
+/>

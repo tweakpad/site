@@ -1,0 +1,115 @@
+---
+title: Checkbox
+description: A Boolean form control with an inline label, a mixed state and native form participation.
+tag: tp-checkbox
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Checkbox"
+  code={`<tp-checkbox name="terms" default-checked>Accept the terms of service</tp-checkbox>`}
+/>
+
+## Usage
+
+The default slot is the Checkbox's inline label, and clicking it toggles the box. Pointer and Space toggle; Enter does not, so a Checkbox never fights a form's submit key.
+
+### With a Field
+
+Put a Checkbox in `tp-field` when it needs a description or error. The Field supplies the accessible name and shows validation for `required`, which is satisfied only when checked.
+
+<Preview
+  title="Field"
+  align="stretch"
+  code={`<tp-field label="Email me product updates" description="About one email a month. Unsubscribe anytime." style="max-inline-size:22rem;margin-inline:auto">
+  <tp-checkbox name="updates" value="monthly"></tp-checkbox>
+</tp-field>`}
+/>
+
+### Forms
+
+A checked box submits `name=value` (`value` defaults to `on`). An unchecked box submits nothing unless you set `unchecked-value`, which helps when the server expects an explicit off value. Reset restores `default-checked`.
+
+<Preview
+  title="Form values"
+  align="stretch"
+  code={`<form id="checkbox-form" style="display:grid;gap:var(--tp-space-3);max-inline-size:22rem;margin-inline:auto">
+  <tp-checkbox name="notifications" value="email" default-checked>Email</tp-checkbox>
+  <tp-checkbox name="notifications" value="push">Push</tp-checkbox>
+  <tp-checkbox name="digest" value="weekly" unchecked-value="off">Weekly digest</tp-checkbox>
+  <div style="display:flex;gap:var(--tp-space-2)">
+    <tp-button type="submit" size="sm">Save</tp-button>
+    <tp-button type="reset" size="sm" variant="outline">Reset</tp-button>
+  </div>
+  <output id="checkbox-form-output" style="font-size:var(--tp-text-sm);color:var(--tp-muted-foreground)">Submit to see the form data.</output>
+</form>`}
+  script={`const form = document.getElementById('checkbox-form');
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const entries = [...new FormData(form)].map(([key, value]) => key + '=' + value);
+  document.getElementById('checkbox-form-output').textContent = entries.join('  ·  ') || 'Nothing submitted';
+});`}
+/>
+
+### Mixed state
+
+`indeterminate` shows a mixed indicator, typically on a "select all" box whose children are partly checked. A press always proposes checked, and your code clears the mixed state, because only it knows what the children hold.
+
+<Preview
+  title="Select all"
+  align="stretch"
+  code={`<fieldset id="checkbox-mixed" style="display:grid;gap:var(--tp-space-3);margin:0 auto;padding:0;border:0;max-inline-size:22rem">
+  <legend style="padding:0;margin-block-end:var(--tp-space-3);font-weight:var(--tp-font-medium)">Export columns</legend>
+  <tp-checkbox id="checkbox-mixed-all" indeterminate>All columns</tp-checkbox>
+  <div style="display:grid;gap:var(--tp-space-3);padding-inline-start:var(--tp-space-6)">
+    <tp-checkbox name="columns" value="name" default-checked>Customer name</tp-checkbox>
+    <tp-checkbox name="columns" value="email" default-checked>Email</tp-checkbox>
+    <tp-checkbox name="columns" value="plan">Plan</tp-checkbox>
+    <tp-checkbox name="columns" value="mrr">Monthly revenue</tp-checkbox>
+  </div>
+</fieldset>`}
+  script={`await customElements.whenDefined('tp-checkbox');
+const all = document.getElementById('checkbox-mixed-all');
+const items = [...document.querySelectorAll('#checkbox-mixed [name="columns"]')];
+let syncing = false;
+const sync = () => {
+  const count = items.filter((item) => item.checked).length;
+  syncing = true;
+  all.indeterminate = count > 0 && count < items.length;
+  all.setChecked(count === items.length);
+  syncing = false;
+};
+all.addEventListener('tp-value-change', (event) => {
+  if (syncing) return;
+  const next = event.detail.value;
+  syncing = true;
+  for (const item of items) item.setChecked(next);
+  all.indeterminate = false;
+  syncing = false;
+});
+for (const item of items) {
+  item.addEventListener('tp-value-change', () => {
+    if (!syncing) queueMicrotask(sync);
+  });
+}`}
+/>
+
+The mixed state is presentation only: the parent's submitted value stays a plain Boolean.
+
+### States
+
+<Preview
+  title="Disabled and read-only"
+  code={`<div style="display:grid;gap:var(--tp-space-3)">
+  <tp-checkbox disabled>Two-factor authentication</tp-checkbox>
+  <tp-checkbox disabled default-checked>Single sign-on (enforced by your admin)</tp-checkbox>
+  <tp-checkbox readonly default-checked>Audit logging</tp-checkbox>
+</div>`}
+/>
+
+Disabled boxes leave the tab order and omit their value from form data. Read-only boxes stay focusable and submit their value, but ignore presses.
+
+### Controlled
+
+Set `checked` before first render to own the state. Each press then emits a cancelable `tp-value-change`; assign `checked` from `event.detail.value` to accept it, or leave it unchanged to reject it.

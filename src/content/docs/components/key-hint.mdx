@@ -1,0 +1,83 @@
+---
+title: Key hint
+description: Keycaps that describe a keyboard shortcut in platform notation, without registering it.
+tag: tp-key-hint
+parts: [tp-key-hint-group]
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Key hint"
+  code={`<p style="margin:0">
+  Press
+  <tp-key-hint-group separator="none">
+    <tp-key-hint key="mod"></tp-key-hint>
+    <tp-key-hint>K</tp-key-hint>
+  </tp-key-hint-group>
+  to search commands and files.
+</p>`}
+/>
+
+## Usage
+
+A Key hint only describes a shortcut; your application implements it. Compose one `tp-key-hint` per key inside a `tp-key-hint-group`, which owns spacing and separators.
+
+### Generated notation
+
+`key` renders platform notation and a readable accessible name. `mod` is Command on macOS and Ctrl elsewhere; `platform` pins a platform, otherwise it is detected.
+
+<Preview
+  title="Modifiers"
+  code={`<div style="display:grid;gap:var(--tp-space-3);justify-items:start">
+  <tp-key-hint-group platform="mac" separator="none">
+    <tp-key-hint key="control"></tp-key-hint>
+    <tp-key-hint key="alt"></tp-key-hint>
+    <tp-key-hint key="shift"></tp-key-hint>
+    <tp-key-hint key="command"></tp-key-hint>
+  </tp-key-hint-group>
+  <tp-key-hint-group platform="windows">
+    <tp-key-hint key="control"></tp-key-hint>
+    <tp-key-hint key="shift"></tp-key-hint>
+    <tp-key-hint>P</tp-key-hint>
+  </tp-key-hint-group>
+</div>`}
+/>
+
+### Separators and sequences
+
+`separator` is `plus` by default, `none` for adjacent keycaps, and `then` for a sequence. Nest groups to describe a chord followed by another chord.
+
+<Preview
+  title="Sequence"
+  code={`<tp-key-hint-group separator="then" label="Comment on selection">
+  <tp-key-hint-group separator="none">
+    <tp-key-hint key="mod"></tp-key-hint>
+    <tp-key-hint>K</tp-key-hint>
+  </tp-key-hint-group>
+  <tp-key-hint-group separator="none">
+    <tp-key-hint key="mod"></tp-key-hint>
+    <tp-key-hint>C</tp-key-hint>
+  </tp-key-hint-group>
+</tp-key-hint-group>`}
+/>
+
+### In controls
+
+Place a hint inside a Button's `icon-end` slot, an Input group addon or a Tooltip. The owning control keeps focus and activation; the hint stays informative.
+
+<Preview
+  title="Button and tooltip"
+  code={`<tp-button variant="outline">
+  Accept invite
+  <tp-key-hint slot="icon-end" key="enter"></tp-key-hint>
+</tp-button>
+<tp-tooltip>
+  <tp-button slot="trigger" variant="outline">Save</tp-button>
+  Save changes
+  <tp-key-hint-group separator="none">
+    <tp-key-hint key="mod"></tp-key-hint>
+    <tp-key-hint>S</tp-key-hint>
+  </tp-key-hint-group>
+</tp-tooltip>`}
+/>

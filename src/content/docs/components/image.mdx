@@ -1,0 +1,98 @@
+---
+title: Image
+description: A responsive image in an optional fixed-ratio frame, with a loading placeholder, a failure fallback, hover zoom, parallax and scroll reveal.
+tag: tp-image
+parts: [tp-image-group]
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Image"
+  align="stretch"
+  code={`<tp-image
+  ratio="1.7777777778"
+  zoom="in"
+  style="max-inline-size:40rem;margin-inline:auto;border-radius:var(--tp-radius-xl)"
+  src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&q=75&auto=format&fit=crop"
+  srcset="https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=640&q=75&auto=format&fit=crop 640w, https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&q=75&auto=format&fit=crop 1200w"
+  alt="A bright open-plan office with long shared desks"
+></tp-image>`}
+/>
+
+## Usage
+
+The browser still picks and loads the file: Image passes `src`, `srcset`, `sizes` and `<source>` children to a native `<picture>`, so lazy loading and responsive candidates work as usual. With a lazy `srcset` of width descriptors and no `sizes`, it sets `sizes="auto, 100vw"` so the browser fetches the laid-out width. Set `alt=""` for a decorative image.
+
+### Ratio and fit
+
+`ratio` (width ÷ height) reserves a fixed frame before the image loads, so nothing shifts. `fit` decides how the picture fills it, as `object-fit` does. Round the frame with `border-radius` on the host.
+
+<Preview
+  title="Ratio and fit"
+  align="stretch"
+  code={`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--tp-space-3);max-inline-size:40rem;margin-inline:auto;inline-size:100%">
+  <tp-image ratio="1" style="border-radius:var(--tp-radius-lg)" src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=480&q=75&auto=format&fit=crop" alt="Desks by a window"></tp-image>
+  <tp-image ratio="0.75" style="border-radius:var(--tp-radius-lg)" src="https://images.unsplash.com/photo-1494337480532-3725c85fd2ab?w=480&q=75&auto=format&fit=crop" alt="A building facade"></tp-image>
+  <tp-image ratio="1" fit="contain" style="border-radius:var(--tp-radius-lg);background:var(--tp-muted)" src="https://images.unsplash.com/photo-1548516173-3cabfa4607e9?w=480&q=75&auto=format&fit=crop" alt="A rooftop terrace"></tp-image>
+</div>`}
+/>
+
+### Placeholder and fallback
+
+While loading, Image shows a pulsing skeleton; `placeholder="spinner"` adds a spinner and `none` shows nothing. If the image fails or has no source, it shows a muted surface with a broken-image icon, or your `fallback` slot content, which stays exposed to assistive technology.
+
+<Preview
+  title="Fallbacks"
+  align="stretch"
+  code={`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--tp-space-3);max-inline-size:32rem;margin-inline:auto;inline-size:100%">
+  <tp-image ratio="1.5" style="border-radius:var(--tp-radius-lg)" alt="Project cover"></tp-image>
+  <tp-image ratio="1.5" style="border-radius:var(--tp-radius-lg)" alt="Project cover">
+    <span slot="fallback" style="display:grid;place-items:center;inline-size:100%;block-size:100%;background:var(--tp-muted);color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">No cover yet</span>
+  </tp-image>
+</div>`}
+/>
+
+### Hover zoom
+
+`zoom="in"` scales the picture up while the pointer hovers, and `zoom="out"` settles it from enlarged to natural size. The frame never changes size. Set `zoomed` to drive the effect from a surrounding card instead.
+
+<Preview
+  title="Hover zoom"
+  align="stretch"
+  code={`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--tp-space-3);max-inline-size:32rem;margin-inline:auto;inline-size:100%">
+  <tp-image ratio="1" zoom="in" style="border-radius:var(--tp-radius-lg)" src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=640&q=75&auto=format&fit=crop" alt="Desks by a window"></tp-image>
+  <tp-image ratio="1" zoom="out" style="border-radius:var(--tp-radius-lg)" src="https://images.unsplash.com/photo-1465869185982-5a1a7522cbcb?w=640&q=75&auto=format&fit=crop" alt="A bicycle in a wet alley"></tp-image>
+</div>`}
+/>
+
+### Reveal and groups
+
+`reveal` animates an image into place the first time it scrolls into view, from tokens such as `fade up` or `zoom-in`. Wrap a set in `tp-image-group` to wait until every image has loaded, then reveal them in order, `stagger` milliseconds apart.
+
+<Preview
+  title="Staggered group"
+  align="stretch"
+  code={`<tp-image-group reveal="fade up" stagger="120" style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--tp-space-3);max-inline-size:40rem;margin-inline:auto;inline-size:100%">
+  <tp-image ratio="1" style="border-radius:var(--tp-radius-lg)" src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&q=75&auto=format&fit=crop" alt=""></tp-image>
+  <tp-image ratio="1" style="border-radius:var(--tp-radius-lg)" src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=400&q=75&auto=format&fit=crop" alt=""></tp-image>
+  <tp-image ratio="1" style="border-radius:var(--tp-radius-lg)" src="https://images.unsplash.com/photo-1548516173-3cabfa4607e9?w=400&q=75&auto=format&fit=crop" alt=""></tp-image>
+  <tp-image ratio="1" style="border-radius:var(--tp-radius-lg)" src="https://images.unsplash.com/photo-1494337480532-3725c85fd2ab?w=400&q=75&auto=format&fit=crop" alt=""></tp-image>
+</tp-image-group>`}
+/>
+
+Under reduced motion, from `motion-policy="reduce"` or the system preference, images appear already revealed and zoom is instant.
+
+### Parallax
+
+`parallax` moves the picture inside its frame as the page, or the nearest scrolling container, scrolls past. The image is enlarged by `parallax-depth` so the frame edges never show; add `zoom-in` or `zoom-out` to scale it as it travels.
+
+<Preview
+  title="Parallax in a scroller"
+  align="stretch"
+  code={`<div style="block-size:20rem;overflow-y:auto;display:grid;gap:var(--tp-space-4);padding:var(--tp-space-4);border:1px solid var(--tp-border);border-radius:var(--tp-radius-xl);max-inline-size:36rem;margin-inline:auto;inline-size:100%">
+  <tp-image loading="eager" ratio="1.7777777778" parallax="up" parallax-depth="0.4" style="border-radius:var(--tp-radius-lg)" src="https://images.unsplash.com/photo-1465869185982-5a1a7522cbcb?w=900&q=75&auto=format&fit=crop" alt=""></tp-image>
+  <tp-image loading="eager" ratio="1.7777777778" parallax="up zoom-in" parallax-depth="0.4" style="border-radius:var(--tp-radius-lg)" src="https://images.unsplash.com/photo-1494337480532-3725c85fd2ab?w=900&q=75&auto=format&fit=crop" alt=""></tp-image>
+  <tp-image loading="eager" ratio="1.7777777778" parallax="down" parallax-depth="0.4" style="border-radius:var(--tp-radius-lg)" src="https://images.unsplash.com/photo-1548516173-3cabfa4607e9?w=900&q=75&auto=format&fit=crop" alt=""></tp-image>
+</div>`}
+/>

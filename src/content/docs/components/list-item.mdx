@@ -1,0 +1,145 @@
+---
+title: List item
+description: One row of media, a title, supporting text and independent actions, grouped into a list when there are several.
+tag: tp-list-item
+parts: [tp-list-item-group, tp-list-item-separator]
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="List item"
+  align="stretch"
+  code={`<tp-list-item-group aria-label="Workspace members" style="max-inline-size:30rem;margin-inline:auto;inline-size:100%">
+  <tp-list-item description="maya.chen@northwind.co">
+    <tp-avatar slot="media" size="sm" fallback="MC" alt=""></tp-avatar>
+    Maya Chen
+    <tp-badge slot="actions" variant="secondary">Owner</tp-badge>
+  </tp-list-item>
+  <tp-list-item-separator></tp-list-item-separator>
+  <tp-list-item description="jonas.weber@northwind.co">
+    <tp-avatar slot="media" size="sm" fallback="JW" alt=""></tp-avatar>
+    Jonas Weber
+    <tp-button slot="actions" variant="outline" size="sm">Manage</tp-button>
+  </tp-list-item>
+  <tp-list-item-separator></tp-list-item-separator>
+  <tp-list-item description="Invited 2 days ago">
+    <tp-avatar slot="media" size="sm" fallback="AO" alt=""></tp-avatar>
+    Amara Okafor
+    <tp-button slot="actions" variant="outline" size="sm">Resend</tp-button>
+  </tp-list-item>
+</tp-list-item-group>`}
+/>
+
+## Usage
+
+A List item is layout only: it has no selection, activation or keyboard model of its own. Controls in the `actions` slot keep their own focus and behavior, so one row can hold several independent actions.
+
+### Content and actions
+
+The default slot is the title and `description` adds supporting text; use the `title` and `description` slots when either needs markup. Empty regions collapse, so a title-only row needs nothing extra.
+
+<Preview
+  title="Content and actions"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-3);max-inline-size:30rem;margin-inline:auto;inline-size:100%">
+  <tp-list-item variant="outline">Two-factor authentication
+    <tp-badge slot="actions" variant="secondary">On</tp-badge>
+  </tp-list-item>
+  <tp-list-item variant="outline" description="Signed in from Chrome on macOS, Berlin.">
+    MacBook Pro
+    <tp-button slot="actions" variant="outline" size="sm">Sign out</tp-button>
+  </tp-list-item>
+  <tp-list-item variant="outline" description="Your plan renews on March 1. Downgrading takes effect then.">
+    Pro plan
+    <tp-button slot="actions" variant="ghost" size="sm">Downgrade</tp-button>
+    <tp-button slot="actions" size="sm">Upgrade</tp-button>
+  </tp-list-item>
+</div>`}
+/>
+
+### Variants and sizes
+
+`variant` is `ghost`, `outline` or `subdued`; `size` steps the density down through `sm` and `xs` for tight panels and menus.
+
+<Preview
+  title="Variants and sizes"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-3);max-inline-size:30rem;margin-inline:auto;inline-size:100%">
+  <tp-list-item description="Ghost is the default.">Release notes</tp-list-item>
+  <tp-list-item variant="outline" description="Outline draws a boundary.">Release notes</tp-list-item>
+  <tp-list-item variant="subdued" description="Subdued fills the row.">Release notes</tp-list-item>
+  <tp-list-item variant="outline" size="sm" description="Small">Release notes</tp-list-item>
+  <tp-list-item variant="outline" size="xs" description="Extra small">Release notes</tp-list-item>
+</div>`}
+/>
+
+### Media
+
+The `media` slot takes an Icon, Avatar or image. `media-treatment` tells the row what it holds, `icon` or `image`, so the media gets the matching extent. With a description, media aligns to the first line of text.
+
+<Preview
+  title="Media"
+  align="stretch"
+  code={`<tp-list-item-group id="list-item-media" aria-label="Recent files" style="max-inline-size:30rem;margin-inline:auto;inline-size:100%">
+  <tp-list-item variant="outline" media-treatment="icon" description="Edited by Maya · 12 minutes ago">
+    <tp-icon slot="media" data-icon="file"></tp-icon>
+    Q3 roadmap.md
+  </tp-list-item>
+  <tp-list-item variant="outline" media-treatment="icon" description="14 files · Shared with Design">
+    <tp-icon slot="media" data-icon="folder"></tp-icon>
+    Brand assets
+  </tp-list-item>
+  <tp-list-item variant="outline" media-treatment="icon" description="New sign-in from an unknown device.">
+    <tp-icon slot="media" data-icon="shield"></tp-icon>
+    Security alert
+    <tp-button slot="actions" variant="outline" size="sm">Review</tp-button>
+  </tp-list-item>
+</tp-list-item-group>`}
+  script={`const icons = {
+  file: { viewBox: '0 0 24 24', paths: [{ d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8ZM14 2v6h6M8 13h8M8 17h8', strokeWidth: 2 }] },
+  folder: { viewBox: '0 0 24 24', paths: [{ d: 'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z', strokeWidth: 2 }] },
+  shield: { viewBox: '0 0 24 24', paths: [{ d: 'm12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6zM12 8v4M12 16h.01', strokeWidth: 2 }] },
+};
+for (const icon of document.querySelectorAll('#list-item-media tp-icon')) icon.icon = icons[icon.dataset.icon];`}
+/>
+
+### Groups
+
+`tp-list-item-group` gives its rows list and list-item roles and spaces them; name it with `aria-label`. Put `tp-list-item-separator` between rows for a divided list.
+
+<Preview
+  title="Grouped with separators"
+  align="stretch"
+  code={`<tp-list-item-group aria-label="Notification channels" style="max-inline-size:30rem;margin-inline:auto;inline-size:100%">
+  <tp-list-item description="Mentions, replies and direct messages.">
+    Email
+    <tp-switch slot="actions" label="Email notifications" default-checked></tp-switch>
+  </tp-list-item>
+  <tp-list-item-separator></tp-list-item-separator>
+  <tp-list-item description="Only when you are away from the desktop app.">
+    Push
+    <tp-switch slot="actions" label="Push notifications" default-checked></tp-switch>
+  </tp-list-item>
+  <tp-list-item-separator></tp-list-item-separator>
+  <tp-list-item description="A summary of activity every Monday.">
+    Weekly digest
+    <tp-switch slot="actions" label="Weekly digest"></tp-switch>
+  </tp-list-item>
+</tp-list-item-group>`}
+/>
+
+### Header and footer
+
+`header` and `footer` span the full row above and below the main content, for an eyebrow label or metadata.
+
+<Preview
+  title="Header and footer"
+  align="stretch"
+  code={`<tp-list-item variant="outline" description="Redesign the onboarding flow and pricing page." style="max-inline-size:30rem;margin-inline:auto;inline-size:100%">
+  <span slot="header" style="color:var(--tp-muted-foreground);font-size:var(--tp-text-xs)">Marketing site</span>
+  Website refresh
+  <tp-button slot="actions" variant="outline" size="sm">Open</tp-button>
+  <span slot="footer" style="color:var(--tp-muted-foreground);font-size:var(--tp-text-xs)">Updated <tp-time datetime="2026-10-08T09:30:00Z" mode="absolute" pattern="MMM d"></tp-time> · 6 contributors</span>
+</tp-list-item>`}
+/>

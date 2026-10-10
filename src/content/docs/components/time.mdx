@@ -1,0 +1,104 @@
+---
+title: Time
+description: One date, time or duration as relative, calendar, absolute or duration text, on a native time element.
+tag: tp-time
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Time"
+  align="stretch"
+  code={`<ul id="time-hero" style="display:grid;gap:var(--tp-space-3);max-inline-size:24rem;margin:0 auto;padding:0;list-style:none;font-size:var(--tp-text-sm)">
+  <li style="display:flex;justify-content:space-between;gap:var(--tp-space-4)">
+    <span><strong>Maya Chen</strong> merged #482</span>
+    <tp-time data-offset="-45" style="color:var(--tp-muted-foreground)"></tp-time>
+  </li>
+  <li style="display:flex;justify-content:space-between;gap:var(--tp-space-4)">
+    <span><strong>Jonas Weber</strong> deployed to production</span>
+    <tp-time data-offset="-1500" style="color:var(--tp-muted-foreground)"></tp-time>
+  </li>
+  <li style="display:flex;justify-content:space-between;gap:var(--tp-space-4)">
+    <span><strong>Priya Natarajan</strong> opened #479</span>
+    <tp-time data-offset="-97200" style="color:var(--tp-muted-foreground)"></tp-time>
+  </li>
+</ul>`}
+  script={`// Demo data: instants relative to the moment the page loads.
+for (const time of document.querySelectorAll('#time-hero tp-time')) {
+  time.datetime = new Date(Date.now() + Number(time.dataset.offset) * 1000);
+}`}
+/>
+
+## Usage
+
+Set `datetime` to an ISO string, an epoch number or a `Date`; without it the element reads its own text, so server-rendered dates upgrade in place. Relative text refreshes on one shared timer when it can next change, and focusing or hovering a value shows the full date and time.
+
+### Modes
+
+`auto` (the default) is relative within 30 days and absolute beyond. `calendar` says "Yesterday at 16:20"; `duration` shows a length of time.
+
+<Preview
+  title="Modes"
+  code={`<dl id="time-modes" style="display:grid;grid-template-columns:auto auto;gap:var(--tp-space-2) var(--tp-space-6);margin:0;font-size:var(--tp-text-sm)">
+  <dt style="color:var(--tp-muted-foreground)">relative</dt><dd style="margin:0"><tp-time mode="relative" data-offset="-10800"></tp-time></dd>
+  <dt style="color:var(--tp-muted-foreground)">calendar</dt><dd style="margin:0"><tp-time mode="calendar" data-offset="-86400"></tp-time></dd>
+  <dt style="color:var(--tp-muted-foreground)">absolute</dt><dd style="margin:0"><tp-time mode="absolute" datetime="2026-10-05T14:30:00Z"></tp-time></dd>
+  <dt style="color:var(--tp-muted-foreground)">duration</dt><dd style="margin:0"><tp-time datetime="PT1H30M"></tp-time></dd>
+</dl>`}
+  script={`for (const time of document.querySelectorAll('#time-modes tp-time[data-offset]')) {
+  time.datetime = new Date(Date.now() + Number(time.dataset.offset) * 1000);
+}`}
+/>
+
+### Presets and patterns
+
+`preset` names a locale-aware format. `pattern` takes Unicode date-field symbols for an exact layout; quote literal words.
+
+<Preview
+  title="Absolute formats"
+  code={`<div style="display:grid;gap:var(--tp-space-2);justify-items:center;font-size:var(--tp-text-sm)">
+  <tp-time mode="absolute" preset="date-long" datetime="2026-10-05T14:30:00Z" time-zone="UTC"></tp-time>
+  <tp-time mode="absolute" preset="full" datetime="2026-10-05T14:30:00Z" time-zone="UTC"></tp-time>
+  <tp-time mode="absolute" pattern="EEE d MMM yyyy 'at' HH:mm" datetime="2026-10-05T14:30:00Z" time-zone="UTC"></tp-time>
+</div>`}
+/>
+
+Write `yyyy-MM-dd`, not Moment-style `YYYY-MM-DD`: unsupported letters render literally and raise a diagnostic instead of silently formatting a different year.
+
+### Dates and time zones
+
+A date-only value stays on its calendar day in every time zone and compares by days. Instants format in the browser's zone unless `time-zone` names one, and `hour-cycle` forces 12- or 24-hour clocks.
+
+<Preview
+  title="Dates and zones"
+  code={`<div style="display:grid;gap:var(--tp-space-2);justify-items:center;font-size:var(--tp-text-sm)">
+  <span>Invoice due <tp-time mode="absolute" preset="date-medium" datetime="2026-11-01"></tp-time></span>
+  <span>Standup: <tp-time mode="absolute" preset="time" datetime="2026-10-12T09:30:00Z" time-zone="America/New_York"></tp-time> New York · <tp-time mode="absolute" preset="time" datetime="2026-10-12T09:30:00Z" time-zone="Europe/Berlin" hour-cycle="h23"></tp-time> Berlin</span>
+</div>`}
+/>
+
+### Relative style
+
+`relative-style` shortens relative text for dense layouts; the long form stays available to assistive technology. `numeric="always"` replaces phrases like "yesterday" with counts.
+
+<Preview
+  title="Short and narrow"
+  code={`<div id="time-styles" style="display:flex;gap:var(--tp-space-6);font-size:var(--tp-text-sm)">
+  <tp-time data-offset="-7200"></tp-time>
+  <tp-time data-offset="-7200" relative-style="short"></tp-time>
+  <tp-time data-offset="-7200" relative-style="narrow"></tp-time>
+  <tp-time data-offset="-86400" numeric="always"></tp-time>
+</div>`}
+  script={`for (const time of document.querySelectorAll('#time-styles tp-time')) {
+  time.datetime = new Date(Date.now() + Number(time.dataset.offset) * 1000);
+}`}
+/>
+
+### Description
+
+The tooltip shows `tooltip-pattern` (default `dd/MM/yy HH:mm`) and makes the value focusable. It is skipped when it would repeat the visible text; `tooltip="false"` removes it and the tab stop.
+
+<Preview
+  title="Description"
+  code={`<span style="font-size:var(--tp-text-sm)">Published <tp-time mode="absolute" preset="date-long" datetime="2026-10-05T14:30:00Z" tooltip-pattern="EEEE HH:mm xxx"></tp-time></span>`}
+/>

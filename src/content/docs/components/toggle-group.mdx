@@ -1,0 +1,109 @@
+---
+title: Toggle group
+description: A set of Toggles with one shared selection, single or multiple, and one tab stop.
+tag: tp-toggle-group
+parts: [tp-toggle]
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Toggle group"
+  code={`<tp-toggle-group label="Board layout" variant="outline" default-value='["board"]'>
+  <tp-toggle value="list">List</tp-toggle>
+  <tp-toggle value="board">Board</tp-toggle>
+  <tp-toggle value="timeline">Timeline</tp-toggle>
+</tp-toggle-group>`}
+/>
+
+## Usage
+
+Put `tp-toggle` elements with unique `value`s inside the group. The selection is always an ordered list of values, in both modes, so `default-value` takes a JSON array. Give the group a `label`; it is one tab stop and arrow keys move between items without selecting.
+
+### Multiple selection
+
+`multiple` lets each item toggle independently, as in a formatting toolbar. Icon-only items need an `aria-label`.
+
+<Preview
+  title="Text formatting"
+  code={`<tp-toggle-group id="toggle-group-format" label="Text formatting" multiple default-value='["bold"]'>
+  <tp-toggle value="bold" aria-label="Bold"><tp-icon data-icon="bold"></tp-icon></tp-toggle>
+  <tp-toggle value="italic" aria-label="Italic"><tp-icon data-icon="italic"></tp-icon></tp-toggle>
+  <tp-toggle value="underline" aria-label="Underline"><tp-icon data-icon="underline"></tp-icon></tp-toggle>
+</tp-toggle-group>`}
+  script={`const icons = {
+  bold: { viewBox: '0 0 24 24', paths: [{ d: 'M6 12h8a4 4 0 0 1 0 8H6V4h7a4 4 0 0 1 0 8', strokeWidth: 2 }] },
+  italic: { viewBox: '0 0 24 24', paths: [{ d: 'M19 4h-9M14 20H5M15 4 9 20', strokeWidth: 2 }] },
+  underline: { viewBox: '0 0 24 24', paths: [{ d: 'M6 3v7a6 6 0 0 0 12 0V3M4 21h16', strokeWidth: 2 }] },
+};
+await customElements.whenDefined('tp-icon');
+for (const icon of document.querySelectorAll('#toggle-group-format tp-icon')) {
+  icon.icon = icons[icon.dataset.icon];
+}`}
+/>
+
+### Spacing
+
+`spacing` is the gap in spacing units (default 2). Zero joins the items into one segmented control with shared seams.
+
+<Preview
+  title="Joined"
+  code={`<tp-toggle-group label="Date range" variant="outline" spacing="0" default-value='["30d"]'>
+  <tp-toggle value="7d">7 days</tp-toggle>
+  <tp-toggle value="30d">30 days</tp-toggle>
+  <tp-toggle value="90d">90 days</tp-toggle>
+  <tp-toggle value="12m">12 months</tp-toggle>
+</tp-toggle-group>`}
+/>
+
+### Orientation and size
+
+The group's `size` and `variant` override the items' own. `orientation="vertical"` stacks the items and switches arrow navigation to Up and Down.
+
+<Preview
+  title="Vertical, small"
+  code={`<tp-toggle-group label="Inbox filter" orientation="vertical" size="sm" default-value='["unread"]'>
+  <tp-toggle value="all">All messages</tp-toggle>
+  <tp-toggle value="unread">Unread</tp-toggle>
+  <tp-toggle value="mentions">Mentions</tp-toggle>
+  <tp-toggle value="starred">Starred</tp-toggle>
+</tp-toggle-group>`}
+/>
+
+### Keeping one selected
+
+In single mode, pressing the selected item clears the selection. When an empty selection makes no sense, cancel that proposal in `tp-value-change`.
+
+<Preview
+  title="Required choice"
+  code={`<div style="display:grid;gap:var(--tp-space-3);justify-items:center">
+  <tp-toggle-group id="toggle-group-plan" label="Billing period" variant="outline" spacing="0" default-value='["yearly"]'>
+    <tp-toggle value="monthly">Monthly</tp-toggle>
+    <tp-toggle value="yearly">Yearly</tp-toggle>
+  </tp-toggle-group>
+  <output id="toggle-group-plan-output" style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">$96 per seat, billed yearly</output>
+</div>`}
+  script={`const group = document.querySelector('#toggle-group-plan');
+const output = document.querySelector('#toggle-group-plan-output');
+group.addEventListener('tp-value-change', (event) => {
+  const [period] = event.detail.value;
+  if (!period) {
+    event.preventDefault();
+    return;
+  }
+  output.textContent = period === 'yearly' ? '$96 per seat, billed yearly' : '$10 per seat, billed monthly';
+});`}
+/>
+
+### Disabled
+
+<Preview
+  title="Disabled items"
+  code={`<tp-toggle-group label="Export format" variant="outline" default-value='["csv"]'>
+  <tp-toggle value="csv">CSV</tp-toggle>
+  <tp-toggle value="xlsx">Excel</tp-toggle>
+  <tp-toggle value="pdf" disabled>PDF</tp-toggle>
+</tp-toggle-group>`}
+/>
+
+Arrow navigation skips disabled items. `disabled` on the group disables every item while keeping each item's own setting for later.

@@ -1,0 +1,67 @@
+---
+title: Marker
+description: A quiet line of status or activity text with an optional icon, plain or set between rules.
+tag: tp-marker
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Marker"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-6);max-inline-size:32rem;margin-inline:auto;inline-size:100%">
+  <tp-marker><tp-spinner slot="icon" size="sm"></tp-spinner>Reading 4 files</tp-marker>
+  <tp-marker variant="separator">Worked for 42s</tp-marker>
+  <tp-marker variant="border">Switched to release-2.4</tp-marker>
+</div>`}
+/>
+
+## Usage
+
+A Marker annotates a stream, such as a chat transcript or an activity log, without becoming a message itself. It adds no role, so meaning lives in its text; supply `role="status"` yourself when the content is a live update.
+
+### Variants
+
+The default has no boundary. `separator` centres the content between two rules, for breaks in a timeline; `border` sets it above a rule, for a step that closes a section.
+
+<Preview
+  title="Variants"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-8);max-inline-size:32rem;margin-inline:auto;inline-size:100%">
+  <tp-marker>Priya joined the project</tp-marker>
+  <tp-marker variant="separator">Today</tp-marker>
+  <tp-marker variant="border">Deployed to production</tp-marker>
+</div>`}
+/>
+
+### Icons
+
+The `icon` slot takes an Icon or a decorative Spinner. The icon region is hidden from assistive technology, so the text must carry the meaning on its own.
+
+<Preview
+  title="With icons"
+  align="stretch"
+  code={`<div id="marker-icons" style="display:grid;gap:var(--tp-space-6);max-inline-size:32rem;margin-inline:auto;inline-size:100%">
+  <tp-marker role="status"><tp-spinner slot="icon" size="sm"></tp-spinner>Compacting conversation</tp-marker>
+  <tp-marker variant="separator"><tp-icon slot="icon" data-icon="check"></tp-icon>Conversation compacted</tp-marker>
+  <tp-marker variant="border"><tp-icon slot="icon" data-icon="branch"></tp-icon>Opened pull request #482</tp-marker>
+</div>`}
+  script={`const icons = {
+  check: { viewBox: '0 0 24 24', paths: [{ d: 'M5 12l4 4L19 6', strokeWidth: 2 }] },
+  branch: { viewBox: '0 0 24 24', paths: [{ d: 'M6 3v12M6 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6M18 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6M18 9a9 9 0 0 1-9 9', strokeWidth: 2 }] },
+};
+for (const icon of document.querySelectorAll('#marker-icons tp-icon')) icon.icon = icons[icon.dataset.icon];`}
+/>
+
+### Actions
+
+A Marker owns no action state, but its content can hold a link or a Button. The control keeps its own focus and semantics.
+
+<Preview
+  title="With an action"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-6);max-inline-size:32rem;margin-inline:auto;inline-size:100%">
+  <tp-marker variant="separator">Older messages hidden. <a href="#actions">Show all</a></tp-marker>
+  <tp-marker variant="separator"><tp-button variant="outline" size="sm">Review 3 changes</tp-button></tp-marker>
+</div>`}
+/>

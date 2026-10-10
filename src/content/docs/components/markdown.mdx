@@ -1,0 +1,134 @@
+---
+title: Markdown
+description: A Markdown document rendered as native, themed content, with code blocks, tables, alerts and task items composed from library components.
+tag: tp-markdown
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Markdown"
+  align="stretch"
+  code={`<tp-markdown heading-offset="1" style="max-inline-size:36rem;margin-inline:auto">
+  ## Release 2.4
+
+  Shared workspaces are here. Invite up to **50 teammates**, assign roles, and keep billing in one place. See the [migration notes](#usage) before you upgrade.
+
+  - [x] Workspace roles and permissions
+  - [x] Consolidated invoices
+  - [ ] Audit log export
+
+  | Plan | Seats | Price |
+  | :--- | ---: | ---: |
+  | Starter | 5 | $0 |
+  | Team | 50 | $12 / seat |
+</tp-markdown>`}
+/>
+
+## Usage
+
+Markdown is parsed by a built-in CommonMark and GitHub Flavored Markdown parser and rendered as real elements, never injected as HTML. The source comes from the `source` property or, when that is unset, from the element's text content, dedented. Set `source` from script for dynamic content.
+
+### Headings
+
+`heading-offset` shifts every heading level so the document fits under the page's own outline: with an offset of 2, `#` renders as `h3`. Headings get ids, prefixed with `id-prefix` when several documents share a page.
+
+<Preview
+  title="Heading offset"
+  align="stretch"
+  code={`<tp-markdown heading-offset="2" id-prefix="changelog-" style="max-inline-size:36rem;margin-inline:auto">
+  # Billing
+
+  Invoices now show usage per workspace.
+
+  ## Fixes
+
+  - Tax IDs are validated before checkout.
+  - Receipts use the account's locale.
+</tp-markdown>`}
+/>
+
+### Composed blocks
+
+Fenced code becomes a Code block, and the fence can set a title, highlighted lines and line numbers. Blockquotes starting with `[!NOTE]`, `[!TIP]`, `[!WARNING]` and similar become Alerts.
+
+<Preview
+  title="Code and alerts"
+  align="stretch"
+  code={`<tp-markdown style="max-inline-size:36rem;margin-inline:auto">
+  Rotate your key from the dashboard, then update the client:
+
+  \`\`\`ts title="client.ts" {2}
+  const client = new Tweakpad({
+    apiKey: process.env.TWEAKPAD_KEY,
+  });
+  \`\`\`
+
+  > [!WARNING]
+  > The old key stops working 24 hours after rotation.
+</tp-markdown>`}
+/>
+
+### Size
+
+`size="sm"` steps body text and headings down one size, for chat bubbles, side panels and other dense surfaces.
+
+<Preview
+  title="Small"
+  align="stretch"
+  code={`<tp-markdown size="sm" style="max-inline-size:24rem;margin-inline:auto">
+  **Deploy finished** in 1m 12s.
+
+  1. Built 214 pages
+  2. Purged the CDN cache
+  3. Notified #releases
+
+  Preview it at \`northwind-pr-482.tweakpad.app\`.
+</tp-markdown>`}
+/>
+
+### Streaming
+
+For replies that arrive in chunks, set `streaming` and call `append()`. Unfinished emphasis, code and links in the last block are completed before parsing, so their markers never flash, and blocks that did not change keep their DOM.
+
+<Preview
+  title="Streaming"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-4);justify-items:start;max-inline-size:36rem;margin-inline:auto;inline-size:100%">
+  <tp-markdown id="markdown-stream" style="min-block-size:12rem;inline-size:100%"></tp-markdown>
+  <tp-button id="markdown-stream-replay" variant="outline" size="sm">Replay</tp-button>
+</div>`}
+  script={`const markdown = document.querySelector('#markdown-stream');
+const reply = 'To **invite a teammate**, open *Settings* and choose \`Members\`:\\n\\n1. Enter their work email.\\n2. Pick a role, such as **Editor**.\\n3. Select [Send invite](#streaming).\\n\\nThey get access as soon as they accept.';
+let timer;
+function play() {
+  clearInterval(timer);
+  markdown.source = '';
+  markdown.streaming = true;
+  let index = 0;
+  timer = setInterval(() => {
+    markdown.append(reply.slice(index, index + 5));
+    index += 5;
+    if (index >= reply.length) {
+      clearInterval(timer);
+      markdown.streaming = false;
+    }
+  }, 40);
+}
+document.querySelector('#markdown-stream-replay').addEventListener('click', play);
+await customElements.whenDefined('tp-markdown');
+play();`}
+/>
+
+### Custom elements
+
+Raw HTML is never inserted as markup. Tags in the `elements` policy become real elements with only the attributes you list; anything else shows as literal text. Here the policy admits `tp-badge`.
+
+<Preview
+  title="Element policy"
+  align="stretch"
+  code={`<tp-markdown id="markdown-elements" style="max-inline-size:36rem;margin-inline:auto"></tp-markdown>`}
+  script={`const markdown = document.querySelector('#markdown-elements');
+markdown.elements = { 'tp-badge': ['variant'] };
+markdown.source = 'Workspace analytics <tp-badge variant="secondary">Beta</tp-badge>\\n\\nTrack active members and storage per project. Press <kbd>G</kbd> then <kbd>A</kbd> to open it.';`}
+/>
