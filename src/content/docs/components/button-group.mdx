@@ -1,0 +1,112 @@
+---
+title: Button group
+description: Several existing controls presented as one joined set, horizontally or vertically.
+tag: tp-button-group
+parts: [tp-button-group-text]
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Button group"
+  code={`<tp-button-group label="Pull request actions">
+  <tp-button variant="outline">Merge</tp-button>
+  <tp-button variant="outline">Request changes</tp-button>
+  <tp-button variant="outline" size="icon" aria-label="More actions">
+    <span slot="icon-start" aria-hidden="true">⋯</span>
+  </tp-button>
+</tp-button-group>`}
+/>
+
+## Usage
+
+A Button group only arranges and joins its members; each `tp-button` keeps its full contract, including its own name, disabled state and activation. Give the group a `label` so assistive technology announces the set.
+
+### Sizes
+
+The group does not force a size or variant on its members. Set the same `size` on every Button when the set should share one height.
+
+<Preview
+  title="Sizes"
+  code={`<div style="display:grid;gap:var(--tp-space-4);justify-items:center">
+  <tp-button-group label="Small actions">
+    <tp-button variant="outline" size="sm">Archive</tp-button>
+    <tp-button variant="outline" size="sm">Report</tp-button>
+    <tp-button variant="outline" size="sm" disabled>Snooze</tp-button>
+  </tp-button-group>
+  <tp-button-group label="Default actions">
+    <tp-button variant="outline">Archive</tp-button>
+    <tp-button variant="outline">Report</tp-button>
+    <tp-button variant="outline" disabled>Snooze</tp-button>
+  </tp-button-group>
+  <tp-button-group label="Large actions">
+    <tp-button variant="outline" size="lg">Archive</tp-button>
+    <tp-button variant="outline" size="lg">Report</tp-button>
+    <tp-button variant="outline" size="lg" disabled>Snooze</tp-button>
+  </tp-button-group>
+</div>`}
+/>
+
+### Orientation
+
+`orientation="vertical"` stacks members and moves the seams to the block axis. Members stretch to the widest one; order and keyboard behavior never change.
+
+<Preview
+  title="Vertical"
+  code={`<tp-button-group orientation="vertical" label="Zoom controls">
+  <tp-button variant="outline" size="icon" aria-label="Zoom in"><span slot="icon-start" aria-hidden="true">+</span></tp-button>
+  <tp-button variant="outline" size="icon" aria-label="Zoom out"><span slot="icon-start" aria-hidden="true">−</span></tp-button>
+</tp-button-group>
+<tp-button-group orientation="vertical" label="Export">
+  <tp-button variant="outline">Export PDF</tp-button>
+  <tp-button variant="outline">Export CSV</tp-button>
+  <tp-button variant="outline">Print</tp-button>
+</tp-button-group>`}
+/>
+
+### Inputs and text
+
+Inputs, selects and toggles can sit next to Buttons and keep their value and form behavior. `tp-button-group-text` adds a noninteractive prefix or suffix segment.
+
+<Preview
+  title="Mixed controls"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-4);max-inline-size:26rem;margin-inline:auto">
+  <tp-button-group label="Workspace address">
+    <tp-button-group-text>tweakpad.app/</tp-button-group-text>
+    <tp-input label="Workspace slug" placeholder="acme"></tp-input>
+  </tp-button-group>
+  <tp-button-group label="Invite teammate">
+    <tp-input label="Email" type="email" placeholder="name@company.com"></tp-input>
+    <tp-button variant="outline">Send invite</tp-button>
+  </tp-button-group>
+</div>`}
+/>
+
+### Separators
+
+Place a `tp-separator` between filled members to keep a visible divide; the group orients it perpendicular to the row.
+
+<Preview
+  title="Split action"
+  code={`<tp-button-group label="Clipboard">
+  <tp-button variant="secondary">Copy</tp-button>
+  <tp-separator></tp-separator>
+  <tp-button variant="secondary">Paste</tp-button>
+</tp-button-group>`}
+/>
+
+### Unjoined
+
+`joined` is on by default. Set the `joined` property to `false` to keep each Button's own corners and add the standard gap while keeping the group semantics.
+
+<Preview
+  title="Unjoined"
+  code={`<tp-button-group id="button-group-unjoined" label="Dialog actions">
+  <tp-button variant="outline">Cancel</tp-button>
+  <tp-button>Save changes</tp-button>
+</tp-button-group>`}
+  script={`document.getElementById('button-group-unjoined').joined = false;`}
+/>
+
+Button group implies no selection. When the members choose one shared value, such as text alignment, use a Toggle group instead.

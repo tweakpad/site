@@ -1,0 +1,187 @@
+---
+title: Message Scroller
+description: A native transcript viewport that opens at the latest message, follows streaming replies and jumps back to the end on request.
+tag: tp-message-scroller
+parts: [tp-message-scroller-item, tp-message-scroller-viewport, tp-message-scroller-content, tp-message-scroller-return-control]
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Message Scroller"
+  align="stretch"
+  code={`<tp-message-scroller label="Support conversation" style="border:var(--tp-border-width) solid var(--tp-border);border-radius:var(--tp-radius-xl);--tp-message-scroller-height:22rem;max-inline-size:28rem;margin-inline:auto">
+  <tp-message-scroller-viewport>
+    <tp-message-scroller-content>
+      <tp-message-scroller-item message-id="q-1" scroll-anchor>
+        <tp-message align="end" aria-label="You">
+          <tp-bubble align="end" variant="default">Why was I charged twice in September?</tp-bubble>
+        </tp-message>
+      </tp-message-scroller-item>
+      <tp-message-scroller-item message-id="a-1">
+        <tp-message aria-label="Support">
+          <tp-bubble variant="ghost">The first charge on September 1 is your Team plan renewal. The second, on September 14, is a prorated charge for the three seats added that day.</tp-bubble>
+        </tp-message>
+      </tp-message-scroller-item>
+      <tp-message-scroller-item message-id="q-2" scroll-anchor>
+        <tp-message align="end" aria-label="You">
+          <tp-bubble align="end" variant="default">Can those seats be billed on the renewal date instead?</tp-bubble>
+        </tp-message>
+      </tp-message-scroller-item>
+      <tp-message-scroller-item message-id="a-2">
+        <tp-message aria-label="Support">
+          <tp-bubble variant="ghost">Yes. Turn on consolidated billing under Settings → Billing, and seats added mid-cycle are charged together on your next renewal. It takes effect from the next seat change.</tp-bubble>
+        </tp-message>
+      </tp-message-scroller-item>
+      <tp-message-scroller-item message-id="q-3" scroll-anchor>
+        <tp-message align="end" aria-label="You">
+          <tp-bubble align="end" variant="default">Done. Will the September invoice change?</tp-bubble>
+        </tp-message>
+      </tp-message-scroller-item>
+      <tp-message-scroller-item message-id="a-3">
+        <tp-message aria-label="Support">
+          <tp-bubble variant="ghost">No, issued invoices stay as they are. You'll see one combined line on the October 1 invoice from now on.</tp-bubble>
+        </tp-message>
+      </tp-message-scroller-item>
+    </tp-message-scroller-content>
+  </tp-message-scroller-viewport>
+  <tp-message-scroller-return-control></tp-message-scroller-return-control>
+</tp-message-scroller>`}
+/>
+
+## Usage
+
+The scroller owns only scrolling: it opens at the latest message, follows growth while the reader is at the end, and keeps their place when they scroll away. Your application owns the messages and transport; Message and Bubble supply the rows.
+
+Explicit composition is one Viewport containing one Content of Items, plus an optional Return control. Scroll up in the example above and the Return control appears to bring the reader back to the end.
+
+### Streaming replies
+
+While the reader is pinned to the end, `follow` keeps the viewport on the growing reply. A turn marked `scroll-anchor` holds its prompt at the reading line, so the question stays in view while the answer fills in below it. Update streamed text in place and keep the Item's `message-id`.
+
+<Preview
+  title="Streaming"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-3);max-inline-size:28rem;margin-inline:auto;inline-size:100%">
+  <tp-message-scroller id="message-scroller-stream" label="Assistant conversation" style="border:var(--tp-border-width) solid var(--tp-border);border-radius:var(--tp-radius-xl);--tp-message-scroller-height:18rem">
+    <tp-message-scroller-item message-id="intro">
+      <tp-message aria-label="Assistant">
+        <tp-bubble variant="ghost">Hi Dana, ask me anything about your workspace.</tp-bubble>
+      </tp-message>
+    </tp-message-scroller-item>
+  </tp-message-scroller>
+  <tp-button id="message-scroller-ask" variant="outline">Ask a question</tp-button>
+</div>`}
+  script={`const scroller = document.getElementById('message-scroller-stream');
+const ask = document.getElementById('message-scroller-ask');
+const turns = [
+  ['How many seats are free?', 'You have 2 of 20 seats free. Two guests have not signed in for 90 days; removing them would free two more without changing your plan.'],
+  ['Who can approve invoices?', 'Owners and members with the Billing admin role. Right now that is you and Marcus Chen. Add the role from Members → Roles.'],
+  ['When does the plan renew?', 'Your Team plan renews on November 1. The estimated total is $480 for 20 seats, billed to the card ending in 4242.'],
+];
+let count = 0;
+
+const row = (id, align, text, anchor) => {
+  const item = document.createElement('tp-message-scroller-item');
+  item.messageId = id;
+  item.scrollAnchor = anchor;
+  const message = document.createElement('tp-message');
+  message.align = align;
+  message.setAttribute('aria-label', align === 'end' ? 'You' : 'Assistant');
+  const bubble = document.createElement('tp-bubble');
+  bubble.align = align;
+  bubble.variant = align === 'end' ? 'default' : 'ghost';
+  bubble.textContent = text;
+  message.append(bubble);
+  item.append(message);
+  scroller.append(item);
+  return bubble;
+};
+
+ask.addEventListener('click', () => {
+  const [question, answer] = turns[count % turns.length];
+  count += 1;
+  ask.disabled = true;
+  row('prompt-' + count, 'end', question, true);
+  const reply = row('reply-' + count, 'start', '', false);
+  const words = answer.split(' ');
+  let index = 0;
+  const timer = setInterval(() => {
+    index += 1;
+    reply.textContent = words.slice(0, index).join(' ');
+    if (index >= words.length) {
+      clearInterval(timer);
+      ask.disabled = false;
+    }
+  }, 60);
+});`}
+/>
+
+This example uses the shorthand: Items placed directly in the Root get a generated Viewport, Content and Return control.
+
+### Jump to a message
+
+`scrollToMessage`, `scrollToStart` and `scrollToEnd` return a receipt whose `finished` promise settles as `completed`, `superseded` or `rejected`. Use them for an outline, search results or a "jump to unread" control.
+
+<Preview
+  title="Commands"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-3);max-inline-size:28rem;margin-inline:auto;inline-size:100%">
+  <tp-button-group id="message-scroller-jumps" label="Jump to" style="justify-self:start">
+    <tp-button size="sm" variant="outline" data-target="kickoff">Kickoff</tp-button>
+    <tp-button size="sm" variant="outline" data-target="scope">Scope change</tp-button>
+    <tp-button size="sm" variant="outline" data-target="end">Latest</tp-button>
+  </tp-button-group>
+  <tp-message-scroller id="message-scroller-commands" label="Project thread" style="border:var(--tp-border-width) solid var(--tp-border);border-radius:var(--tp-radius-xl);--tp-message-scroller-height:14rem">
+    <tp-message-scroller-item message-id="kickoff">
+      <tp-message author="Lena Ortiz" timestamp="2026-09-02T09:15:00"><tp-bubble>Kickoff notes are in the project doc. Launch target is October 20.</tp-bubble></tp-message>
+    </tp-message-scroller-item>
+    <tp-message-scroller-item message-id="design">
+      <tp-message author="Omar Haddad" timestamp="2026-09-09T16:40:00"><tp-bubble>Design review passed. Two follow-ups on the empty states.</tp-bubble></tp-message>
+    </tp-message-scroller-item>
+    <tp-message-scroller-item message-id="scope">
+      <tp-message author="Lena Ortiz" timestamp="2026-09-18T11:05:00"><tp-bubble>Scope change: CSV import moves to the next release so we keep the date.</tp-bubble></tp-message>
+    </tp-message-scroller-item>
+    <tp-message-scroller-item message-id="qa">
+      <tp-message author="Grace Kim" timestamp="2026-09-30T14:20:00"><tp-bubble>QA found three blockers, all assigned. Retest is scheduled for Monday.</tp-bubble></tp-message>
+    </tp-message-scroller-item>
+    <tp-message-scroller-item message-id="ready">
+      <tp-message author="Omar Haddad" timestamp="2026-10-08T10:00:00"><tp-bubble>All blockers closed. We are ready for the launch checklist.</tp-bubble></tp-message>
+    </tp-message-scroller-item>
+  </tp-message-scroller>
+</div>`}
+  script={`const scroller = document.getElementById('message-scroller-commands');
+document.getElementById('message-scroller-jumps').addEventListener('click', (event) => {
+  const target = event.target.closest('[data-target]')?.dataset.target;
+  if (!target) return;
+  if (target === 'end') scroller.scrollToEnd({ behavior: 'smooth' });
+  else scroller.scrollToMessage(target, { align: 'start', behavior: 'smooth' });
+});`}
+/>
+
+Commands preserve focus, so the reader stays on the button they pressed. A message command releases following; a completed end command resumes it.
+
+### Opening position
+
+`initial-position` places the reader once, on the first content: `end` (default) for chats, `start` for a log read from the top, or `last-anchor` to open at the latest long turn. Changing it later never moves the reader.
+
+<Preview
+  title="Open at the start"
+  align="stretch"
+  code={`<tp-message-scroller label="Changelog" initial-position="start" style="border:var(--tp-border-width) solid var(--tp-border);border-radius:var(--tp-radius-xl);--tp-message-scroller-height:12rem;max-inline-size:28rem;margin-inline:auto">
+  <tp-message-scroller-item message-id="v-2-4">
+    <tp-message author="Release bot" timestamp="2026-10-07T08:00:00"><tp-bubble variant="outline">v2.4 adds audit log export and SAML group sync.</tp-bubble></tp-message>
+  </tp-message-scroller-item>
+  <tp-message-scroller-item message-id="v-2-3">
+    <tp-message author="Release bot" timestamp="2026-09-23T08:00:00"><tp-bubble variant="outline">v2.3 speeds up search on large workspaces by about 40%.</tp-bubble></tp-message>
+  </tp-message-scroller-item>
+  <tp-message-scroller-item message-id="v-2-2">
+    <tp-message author="Release bot" timestamp="2026-09-09T08:00:00"><tp-bubble variant="outline">v2.2 introduces guest seats and per-project permissions.</tp-bubble></tp-message>
+  </tp-message-scroller-item>
+  <tp-message-scroller-item message-id="v-2-1">
+    <tp-message author="Release bot" timestamp="2026-08-26T08:00:00"><tp-bubble variant="outline">v2.1 fixes calendar sync for recurring events.</tp-bubble></tp-message>
+  </tp-message-scroller-item>
+</tp-message-scroller>`}
+/>
+
+The frame defaults to `120 × --tp-spacing` tall. Set `--tp-message-scroller-height` for another bound, or `100%` inside a height-constrained parent.

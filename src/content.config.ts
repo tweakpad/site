@@ -2,7 +2,7 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-/** Docs: getting-started guides and one page per foundational component. */
+/** Docs: getting-started guides, one page per foundational component, and opt-in widgets. */
 const docs = defineCollection({
   loader: glob({ pattern: '**/*.mdx', base: './src/content/docs' }),
   schema: z.object({
@@ -11,6 +11,13 @@ const docs = defineCollection({
     order: z.number().default(100),
     /** Custom element whose API table the page shows, read from the package manifest. */
     tag: z.string().optional(),
+    /** Further elements of the same component (for example `tp-accordion-item`), each with its own API table. */
+    parts: z.array(z.string()).default([]),
+    /**
+     * Path of the library's reference doc under `docs/` without `.md`, when it differs from the
+     * page slug; `false` when the library has no reference doc for this component.
+     */
+    reference: z.union([z.string(), z.literal(false)]).optional(),
   }),
 });
 

@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
+import literalCode from './src/lib/vite-literal-code.mjs';
 
 // GitHub Pages serves the site from a sub-path (https://<owner>.github.io/<repo>/) unless a
 // custom domain is set. The deploy workflow passes both values from actions/configure-pages.
@@ -12,6 +13,7 @@ export default defineConfig({
   base,
   integrations: [mdx()],
   vite: {
+    plugins: [literalCode()],
     // `@tweakpad/ui/register` defines every element in one chunk. Per-component registration
     // would split it; until then, keep the warning for chunks larger than that one.
     build: { chunkSizeWarningLimit: 2000 },

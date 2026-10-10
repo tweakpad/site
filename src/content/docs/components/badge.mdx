@@ -1,0 +1,79 @@
+---
+title: Badge
+description: A compact, passive label for status, category, metadata or a count.
+tag: tp-badge
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Badge"
+  code={`<tp-badge>New</tp-badge>
+<tp-badge variant="secondary">12 unread</tp-badge>
+<tp-badge variant="outline">Draft</tp-badge>`}
+/>
+
+## Usage
+
+A Badge is a non-focusable label, so it never adds a tab stop. Its text should carry the meaning on its own: "Failed" says more than a red pill.
+
+### Variants
+
+<Preview
+  title="Variants"
+  code={`<tp-badge>Default</tp-badge>
+<tp-badge variant="secondary">Secondary</tp-badge>
+<tp-badge variant="destructive">Destructive</tp-badge>
+<tp-badge variant="outline">Outline</tp-badge>
+<tp-badge variant="ghost">Ghost</tp-badge>
+<tp-badge variant="link">Link</tp-badge>`}
+/>
+
+`variant` is visual emphasis only. Use `destructive` for failures and blocking problems, `secondary` or `outline` for neutral metadata, and the default for the one thing you want noticed.
+
+### Icons and progress
+
+<Preview
+  title="With marks"
+  code={`<tp-badge variant="secondary">
+  <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+  Verified
+</tp-badge>
+<tp-badge variant="outline">
+  <tp-spinner size="sm" label=""></tp-spinner>
+  Processing
+</tp-badge>
+<tp-badge variant="destructive">
+  <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+  Payment failed
+</tp-badge>`}
+/>
+
+The default slot takes text plus inline marks such as an icon or a Spinner. Keep them decorative, with `aria-hidden` or `label=""`, when the text already says what they mean.
+
+### In context
+
+<Preview
+  title="Status in a list"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-3);inline-size:100%;max-inline-size:28rem;margin-inline:auto;font-size:var(--tp-text-sm)">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--tp-space-3)">
+    <span>Website redesign</span>
+    <tp-badge variant="secondary">In review</tp-badge>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--tp-space-3)">
+    <span>Mobile onboarding</span>
+    <tp-badge>Shipped</tp-badge>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--tp-space-3)">
+    <span>Billing migration</span>
+    <tp-badge variant="destructive">Blocked</tp-badge>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--tp-space-3)">
+    <span>Q3 roadmap</span>
+    <tp-badge variant="outline">Draft</tp-badge>
+  </div>
+</div>`}
+/>
+
+Write counts with their noun, like "12 unread", rather than a bare number. A Badge inside a Button or link stays passive, so the composition keeps one interactive target. For a clickable or removable label, use Button or Toggle instead.

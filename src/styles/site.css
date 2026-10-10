@@ -338,6 +338,10 @@ a {
   margin-block-start: 0;
 }
 
+.sidebar section + section {
+  margin-block-start: 1.75rem;
+}
+
 .sidebar ul {
   margin: 0;
   padding: 0;

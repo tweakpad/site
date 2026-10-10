@@ -1,0 +1,151 @@
+---
+title: Tree view
+description: A hierarchy to expand, collapse, select and activate, from nested markup or from records.
+tag: tp-tree-view
+parts: [tp-tree-item]
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Tree view"
+  code={`<tp-tree-view id="tree-view-hero" label="Project files" default-expanded='["src", "components"]' default-value='["button.ts"]' style="inline-size:16rem">
+  <tp-tree-item value="src">
+    <tp-icon slot="leading" data-icon="folder"></tp-icon>src
+    <tp-tree-item value="components">
+      <tp-icon slot="leading" data-icon="folder"></tp-icon>components
+      <tp-tree-item value="button.ts"><tp-icon slot="leading" data-icon="file"></tp-icon>button.ts</tp-tree-item>
+      <tp-tree-item value="card.ts"><tp-icon slot="leading" data-icon="file"></tp-icon>card.ts</tp-tree-item>
+      <tp-tree-item value="dialog.ts"><tp-icon slot="leading" data-icon="file"></tp-icon>dialog.ts</tp-tree-item>
+    </tp-tree-item>
+    <tp-tree-item value="index.ts"><tp-icon slot="leading" data-icon="file"></tp-icon>index.ts</tp-tree-item>
+  </tp-tree-item>
+  <tp-tree-item value="docs">
+    <tp-icon slot="leading" data-icon="folder"></tp-icon>docs
+    <tp-tree-item value="getting-started.md"><tp-icon slot="leading" data-icon="file"></tp-icon>getting-started.md</tp-tree-item>
+  </tp-tree-item>
+  <tp-tree-item value="package.json"><tp-icon slot="leading" data-icon="file"></tp-icon>package.json</tp-tree-item>
+</tp-tree-view>`}
+  script={`const icons = {
+  folder: { viewBox: '0 0 24 24', paths: [{ d: 'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z', strokeWidth: 2 }] },
+  file: { viewBox: '0 0 24 24', paths: [
+    { d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z', strokeWidth: 2 },
+    { d: 'M14 2v6h6M8 13h8M8 17h8', strokeWidth: 2 },
+  ] },
+};
+await customElements.whenDefined('tp-icon');
+for (const icon of document.querySelectorAll('#tree-view-hero tp-icon[data-icon]')) {
+  icon.icon = icons[icon.dataset.icon];
+}`}
+/>
+
+## Usage
+
+Nest `tp-tree-item` elements: text forms the label, `slot="leading"` and `slot="trailing"` hold marks and actions, and nested items are the children. `default-expanded` and `default-value` take JSON arrays of item values and apply before the first render, so the tree appears already open without change events. The tree is one tab stop; arrow keys move, Right expands and Left collapses or returns to the parent.
+
+### Multiple selection with checkboxes
+
+`selection-mode="multiple"` with `checkbox-selection` shows a checked indicator in every row. `selection-propagation` cascades a parent's selection to its descendants and derives mixed parents.
+
+<Preview
+  title="Permissions"
+  code={`<tp-tree-view label="Permissions" selection-mode="multiple" checkbox-selection selection-propagation default-expanded='["billing", "projects"]' default-value='["invoices", "create", "archive"]' style="inline-size:18rem">
+  <tp-tree-item value="billing">
+    Billing
+    <tp-tree-item value="invoices">View invoices</tp-tree-item>
+    <tp-tree-item value="payment">Manage payment methods</tp-tree-item>
+  </tp-tree-item>
+  <tp-tree-item value="projects">
+    Projects
+    <tp-tree-item value="create">Create projects</tp-tree-item>
+    <tp-tree-item value="archive">Archive projects</tp-tree-item>
+  </tp-tree-item>
+  <tp-tree-item value="admin" disabled>Workspace admin</tp-tree-item>
+</tp-tree-view>`}
+/>
+
+Disabled items stay focusable but are never selected by user input.
+
+### Activation
+
+Enter or a press fires a cancelable `tp-action` with the item's value, separately from selection. Use it to open a file or navigate; canceling it keeps the press from selecting or expanding.
+
+<Preview
+  title="Opening items"
+  code={`<div style="display:grid;gap:var(--tp-space-3);justify-items:center">
+  <tp-tree-view id="tree-view-action" label="Handbook" default-expanded='["engineering"]' style="inline-size:16rem">
+    <tp-tree-item value="engineering">
+      Engineering
+      <tp-tree-item value="On-call rotation">On-call rotation</tp-tree-item>
+      <tp-tree-item value="Code review">Code review</tp-tree-item>
+    </tp-tree-item>
+    <tp-tree-item value="People">People</tp-tree-item>
+  </tp-tree-view>
+  <output id="tree-view-action-output" style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">Nothing opened yet</output>
+</div>`}
+  script={`const tree = document.querySelector('#tree-view-action');
+const output = document.querySelector('#tree-view-action-output');
+tree.addEventListener('tp-action', (event) => {
+  if (event.detail.value === 'engineering') return;
+  output.textContent = \`Opened \${event.detail.value}\`;
+});`}
+/>
+
+### Expansion trigger
+
+By default pressing a row toggles it. `expansion-trigger="indicator"` reserves the row press for selection and expands only from the chevron, which suits folders that are also selectable.
+
+<Preview
+  title="Chevron only"
+  code={`<tp-tree-view label="Locations" expansion-trigger="indicator" default-expanded='["europe"]' default-value='["europe"]' style="inline-size:16rem">
+  <tp-tree-item value="europe">
+    Europe
+    <tp-tree-item value="berlin">Berlin</tp-tree-item>
+    <tp-tree-item value="lisbon">Lisbon</tp-tree-item>
+  </tp-tree-item>
+  <tp-tree-item value="north-america">
+    North America
+    <tp-tree-item value="toronto">Toronto</tp-tree-item>
+    <tp-tree-item value="austin">Austin</tp-tree-item>
+  </tp-tree-item>
+</tp-tree-view>`}
+/>
+
+### Records
+
+For large or data-driven trees, set `defaultItems` (or controlled `items`) to records of `{ id, label, children }`. Records mode renders flat rows, which enables `virtualized` and `reorderable`; give a virtualized tree a block size.
+
+<Preview
+  title="From records, reorderable"
+  code={`<tp-tree-view id="tree-view-records" label="Sprint backlog" reorderable size="sm" style="inline-size:18rem"></tp-tree-view>`}
+  script={`await customElements.whenDefined('tp-tree-view');
+const tree = document.querySelector('#tree-view-records');
+tree.defaultExpanded = ['checkout', 'search'];
+tree.defaultItems = [
+  { id: 'checkout', label: 'Checkout redesign', children: [
+    { id: 'cart', label: 'Persist cart across devices' },
+    { id: 'wallets', label: 'Apple Pay and Google Pay' },
+  ] },
+  { id: 'search', label: 'Search', children: [
+    { id: 'typo', label: 'Typo tolerance' },
+    { id: 'filters', label: 'Saved filters' },
+  ] },
+  { id: 'onboarding', label: 'Onboarding emails' },
+];`}
+/>
+
+Drag a handle, or press Control+Enter (Command+Enter) on an item and move it with the arrow keys. Each move is proposed through a cancelable `tp-items-change`.
+
+### Size and guides
+
+<Preview
+  title="Small, no guides"
+  code={`<tp-tree-view label="Settings" size="sm" guides="none" default-expanded='["account"]' style="inline-size:14rem">
+  <tp-tree-item value="account">
+    Account
+    <tp-tree-item value="profile">Profile</tp-tree-item>
+    <tp-tree-item value="security">Security</tp-tree-item>
+  </tp-tree-item>
+  <tp-tree-item value="notifications">Notifications</tp-tree-item>
+</tp-tree-view>`}
+/>

@@ -1,0 +1,112 @@
+---
+title: Tabs
+description: One panel at a time from a set of peers, with native tab buttons and roving keyboard focus.
+tag: tp-tabs
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Tabs"
+  align="stretch"
+  code={`<tp-tabs default-value="account" label="Settings" style="max-inline-size:26rem;margin-inline:auto">
+  <button slot="tab" value="account">Account</button>
+  <button slot="tab" value="password">Password</button>
+  <section slot="panel" value="account">
+    <tp-card>
+      <span slot="header">Account</span>
+      <span slot="description">Update how your name appears to teammates.</span>
+      <tp-field label="Display name">
+        <tp-input name="display-name" default-value="Maya Chen"></tp-input>
+      </tp-field>
+      <tp-button slot="footer">Save changes</tp-button>
+    </tp-card>
+  </section>
+  <section slot="panel" value="password">
+    <tp-card>
+      <span slot="header">Password</span>
+      <span slot="description">Use at least 12 characters.</span>
+      <tp-field label="New password">
+        <tp-input type="password" name="new-password" autocomplete="new-password"></tp-input>
+      </tp-field>
+      <tp-button slot="footer">Update password</tp-button>
+    </tp-card>
+  </section>
+</tp-tabs>`}
+/>
+
+## Usage
+
+Author each tab as a native `<button slot="tab">` and each panel as an element with `slot="panel"`, matched by `value`. Tabs supplies roles, `type="button"`, roving tabindex and the `aria-controls` and `aria-labelledby` links; `label` names the tab list.
+
+### Variants
+
+<Preview
+  title="Underline"
+  align="stretch"
+  code={`<tp-tabs variant="underline" default-value="overview" label="Project" style="max-inline-size:28rem;margin-inline:auto">
+  <button slot="tab" value="overview">Overview</button>
+  <button slot="tab" value="activity">Activity</button>
+  <button slot="tab" value="settings">Settings</button>
+  <p slot="panel" value="overview">Website redesign: 14 open tasks, due March 28.</p>
+  <p slot="panel" value="activity">Jonas Weber moved “Pricing page” to Review 2 hours ago.</p>
+  <p slot="panel" value="settings">Visibility, integrations and archive options.</p>
+</tp-tabs>`}
+/>
+
+`enclosed` (the default) suits tabs that switch a contained surface; `underline` sits lighter on page-level navigation. The indicator glides to the selected tab in both.
+
+### Vertical
+
+<Preview
+  title="Vertical"
+  align="stretch"
+  code={`<tp-tabs orientation="vertical" default-value="general" label="Workspace settings" style="max-inline-size:30rem;margin-inline:auto">
+  <button slot="tab" value="general">General</button>
+  <button slot="tab" value="members">Members</button>
+  <button slot="tab" value="billing">Billing</button>
+  <p slot="panel" value="general">Workspace name, URL and default language.</p>
+  <p slot="panel" value="members">12 members, 3 pending invitations.</p>
+  <p slot="panel" value="billing">Team plan, renews on April 1 for $480.</p>
+</tp-tabs>`}
+/>
+
+Vertical lists use Up and Down instead of Left and Right, and expose `aria-orientation`.
+
+### Keyboard and activation
+
+<Preview
+  title="Automatic activation"
+  align="stretch"
+  code={`<tp-tabs activation="automatic" default-value="day" label="Range" style="max-inline-size:24rem;margin-inline:auto">
+  <button slot="tab" value="day">Day</button>
+  <button slot="tab" value="week">Week</button>
+  <button slot="tab" value="month">Month</button>
+  <p slot="panel" value="day">1,204 visitors today.</p>
+  <p slot="panel" value="week">8,931 visitors this week.</p>
+  <p slot="panel" value="month">36,410 visitors this month.</p>
+</tp-tabs>`}
+/>
+
+By default activation is `manual`: arrow keys move focus and Enter or Space selects. Use `automatic` when panels are cheap to show, so selection follows focus. Arrows wrap at the ends unless the `loopFocus` property is set to `false`.
+
+### Disabled tabs
+
+<Preview
+  title="Disabled"
+  align="stretch"
+  code={`<tp-tabs default-value="details" label="Order" style="max-inline-size:26rem;margin-inline:auto">
+  <button slot="tab" value="details">Details</button>
+  <button slot="tab" value="shipping">Shipping</button>
+  <button slot="tab" value="returns" aria-disabled="true">Returns</button>
+  <p slot="panel" value="details">Order #10482, placed March 3.</p>
+  <p slot="panel" value="shipping">Delivered March 6 by UPS.</p>
+  <p slot="panel" value="returns">Returns open after delivery.</p>
+</tp-tabs>`}
+/>
+
+`aria-disabled="true"` keeps a tab discoverable through arrow navigation; native `disabled` removes it from focus. Neither can be activated.
+
+### Panel mounting
+
+Inactive panels are detached from the DOM after their exit and restored on activation, so heavy content costs nothing while hidden. Add `keep-mounted` to a panel that must stay in the document, for example one holding form fields that still submit, and it is kept hidden and inert instead.

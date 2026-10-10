@@ -1,0 +1,133 @@
+---
+title: Input group
+description: One Input or Text area joined with text, icons, shortcuts and actions inside a single shared border.
+tag: tp-input-group
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Input group"
+  align="stretch"
+  code={`<tp-field id="input-group-hero" label="Search" style="max-inline-size:24rem;margin-inline:auto;inline-size:100%">
+  <tp-input-group>
+    <tp-icon slot="inline-start" data-icon="search"></tp-icon>
+    <tp-input type="search" placeholder="Search docs, issues and people"></tp-input>
+    <tp-key-hint-group slot="inline-end" separator="none">
+      <tp-key-hint key="mod"></tp-key-hint>
+      <tp-key-hint>K</tp-key-hint>
+    </tp-key-hint-group>
+  </tp-input-group>
+</tp-field>`}
+  script={`document.querySelector('#input-group-hero tp-icon').icon = {
+  viewBox: '0 0 24 24',
+  paths: [{ d: 'M21 21l-5-5M10.5 3a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15', strokeWidth: 1.75 }],
+};`}
+/>
+
+## Usage
+
+The group owns the outside border and the focus and invalid ring; the editor inside keeps its native editing, validation and form value. Put exactly one `tp-input`, `tp-text-area` or native editor in the default slot, and label it with a Field as usual.
+
+### Addons
+
+`inline-start` and `inline-end` hold text or icons beside the editor. Clicking a non-interactive addon focuses the editor, so units and prefixes behave like part of the field.
+
+<Preview
+  title="Text addons"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-4);max-inline-size:24rem;margin-inline:auto;inline-size:100%">
+  <tp-field label="Monthly budget">
+    <tp-input-group>
+      <span slot="inline-start">$</span>
+      <tp-input inputmode="decimal" default-value="2,400.00"></tp-input>
+      <span slot="inline-end">USD</span>
+    </tp-input-group>
+  </tp-field>
+  <tp-field label="Workspace URL">
+    <tp-input-group>
+      <span slot="inline-start">https://</span>
+      <tp-input placeholder="northwind"></tp-input>
+      <span slot="inline-end">.tweakpad.app</span>
+    </tp-input-group>
+  </tp-field>
+</div>`}
+/>
+
+### Actions
+
+Buttons in the `action` slot sit after the editor and stay independently operable, even when the editor is read-only or disabled. `action-variant` and `action-size` set their defaults; an explicitly configured Button wins.
+
+<Preview
+  title="Actions"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-4);max-inline-size:24rem;margin-inline:auto;inline-size:100%">
+  <tp-field label="Invite link">
+    <tp-input-group>
+      <tp-input id="input-group-copy-input" readonly default-value="https://tweakpad.app/join/8f2c41"></tp-input>
+      <tp-button id="input-group-copy" slot="action">Copy</tp-button>
+    </tp-input-group>
+  </tp-field>
+  <tp-field label="Coupon code" description="Codes are case-insensitive.">
+    <tp-input-group action-variant="secondary">
+      <tp-input placeholder="SPRING25"></tp-input>
+      <tp-button slot="action">Apply</tp-button>
+    </tp-input-group>
+  </tp-field>
+</div>`}
+  script={`const button = document.querySelector('#input-group-copy');
+button.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(document.querySelector('#input-group-copy-input').value);
+    button.textContent = 'Copied';
+  } catch {
+    button.textContent = 'Select to copy';
+  }
+  setTimeout(() => (button.textContent = 'Copy'), 1600);
+});`}
+/>
+
+### Block edges
+
+`block-start` and `block-end` span the group above and below the editor. With a Text area they make a composer: a context line on top, a character count and submit actions in the footer.
+
+<Preview
+  title="Composer"
+  align="stretch"
+  code={`<tp-field label="Reply" style="max-inline-size:30rem;margin-inline:auto;inline-size:100%">
+  <tp-input-group>
+    <span slot="block-start">Replying to Jonas Weber</span>
+    <tp-text-area id="input-group-reply" maxlength="280" placeholder="Share an update with the team"></tp-text-area>
+    <span id="input-group-count" slot="block-end" style="margin-inline-end:auto">0/280</span>
+    <tp-button slot="block-end" variant="ghost" size="sm">Cancel</tp-button>
+    <tp-button slot="block-end" size="sm">Post reply</tp-button>
+  </tp-input-group>
+</tp-field>`}
+  script={`const reply = document.querySelector('#input-group-reply');
+reply.addEventListener('input', () => {
+  document.querySelector('#input-group-count').textContent = reply.value.length + '/280';
+});`}
+/>
+
+### States
+
+The group reflects the editor's disabled and invalid states on its border. Errors still come from the Field.
+
+<Preview
+  title="Disabled and invalid"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-4);max-inline-size:24rem;margin-inline:auto;inline-size:100%">
+  <tp-field label="Subdomain" error="That subdomain is already taken." invalid>
+    <tp-input-group>
+      <tp-input default-value="acme"></tp-input>
+      <span slot="inline-end">.tweakpad.app</span>
+    </tp-input-group>
+  </tp-field>
+  <tp-field label="Project ID" disabled>
+    <tp-input-group>
+      <span slot="inline-start">prj_</span>
+      <tp-input default-value="8f2c41"></tp-input>
+    </tp-input-group>
+  </tp-field>
+</div>`}
+/>

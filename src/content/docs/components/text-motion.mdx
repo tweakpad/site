@@ -1,0 +1,68 @@
+---
+title: Text motion
+description: Splits text into lines, words or characters and reveals them in sequence as the text scrolls into view.
+tag: tp-text-motion
+---
+
+import Preview from '../../../components/Preview.astro';
+
+<Preview
+  title="Text motion"
+  code={`<p style="margin:0;inline-size:32rem;max-inline-size:100%;font-size:2.75rem;line-height:1.05;font-weight:600;letter-spacing:-0.02em;text-align:center">
+  <tp-text-motion split="words lines" mask="lines" reveal="up" reveal-repeat>
+    Quiet spaces, open light, and rooms that breathe
+  </tp-text-motion>
+</p>`}
+/>
+
+## Usage
+
+Put Text motion inside the heading or paragraph whose text it animates and keep typography on that element; the pieces inherit it. Lines are measured from the original text's own layout, so the split never changes wrapping or height and nothing below moves. A standalone text reveals the first time it enters the viewport.
+
+### Masks
+
+`mask` clips a unit so pieces rise from behind it. With a mask, `up`, `down`, `left` and `right` travel the piece's own size; without one they travel a short distance and fade.
+
+<Preview
+  title="Words behind a mask"
+  code={`<p style="margin:0;inline-size:100%;text-align:center;font-size:2rem;line-height:1.1;font-weight:600">
+  <tp-text-motion split="words" mask="words" reveal="up" stagger="60" reveal-repeat>Ship the release on Friday</tp-text-motion>
+</p>`}
+/>
+
+### Characters and effects
+
+`reveal` combines effects such as `fade`, `blur`, `zoom-in` and the four directions. `split="chars"` animates user-perceived characters and turns off kerning from the first frame, so the text never re-wraps when it splits.
+
+<Preview
+  title="Characters from the center"
+  code={`<p style="margin:0;inline-size:100%;text-align:center;font-size:2.5rem;font-weight:600;letter-spacing:-0.02em">
+  <tp-text-motion split="chars" reveal="fade blur" stagger="25" stagger-from="center" reveal-repeat>Open light</tp-text-motion>
+</p>`}
+/>
+
+### Stagger
+
+`stagger` is the delay in milliseconds between consecutive pieces, and `stagger-from` starts the sequence at the `first`, `last` or `center` piece. Small values feel like one gesture; large ones read word by word.
+
+<Preview
+  title="Slow stagger"
+  code={`<p style="margin:0;inline-size:100%;text-align:center;font-size:1.75rem;font-weight:600">
+  <tp-text-motion split="words" reveal="fade zoom-in" stagger="120" reveal-repeat>Every time it enters</tp-text-motion>
+</p>`}
+/>
+
+`reveal-repeat` resets the text once it has fully left the viewport and plays again when it returns. All examples here use it so you can scroll back to replay them.
+
+### Rich text
+
+Formatting is kept around the pieces and links stay the original element, wrapping like ordinary text. Screen readers read the sentence once, with the link and its full name.
+
+<Preview
+  title="Inline formatting"
+  code={`<p style="margin:0;inline-size:32rem;max-inline-size:100%;font-size:var(--tp-text-lg);line-height:1.6">
+  <tp-text-motion split="words lines" reveal="fade up" stagger="15" reveal-repeat>Read the <a href="#rich-text">migration guide</a> before upgrading, and <em>back up your workspace</em> first.</tp-text-motion>
+</p>`}
+/>
+
+Under reduced motion every piece appears at rest immediately and the events still fire.

@@ -14,14 +14,19 @@ export const docSlug = (entry: DocEntry) => entry.id.split('/').slice(1).join('/
 export const DOC_GROUPS = [
   { id: 'getting-started', label: 'Getting started' },
   { id: 'components', label: 'Components' },
+  { id: 'widgets', label: 'Widgets' },
 ] as const;
+
+/** Groups whose entries document one component each, with an API reference and related patterns. */
+export const isComponentDoc = (entry: DocEntry) =>
+  docGroup(entry) === 'components' || docGroup(entry) === 'widgets';
 
 export async function docsByGroup() {
   const entries = (await getCollection('docs')).sort(byOrder);
   return DOC_GROUPS.map((group) => ({
     ...group,
     entries:
-      group.id === 'components'
+      group.id !== 'getting-started'
         ? entries
             .filter((entry) => docGroup(entry) === group.id)
             .sort((a, b) => a.data.title.localeCompare(b.data.title))

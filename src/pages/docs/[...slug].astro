@@ -3,7 +3,7 @@ import { getCollection, render } from 'astro:content';
 import ApiTable from '../../components/ApiTable.astro';
 import RelatedPatterns from '../../components/RelatedPatterns.astro';
 import DocsLayout from '../../layouts/DocsLayout.astro';
-import { docGroup, docSlug, type DocEntry } from '../../lib/content';
+import { docGroup, docSlug, isComponentDoc, type DocEntry } from '../../lib/content';
 
 export async function getStaticPaths() {
   const entries = await getCollection('docs');
@@ -12,12 +12,18 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props as { entry: DocEntry };
 const { Content, headings } = await render(entry);
-const isComponent = docGroup(entry) === 'components';
-const tag = entry.data.tag;
+const isComponent = isComponentDoc(entry);
+const isWidget = docGroup(entry) === 'widgets';
+const { tag, parts } = entry.data;
+const reference =
+  entry.data.reference === false
+    ? undefined
+    : (entry.data.reference ?? (isWidget ? `widgets/${docSlug(entry)}` : docSlug(entry)));
 const pageHeadings = isComponent
   ? [
       ...headings,
       ...(tag ? [{ depth: 2, slug: 'api-reference', text: 'API reference' }] : []),
+      ...(tag ? parts.map((part) => ({ depth: 3, slug: `api-${part}`, text: `<${part}>` })) : []),
       { depth: 2, slug: 'related-patterns', text: 'Related patterns' },
     ]
   : headings;
@@ -31,9 +37,11 @@ const pageHeadings = isComponent
       isComponent && (
         <div class="page-meta">
           {tag && <span class="chip">&lt;{tag}&gt;</span>}
-          <a class="chip" href={`https://github.com/tweakpad/ui/blob/development/docs/${docSlug(entry)}.md`}>
-            Reference docs ↗
-          </a>
+          {reference && (
+            <a class="chip" href={`https://github.com/tweakpad/ui/blob/development/docs/${reference}.md`}>
+              Reference docs ↗
+            </a>
+          )}
         </div>
       )
     }
@@ -45,6 +53,14 @@ const pageHeadings = isComponent
         <>
           <h2 id="api-reference">API reference</h2>
           <ApiTable tag={tag} />
+          {parts.map((part) => (
+            <>
+              <h3 id={`api-${part}`}>
+                <code>&lt;{part}&gt;</code>
+              </h3>
+              <ApiTable tag={part} />
+            </>
+          ))}
         </>
       )
     }
@@ -58,4 +74,12 @@ const pageHeadings = isComponent
       )
     }
   </div>
+  {
+    isWidget && (
+      <script>
+        // Widgets are opt-in: `@tweakpad/ui/register` never defines them.
+        import '@tweakpad/ui/register/widgets';
+      </script>
+    )
+  }
 </DocsLayout>

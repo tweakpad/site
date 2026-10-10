@@ -59,7 +59,9 @@ export function elementApi(tagName: string): ElementApi | undefined {
         attributes: (declaration.attributes ?? [])
           .filter(
             (attribute) =>
-              attribute.inheritedFrom?.name !== SHARED_BASE || SHARED_KEPT.has(attribute.name),
+              // The analyzer also lists private reactive state (`_copied`), which is not API.
+              !attribute.name.startsWith('_') &&
+              (attribute.inheritedFrom?.name !== SHARED_BASE || SHARED_KEPT.has(attribute.name)),
           )
           .map((attribute) => ({
             name: attribute.name,
