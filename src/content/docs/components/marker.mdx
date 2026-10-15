@@ -34,6 +34,21 @@ The default has no boundary. `separator` centres the content between two rules, 
 </div>`}
 />
 
+### Tones
+
+`tone` colors the text and icon: `neutral` (the default), `accent`, `success` or `danger`. Keep the outcome in the words too, since color alone is not announced.
+
+<Preview
+  title="Tones"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-6);max-inline-size:32rem;margin-inline:auto;inline-size:100%">
+  <tp-marker>Build queued</tp-marker>
+  <tp-marker tone="accent">Review requested from Priya</tp-marker>
+  <tp-marker variant="separator" tone="success">All 128 checks passed</tp-marker>
+  <tp-marker variant="border" tone="danger">Deploy to production failed</tp-marker>
+</div>`}
+/>
+
 ### Icons
 
 The `icon` slot takes an Icon or a decorative Spinner. The icon region is hidden from assistive technology, so the text must carry the meaning on its own.

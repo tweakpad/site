@@ -84,6 +84,26 @@ drawer.defaultSnapPoint = 0.5;`}
 
 `onSnapPointChange` receives each proposed snap point as a cancelable event, and `setSnapPoint()` moves the sheet from code.
 
+### Nested drawers
+
+Put a Drawer inside another Drawer's body to open a follow-up step on top of it. The parent stays open and recedes behind the new sheet; closing the child returns to the parent where it left off.
+
+<Preview
+  title="Nested"
+  code={`<tp-drawer label="Workspace members" description="Northwind · 6 members" show-swipe-handle>
+  <tp-button slot="trigger" variant="outline">Manage members</tp-button>
+  <p style="margin:0">Maya Chen, Jonas Weber, Amara Okafor and 3 others have access.</p>
+  <tp-drawer label="Invite a member" description="They get an email with a join link." show-swipe-handle>
+    <tp-button slot="trigger" variant="outline">Invite member</tp-button>
+    <tp-field label="Email">
+      <tp-input type="email" name="invite-email" placeholder="lee@northwind.co"></tp-input>
+    </tp-field>
+    <tp-button slot="close">Send invite</tp-button>
+  </tp-drawer>
+  <tp-button slot="close" variant="outline">Done</tp-button>
+</tp-drawer>`}
+/>
+
 ### Non-dismissible
 
 Set the `dismissible` property to `false` when outside presses, Escape and swipes must not close the drawer, such as a required acknowledgement. The explicit close action still works.

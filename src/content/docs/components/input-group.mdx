@@ -87,6 +87,44 @@ button.addEventListener('click', async () => {
 });`}
 />
 
+### Menus and tooltips in addons
+
+Addon slots also take interactive components, such as a Menu that picks a country code or a Tooltip that explains the expected format. They keep their own focus and keyboard behavior; give an icon-only trigger an `aria-label`.
+
+<Preview
+  title="Interactive addons"
+  align="stretch"
+  code={`<div id="input-group-addons" style="display:grid;gap:var(--tp-space-4);max-inline-size:24rem;margin-inline:auto;inline-size:100%">
+  <tp-field label="Phone number">
+    <tp-input-group>
+      <tp-menu id="input-group-country" slot="inline-start" label="Country code">
+        <tp-button slot="trigger" variant="ghost" size="xs"><span id="input-group-country-label">+1</span><tp-icon slot="icon-end" data-icon="down"></tp-icon></tp-button>
+        <tp-menu-item value="+1">United States +1</tp-menu-item>
+        <tp-menu-item value="+44">United Kingdom +44</tp-menu-item>
+        <tp-menu-item value="+49">Germany +49</tp-menu-item>
+      </tp-menu>
+      <tp-input type="tel" name="phone" autocomplete="tel-national" placeholder="415 555 0132"></tp-input>
+    </tp-input-group>
+  </tp-field>
+  <tp-field label="Project identifier">
+    <tp-input-group>
+      <tp-input mono placeholder="checkout-service"></tp-input>
+      <tp-tooltip slot="inline-end" label="Lowercase letters, numbers and hyphens.">
+        <tp-button slot="trigger" variant="ghost" size="icon-xs" aria-label="Identifier format"><tp-icon slot="icon-start" data-icon="help"></tp-icon></tp-button>
+      </tp-tooltip>
+    </tp-input-group>
+  </tp-field>
+</div>`}
+  script={`const icons = {
+  down: { viewBox: '0 0 24 24', paths: [{ d: 'm6 9 6 6 6-6', strokeWidth: 2 }] },
+  help: { viewBox: '0 0 24 24', paths: [{ d: 'M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01', strokeWidth: 2 }] },
+};
+for (const icon of document.querySelectorAll('#input-group-addons tp-icon')) icon.icon = icons[icon.dataset.icon];
+document.querySelector('#input-group-country').addEventListener('tp-action', (event) => {
+  document.querySelector('#input-group-country-label').textContent = event.detail.value;
+});`}
+/>
+
 ### Block edges
 
 `block-start` and `block-end` span the group above and below the editor. With a Text area they make a composer: a context line on top, a character count and submit actions in the footer.
