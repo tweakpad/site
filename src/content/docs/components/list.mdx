@@ -1,39 +1,39 @@
 ---
-title: List item
-description: One row of media, a title, supporting text and independent actions, grouped into a list when there are several.
-tag: tp-list-item
-parts: [tp-list-item-group, tp-list-item-separator]
+title: List
+description: Rows of media, a title, supporting text and independent actions, as a named list or one row on its own.
+tag: tp-list
+parts: [tp-list-item, tp-list-separator]
 ---
 
 import Preview from '../../../components/Preview.astro';
 
 <Preview
-  title="List item"
+  title="List"
   align="stretch"
-  code={`<tp-list-item-group aria-label="Workspace members" style="max-inline-size:30rem;margin-inline:auto;inline-size:100%">
+  code={`<tp-list aria-label="Workspace members" style="max-inline-size:30rem;margin-inline:auto;inline-size:100%">
   <tp-list-item description="maya.chen@northwind.co">
     <tp-avatar slot="media" size="sm" fallback="MC" alt=""></tp-avatar>
     Maya Chen
     <tp-badge slot="actions" variant="secondary">Owner</tp-badge>
   </tp-list-item>
-  <tp-list-item-separator></tp-list-item-separator>
+  <tp-list-separator></tp-list-separator>
   <tp-list-item description="jonas.weber@northwind.co">
     <tp-avatar slot="media" size="sm" fallback="JW" alt=""></tp-avatar>
     Jonas Weber
     <tp-button slot="actions" variant="outline" size="sm">Manage</tp-button>
   </tp-list-item>
-  <tp-list-item-separator></tp-list-item-separator>
+  <tp-list-separator></tp-list-separator>
   <tp-list-item description="Invited 2 days ago">
     <tp-avatar slot="media" size="sm" fallback="AO" alt=""></tp-avatar>
     Amara Okafor
     <tp-button slot="actions" variant="outline" size="sm">Resend</tp-button>
   </tp-list-item>
-</tp-list-item-group>`}
+</tp-list>`}
 />
 
 ## Usage
 
-A List item is layout only: it has no selection, activation or keyboard model of its own. Controls in the `actions` slot keep their own focus and behavior, so one row can hold several independent actions.
+`tp-list` holds `tp-list-item` rows and `tp-list-separator` dividers. Both are layout only: there is no selection, activation or keyboard model of their own. Controls in the `actions` slot keep their own focus and behavior, so one row can hold several independent actions.
 
 ### Content and actions
 
@@ -81,7 +81,7 @@ The `media` slot takes an Icon, Avatar or image. `media-treatment` tells the row
 <Preview
   title="Media"
   align="stretch"
-  code={`<tp-list-item-group id="list-item-media" aria-label="Recent files" style="max-inline-size:30rem;margin-inline:auto;inline-size:100%">
+  code={`<tp-list id="list-item-media" aria-label="Recent files" style="max-inline-size:30rem;margin-inline:auto;inline-size:100%">
   <tp-list-item variant="outline" media-treatment="icon" description="Edited by Maya · 12 minutes ago">
     <tp-icon slot="media" data-icon="file"></tp-icon>
     Q3 roadmap.md
@@ -95,7 +95,7 @@ The `media` slot takes an Icon, Avatar or image. `media-treatment` tells the row
     Security alert
     <tp-button slot="actions" variant="outline" size="sm">Review</tp-button>
   </tp-list-item>
-</tp-list-item-group>`}
+</tp-list>`}
   script={`const icons = {
   file: { viewBox: '0 0 24 24', paths: [{ d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8ZM14 2v6h6M8 13h8M8 17h8', strokeWidth: 2 }] },
   folder: { viewBox: '0 0 24 24', paths: [{ d: 'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z', strokeWidth: 2 }] },
@@ -104,29 +104,29 @@ The `media` slot takes an Icon, Avatar or image. `media-treatment` tells the row
 for (const icon of document.querySelectorAll('#list-item-media tp-icon')) icon.icon = icons[icon.dataset.icon];`}
 />
 
-### Groups
+### Lists and separators
 
-`tp-list-item-group` gives its rows list and list-item roles and spaces them; name it with `aria-label`. Put `tp-list-item-separator` between rows for a divided list.
+`tp-list` carries the `list` role and its `aria-label` on the host, and its direct `tp-list-item` rows become list items. Name every list. Put `tp-list-separator` between rows for a divided list. A single `tp-list-item` also works on its own, outside a list, as in the examples above.
 
 <Preview
-  title="Grouped with separators"
+  title="Divided list"
   align="stretch"
-  code={`<tp-list-item-group aria-label="Notification channels" style="max-inline-size:30rem;margin-inline:auto;inline-size:100%">
+  code={`<tp-list aria-label="Notification channels" style="max-inline-size:30rem;margin-inline:auto;inline-size:100%">
   <tp-list-item description="Mentions, replies and direct messages.">
     Email
     <tp-switch slot="actions" label="Email notifications" default-checked></tp-switch>
   </tp-list-item>
-  <tp-list-item-separator></tp-list-item-separator>
+  <tp-list-separator></tp-list-separator>
   <tp-list-item description="Only when you are away from the desktop app.">
     Push
     <tp-switch slot="actions" label="Push notifications" default-checked></tp-switch>
   </tp-list-item>
-  <tp-list-item-separator></tp-list-item-separator>
+  <tp-list-separator></tp-list-separator>
   <tp-list-item description="A summary of activity every Monday.">
     Weekly digest
     <tp-switch slot="actions" label="Weekly digest"></tp-switch>
   </tp-list-item>
-</tp-list-item-group>`}
+</tp-list>`}
 />
 
 ### Header and footer

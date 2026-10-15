@@ -4,7 +4,7 @@ description: A list of files uploading in parallel, each with its own progress a
 category: Files
 order: 7
 featured: true
-components: [card, list-item, progress, badge, button]
+components: [card, list, progress, badge, button]
 example: |
   <tp-card style="inline-size:min(100%, 26rem)">
     <h2 slot="header">Uploading 3 files</h2>
@@ -34,4 +34,4 @@ example: |
 
 ## Make it yours
 
-Replace a finished bar with a List item and an open action, and show an error state with a retry for failed files.
+Replace a finished bar with a List row and an open action, and show an error state with a retry for failed files. To let people pick or drop the files too, File upload's upload adapter reports the same per-file progress, retry and cancellation.

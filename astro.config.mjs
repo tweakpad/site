@@ -12,6 +12,10 @@ export default defineConfig({
   site,
   base,
   integrations: [mdx()],
+  // Pages renamed by library releases keep their old address.
+  redirects: {
+    '/docs/components/list-item': '/docs/components/list',
+  },
   vite: {
     plugins: [literalCode()],
     // `@tweakpad/ui/register` defines every element in one chunk. Per-component registration

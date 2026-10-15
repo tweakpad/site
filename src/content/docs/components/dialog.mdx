@@ -62,6 +62,21 @@ The corner Close stays visible unless another named close action is reachable, s
 </tp-dialog>`}
 />
 
+### Backdrop
+
+`backdrop="blur"` keeps the dark fill and blurs the page behind it, which suits a focused task over a busy screen. It changes only the appearance; `modality` still decides whether there is a backdrop at all. Drawer and Alert Dialog accept the same attribute.
+
+<Preview
+  title="Blurred backdrop"
+  code={`<tp-dialog backdrop="blur" label="Share “Q3 planning”" description="Anyone with the link can view.">
+  <tp-button slot="trigger" variant="outline">Share</tp-button>
+  <tp-field label="Link">
+    <tp-input readonly default-value="https://acme.com/d/q3-planning"></tp-input>
+  </tp-field>
+  <tp-button slot="close">Done</tp-button>
+</tp-dialog>`}
+/>
+
 ### Detached triggers
 
 When the opening control lives elsewhere, such as a table row or a menu, register it with `registerTrigger()`. It toggles the dialog and receives focus on close, just like a slotted trigger.

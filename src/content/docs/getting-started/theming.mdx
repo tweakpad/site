@@ -41,6 +41,15 @@ Components read inherited `--tp-*` custom properties. Override a few roles on an
   --tp-radius: 0.75rem;
 }`} />
 
+## Motion
+
+Motion has its own token roles: three durations, `--tp-duration-fast` (200ms) for feedback, `--tp-duration-normal` (280ms) for surfaces and layout moves and `--tp-duration-slow` (560ms) for reveals, and three easings, `--tp-easing-standard` for changes within the page, `--tp-easing-enter` for arrivals and `--tp-easing-exit` for departures. Popups and dialogs open on the enter easing and close on the exit easing. Every finite animation is multiplied by `--tp-motion-scale`, which reduced motion sets to `0`. Override the roles on any subtree to retime everything inside it.
+
+<Code language="css" code={`.calm-region {
+  --tp-duration-normal: 400ms;
+  --tp-easing-enter: cubic-bezier(0.16, 1, 0.3, 1);
+}`} />
+
 ## Density
 
 Spacing, control heights and icon sizes derive from one seed, `--tp-spacing`, and type from the `--tp-text-*` roles. Every preview on this site has a Default and Compact selector that applies a compact seed to that preview; the choice carries across previews and pages.

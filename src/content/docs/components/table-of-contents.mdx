@@ -68,6 +68,38 @@ Activating an item scrolls only the content's container and keeps that item curr
 
 `depth` only indents an item; it is never used for tracking. `label` replaces the default "On this page" title, and a `title` slot accepts richer content. This list follows the article above: scroll it and both lists update.
 
+### Compact
+
+`variant="compact"` draws less attention: one short line per top-level item, with the current one marked. Hovering the lines opens the full list in a card after `open-delay`, and `close-delay` keeps it open briefly after the pointer leaves; the lines are also one Button for keyboard users. `side` is the direction the card grows: `inline-start` for lines on the end edge of the page, `inline-end` for lines on the start edge.
+
+<Preview
+  title="Compact"
+  align="stretch"
+  code={`<tp-scroll-area label="Release notes" style="block-size:18rem">
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 2rem;gap:var(--tp-space-6);padding:var(--tp-space-6);align-items:start">
+    <article>
+      <h3 id="toc-compact-highlights" style="margin-block:0 var(--tp-space-3)">Highlights</h3>
+      <p style="margin-block:0 var(--tp-space-4)">Version 4.2 adds shared workspaces, a faster search index and a new export pipeline. Existing projects upgrade automatically the next time they open.</p>
+      <h3 id="toc-compact-workspaces" style="margin-block:0 var(--tp-space-3)">Shared workspaces</h3>
+      <p style="margin-block:0 var(--tp-space-4)">Invite collaborators to a workspace instead of to each project. Permissions follow the workspace, and owners can still restrict a single project to a smaller group.</p>
+      <h3 id="toc-compact-search" style="margin-block:0 var(--tp-space-3)">Search</h3>
+      <p style="margin-block:0 var(--tp-space-4)">Results now arrive as you type, ranked by recent activity. Filters for owner, type and date can be combined and saved.</p>
+      <h3 id="toc-compact-export" style="margin-block:0 var(--tp-space-3)">Export</h3>
+      <p style="margin-block:0 var(--tp-space-4)">Exports run in the background and notify you when they finish. PDF exports keep links and the document outline.</p>
+      <div style="block-size:10rem"></div>
+    </article>
+    <aside style="position:sticky;top:0">
+      <tp-table-of-contents variant="compact" navigation="scroll" label="In this release">
+        <tp-table-of-contents-item href="#toc-compact-highlights">Highlights</tp-table-of-contents-item>
+        <tp-table-of-contents-item href="#toc-compact-workspaces">Shared workspaces</tp-table-of-contents-item>
+        <tp-table-of-contents-item href="#toc-compact-search">Search</tp-table-of-contents-item>
+        <tp-table-of-contents-item href="#toc-compact-export">Export</tp-table-of-contents-item>
+      </tp-table-of-contents>
+    </aside>
+  </div>
+</tp-scroll-area>`}
+/>
+
 ### Reading line
 
 The reading line defaults to the scroll container's `scroll-padding-block-start`, the same CSS you already use to clear a sticky header for anchor links, so a jump always lands on the item it marks. `activation-offset` overrides it with pixels or a percentage. For busy pages, `scroll-throttle` and `scroll-debounce` reduce how often the current item updates.
