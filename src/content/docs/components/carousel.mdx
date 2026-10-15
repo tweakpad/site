@@ -4,7 +4,6 @@ description: Slotted slides at discrete positions, with buttons, keyboard, swipe
 tag: tp-carousel
 ---
 
-import Code from '../../../components/Code.astro';
 import Preview from '../../../components/Preview.astro';
 
 <Preview
@@ -129,12 +128,28 @@ document.getElementById('carousel-vertical').options = { layout: { itemsPerView:
 
 By default the track slides between items. The `effect` property swaps in a richer transition, built by a factory you import, so pages without one bundle none. `carouselCrossfadeEffect()` fades between slides, `carouselLayeredEffect()` turns media away with perspective, `carouselParallaxEffect()` moves media more slowly than its slide, `carouselFocusEffect()` dims and shrinks slides away from the aligned one, and `carouselShaderEffect()` runs a WebGL transition: `wipe`, `displace`, `chromatic`, `crosswarp` or `glass`.
 
-<Code language="typescript" code={`import { carouselCrossfadeEffect, carouselShaderEffect } from '@tweakpad/ui';
+<Preview
+  title="Crossfade"
+  align="stretch"
+  code={`<tp-carousel id="carousel-crossfade" label="Release highlights" loop style="max-inline-size:32rem;margin-inline:auto">
+  <div style="display:grid;align-content:end;gap:var(--tp-space-1);aspect-ratio:16/9;padding:var(--tp-space-6);border-radius:var(--tp-radius-lg);background:var(--tp-muted)">
+    <strong data-carousel-layer="1" style="font-size:var(--tp-text-xl)">Single sign-on</strong>
+    <span data-carousel-layer="2" style="color:var(--tp-muted-foreground)">SAML and OIDC are now available on every plan.</span>
+  </div>
+  <div style="display:grid;align-content:end;gap:var(--tp-space-1);aspect-ratio:16/9;padding:var(--tp-space-6);border-radius:var(--tp-radius-lg);background:var(--tp-foreground);color:var(--tp-background)">
+    <strong data-carousel-layer="1" style="font-size:var(--tp-text-xl)">Audit log</strong>
+    <span data-carousel-layer="2" style="opacity:.7">Every permission change, kept for 400 days.</span>
+  </div>
+  <div style="display:grid;align-content:end;gap:var(--tp-space-1);aspect-ratio:16/9;padding:var(--tp-space-6);border-radius:var(--tp-radius-lg);background:var(--tp-muted)">
+    <strong data-carousel-layer="1" style="font-size:var(--tp-text-xl)">Faster exports</strong>
+    <span data-carousel-layer="2" style="color:var(--tp-muted-foreground)">Large CSV exports finish up to 5× sooner.</span>
+  </div>
+</tp-carousel>`}
+  script={`import { carouselCrossfadeEffect } from '@tweakpad/ui';
 
-carousel.effect = carouselCrossfadeEffect({ duration: 600 });
-// Shader effects draw each slide's data-carousel-media image, video or canvas.
-carousel.effect = carouselShaderEffect({ variant: 'displace' });
-carousel.effect = null; // back to the sliding track`} />
+await customElements.whenDefined('tp-carousel');
+document.getElementById('carousel-crossfade').effect = carouselCrossfadeEffect({ duration: 600 });`}
+/>
 
 Mark the one image or video per slide that an effect transforms with `data-carousel-media`, and text that should reveal in order with `data-carousel-layer="1"`, `"2"` and so on. Effects follow dragging, play backwards when a navigation reverses and settle instantly under reduced motion; slide semantics and announcements don't change.
 

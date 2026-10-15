@@ -50,6 +50,17 @@ const fullTitle = title === 'Tweakpad UI' ? title : `${title} · Tweakpad UI`;
         }
       } catch {}
     </script>
+    <!--
+      Preview scripts that import from the library wait on this registry; Preview.astro fills it
+      from the site bundle. Classic inline scripts run before any module, so it always exists first.
+    -->
+    <script is:inline>
+      window.__tpPreviewModules = (() => {
+        let resolve;
+        const ready = new Promise((done) => (resolve = done));
+        return { ready, resolve };
+      })();
+    </script>
   </head>
   <body class:list={{ immersive }}>
     <a class="skip-link" href="#main">Skip to content</a>
