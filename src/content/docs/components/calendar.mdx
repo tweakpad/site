@@ -78,6 +78,42 @@ calendar.disabledDates = (date) => [0, 6].includes(new Date(date + 'T00:00').get
 
 Disabled and unavailable dates are skipped by keyboard movement and cannot be selected; unavailable ones carry a separate `data-unavailable` marker for styling.
 
+### Custom day content
+
+<Preview
+  title="Nightly prices and booked dates"
+  code={`<tp-card section-colors="off" style="inline-size:fit-content">
+  <tp-calendar
+    id="calendar-prices"
+    label="Stay"
+    selection-mode="range"
+    today="2026-12-01"
+    default-value="2026-12-08/2026-12-11"
+    style="--tp-calendar-cell-size:calc(var(--tp-spacing) * 14)"
+  ></tp-calendar>
+</tp-card>`}
+  script={`import { html } from 'lit';
+
+await customElements.whenDefined('tp-calendar');
+const calendar = document.getElementById('calendar-prices');
+const booked = new Set(['2026-12-17', '2026-12-18', '2026-12-19', '2026-12-20']);
+const weekend = (date) => [5, 6].includes(new Date(date + 'T00:00').getDay());
+calendar.disabledDates = booked;
+calendar.dayModifiers = { booked };
+calendar.messages = {
+  day: (day) => (day.modifiers.booked ? day.label + ', booked' : day.label),
+};
+calendar.renderDay = (day) => {
+  const number = Number(day.date.slice(8));
+  if (day.modifiers.booked) return html\`<s>\${number}</s>\`;
+  if (day.outside) return undefined;
+  const price = weekend(day.date) ? '$180' : '$140';
+  return html\`<span style="display:grid;line-height:1.1">\${number}<small style="font-size:var(--tp-text-xs);opacity:0.7">\${price}</small></span>\`;
+};`}
+/>
+
+`renderDay` puts your own content inside each day button, here a nightly rate, while the button keeps its date name, focus and selection. Keep that content passive. `dayModifiers` tags dates with a `data-booked` marker and `day.modifiers.booked`, so the struck-through days can also say "booked" to screen readers through `messages.day`. `--tp-calendar-cell-size` makes room for the extra line.
+
 ### Month and year selectors
 
 `caption-layout="dropdown"` replaces the caption text with native selects, which helps when the date may be years away, such as a birth date. Use `dropdown-months` or `dropdown-years` for one selector.
@@ -113,6 +149,62 @@ Disabled and unavailable dates are skipped by keyboard movement and cannot be se
 </tp-card>`}
 />
 
+### Presets
+
+<Preview
+  title="Quick picks"
+  code={`<tp-card id="calendar-presets" size="sm" section-colors="off" style="inline-size:fit-content;max-inline-size:20rem">
+  <tp-calendar label="Follow-up date" today="2026-02-12" value="2026-02-12" displayed-month="2026-02-01" fixed-weeks></tp-calendar>
+  <div slot="footer" style="display:flex;flex-wrap:wrap;gap:var(--tp-space-2)">
+    <tp-button variant="outline" size="sm" data-days="0" style="flex:1 0 auto">Today</tp-button>
+    <tp-button variant="outline" size="sm" data-days="1" style="flex:1 0 auto">Tomorrow</tp-button>
+    <tp-button variant="outline" size="sm" data-days="7" style="flex:1 0 auto">Next week</tp-button>
+    <tp-button variant="outline" size="sm" data-days="30" style="flex:1 0 auto">In 30 days</tp-button>
+  </div>
+</tp-card>`}
+  script={`await customElements.whenDefined('tp-calendar');
+const card = document.getElementById('calendar-presets');
+const calendar = card.querySelector('tp-calendar');
+calendar.addEventListener('tp-value-change', (event) => {
+  if (!event.defaultPrevented) calendar.value = event.detail.value;
+});
+calendar.addEventListener('tp-displayed-month-change', (event) => {
+  if (!event.defaultPrevented) calendar.displayedMonth = event.detail.value;
+});
+for (const button of card.querySelectorAll('[data-days]')) {
+  button.addEventListener('click', () => {
+    const date = new Date(calendar.today + 'T00:00');
+    date.setDate(date.getDate() + Number(button.dataset.days));
+    const iso = [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+      .map((part) => String(part).padStart(2, '0'))
+      .join('-');
+    calendar.value = iso;
+    calendar.displayedMonth = iso.slice(0, 8) + '01';
+  });
+}`}
+/>
+
+Shortcut buttons can drive a controlled Calendar: set `value` to pick the date and `displayed-month` to bring its month into view. Because both are controlled, the listeners accept the reader's own clicks and month changes too. `fixed-weeks` keeps the card from changing height between months.
+
+### Date and time
+
+<Preview
+  title="Date with start and end times"
+  code={`<tp-card size="sm" section-colors="off" style="inline-size:fit-content">
+  <tp-calendar label="Meeting date" today="2026-06-08" default-value="2026-06-12"></tp-calendar>
+  <div slot="footer" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--tp-space-3);inline-size:100%">
+    <tp-field label="Starts">
+      <tp-input type="time" default-value="10:30"></tp-input>
+    </tp-field>
+    <tp-field label="Ends">
+      <tp-input type="time" default-value="11:15"></tp-input>
+    </tp-field>
+  </div>
+</tp-card>`}
+/>
+
+Calendar values are dates only. Collect times in labelled time inputs beside it and combine the two in your own code.
+
 ### Locale
 
 `locale` takes a BCP 47 tag and formats the caption, weekday names, day numbers and accessible date names through `Intl`. Without it the Calendar follows the document language, then the browser. The first day of the week also comes from the locale, Monday in French and Sunday in Brazilian Portuguese, unless `week-starts-on` sets it.
@@ -135,6 +227,62 @@ document.getElementById('calendar-locale-fr').messages = {
 />
 
 The value stays a `YYYY-MM-DD` string in every locale. `label` names the group; the remaining control names and validation messages come from the `messages` property, which falls back to English. The French calendar above names its navigation buttons that way.
+
+<Preview
+  title="Arabic, right to left"
+  code={`<div dir="rtl" lang="ar">
+  <tp-card section-colors="off" style="inline-size:fit-content">
+    <tp-calendar id="calendar-rtl" label="تاريخ الوصول" locale="ar" selection-mode="range" today="2026-06-08" default-value="2026-06-10/2026-06-14"></tp-calendar>
+  </tp-card>
+</div>`}
+  script={`await customElements.whenDefined('tp-calendar');
+document.getElementById('calendar-rtl').messages = {
+  previous: (_month, caption) => 'الشهر السابق، ' + caption,
+  next: (_month, caption) => 'الشهر التالي، ' + caption,
+};`}
+/>
+
+Inside `dir="rtl"` the grid, the navigation chevrons, the arrow keys and the rounded ends of a range all flip. The locale only formats the text; dates stay Gregorian `YYYY-MM-DD` values.
+
+### Date picker
+
+<Preview
+  title="In a popover"
+  code={`<tp-field label="Due date" style="inline-size:100%;max-inline-size:18rem">
+  <tp-popover id="calendar-picker" label="Choose a due date" placement="bottom start">
+    <tp-button id="calendar-picker-trigger" slot="trigger" variant="outline" style="display:block">
+      <svg slot="icon-start" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <tp-time id="calendar-picker-label" mode="absolute" preset="date-long" tooltip="false">Pick a date</tp-time>
+    </tp-button>
+    <tp-calendar id="calendar-picker-calendar" label="Due date" today="2026-06-08"></tp-calendar>
+  </tp-popover>
+</tp-field>`}
+  script={`await customElements.whenDefined('tp-popover');
+const popover = document.getElementById('calendar-picker');
+const calendar = document.getElementById('calendar-picker-calendar');
+const trigger = document.getElementById('calendar-picker-trigger');
+const setTrigger = (empty) => {
+  trigger.partContracts = {
+    button: {
+      styleHook: {
+        'justify-content': 'flex-start',
+        'font-weight': 'var(--tp-font-normal)',
+        ...(empty ? { color: 'var(--tp-muted-foreground)' } : {}),
+      },
+    },
+  };
+};
+setTrigger(true);
+popover.initialFocus = calendar;
+calendar.addEventListener('tp-value-change', (event) => {
+  if (event.defaultPrevented) return;
+  setTrigger(!event.detail.value);
+  document.getElementById('calendar-picker-label').datetime = event.detail.value ?? undefined;
+  popover.close();
+});`}
+/>
+
+A Popover supplies the floating surface and returns focus to the trigger; the Calendar supplies the date. Close the popover once a date is picked. A `tp-time` label formats the chosen date for the reader's locale and shows its own text, "Pick a date", until there is one.
 
 ### Forms and events
 

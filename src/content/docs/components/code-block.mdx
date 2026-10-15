@@ -137,4 +137,27 @@ The built-in highlighter covers TypeScript, JavaScript, HTML, CSS, JSON, Bash an
 </tp-code-block>`}
 />
 
+<Preview
+  title="Token theme"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-4);max-inline-size:40rem;margin-inline:auto;--tp-syntax-keyword:light-dark(#6d28d9,#c4b5fd);--tp-syntax-string:light-dark(#047857,#6ee7b7);--tp-syntax-function:light-dark(#1d4ed8,#93c5fd);--tp-syntax-comment:var(--tp-muted-foreground)">
+  <tp-code-block language="typescript" label="webhooks.ts">
+    // Verify the signature before trusting the payload.
+    export async function handleWebhook(request: Request) {
+      const signature = request.headers.get('x-signature');
+      if (!signature) return new Response('Missing signature', { status: 401 });
+      return processEvent(await request.json());
+    }
+  </tp-code-block>
+  <tp-code-block language="diff" label="cache.diff">
+    @@ -12,3 +12,3 @@
+    -const KEY_TTL = 60 * 60 * 1000;
+    +const KEY_TTL = 5 * 60 * 1000;
+     export const verifier = createVerifier({ ttl: KEY_TTL });
+  </tp-code-block>
+</div>`}
+/>
+
+The wrapper above sets four `--tp-syntax-*` roles, and both blocks inside pick them up, light and dark alike. `language="diff"` colors a unified patch as written; use `added-lines` and `removed-lines` instead when you want to mark changes in highlighted source.
+
 For full grammar coverage, assign a Shiki-based highlighter from `@tweakpad/ui/code` to the `highlighter` property. The block renders plain text first and swaps in colors without shifting layout.

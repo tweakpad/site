@@ -38,6 +38,15 @@ The Card owns the surface, header, content and footer layout; everything you slo
 </tp-card>`}
 />
 
+Every slot is optional. Without a header or footer, the card is a single padded surface for a short note or summary.
+
+<Preview
+  title="Content only"
+  code={`<tp-card style="inline-size:100%;max-inline-size:28rem">
+  <p style="margin:0">Your weekly report is ready: 18 tasks closed, 4 opened, and the Q3 launch is on track.</p>
+</tp-card>`}
+/>
+
 ### Borders and section colors
 
 `borders` and `section-colors` are independent. Turn section colors off for one uniform fill, or borders off when the card sits on a contrasting surface.
