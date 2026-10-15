@@ -70,6 +70,20 @@ Buttons and Toggles can join beside the editors, for example a lock between widt
 </div>`}
 />
 
+### Member states
+
+Each editor keeps its own state inside the group. A read-only or disabled editor shows its usual treatment while its neighbours stay editable.
+
+<Preview
+  title="Read-only and disabled"
+  align="stretch"
+  code={`<tp-field-group label="Retry policy" style="max-inline-size:24rem">
+  <tp-input-group><tp-input label="Timeout" default-value="30" readonly></tp-input><span slot="suffix">s</span></tp-input-group>
+  <tp-input-group><tp-input label="Retries" default-value="3"></tp-input></tp-input-group>
+  <tp-input-group><tp-input label="Backoff" default-value="2" disabled></tp-input><span slot="suffix">×</span></tp-input-group>
+</tp-field-group>`}
+/>
+
 ### Orientation
 
 `orientation="vertical"` stacks the editors, stretches them to the widest one and joins their block edges. Use it for long tuples that would become unreadable in one row.

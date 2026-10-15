@@ -208,4 +208,21 @@ form.onFormSubmit = (values, { data }) => {
 form.addEventListener('tp-reset', () => { output.textContent = ''; });`}
 />
 
+Here the server check runs right after the files are added: `rejectFile()` turns the duplicate into an error item with your message, and it blocks submission until it is removed.
+
+<Preview
+  title="Server rejection"
+  align="stretch"
+  code={`<tp-file-upload id="file-upload-server" name="invoices" multiple accept="application/pdf" size="sm" style="inline-size:100%;max-inline-size:30rem;margin-inline:auto"></tp-file-upload>`}
+  script={`await customElements.whenDefined('tp-file-upload');
+const upload = document.querySelector('#file-upload-server');
+const invoice = (name) => new File(['%PDF-1.7'], name, { type: 'application/pdf' });
+const { accepted } = await upload.addFiles([invoice('INV-2048.pdf'), invoice('INV-2031.pdf')]);
+// A simulated server already holds INV-2031 and refuses it a moment later.
+setTimeout(() => {
+  const duplicate = accepted.find((file) => file.name === 'INV-2031.pdf');
+  if (upload.isConnected && duplicate) upload.rejectFile(duplicate, 'INV-2031 was already submitted on Oct 2.');
+}, 800);`}
+/>
+
 `readonly` keeps the control focusable and its files submitted, but refuses changes and hides Remove; `disabled` refuses every change and submits nothing.

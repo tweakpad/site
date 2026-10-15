@@ -77,18 +77,51 @@ document.querySelector('#drag-drop-list-xs').defaultValue = [
 
 ### Activation and swapping
 
-By default only the handle starts a pointer drag, which keeps text in the row selectable. `activation="item"` lets the whole row start one, after a short delay or movement so clicks still work. `reorder-mode="swap"` exchanges two items instead of shifting the ones between them.
+By default only the handle starts a pointer drag, which keeps text in the row selectable. `activation="item"` lets the whole row start one, after a short delay or movement so clicks still work. `reorder-mode="swap"` exchanges two items instead of shifting the ones between them. The `feedback` property picks the drag feedback; `'clone'`, used here, leaves a copy in the row's layout position while the item moves.
 
 <Preview
   title="Whole-row drag with swap"
   align="stretch"
   code={`<tp-drag-drop-list id="drag-drop-list-swap" label="Dashboard widgets" variant="subdued" activation="item" reorder-mode="swap" style="max-inline-size:26rem;margin-inline:auto;inline-size:100%"></tp-drag-drop-list>`}
-  script={`document.querySelector('#drag-drop-list-swap').defaultValue = [
+  script={`const list = document.querySelector('#drag-drop-list-swap');
+list.feedback = 'clone';
+list.defaultValue = [
   { id: 'revenue', label: 'Monthly revenue' },
   { id: 'signups', label: 'New signups' },
   { id: 'churn', label: 'Churn rate' },
   { id: 'tickets', label: 'Open support tickets' },
 ];`}
+/>
+
+### Rich rows
+
+`renderItem` returns the content of each row from its item and a context, so rows can carry Badges and their own actions; a control in the `actions` slot stays separately operable. The context's `preview` flag marks the copy shown while dragging. `renderOverlay` draws the row that follows the pointer.
+
+<Preview
+  title="Custom rows and overlay"
+  align="stretch"
+  code={`<div id="drag-drop-list-rich" style="display:grid;gap:var(--tp-space-3);max-inline-size:30rem;margin-inline:auto;inline-size:100%">
+  <output id="drag-drop-list-rich-output" style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">Drag to reorder, or open a release.</output>
+</div>`}
+  script={`import { html } from 'lit';
+
+// Configure the list before it first renders, then mount it.
+const list = document.createElement('tp-drag-drop-list');
+list.label = 'Release queue';
+list.variant = 'outline';
+const output = document.querySelector('#drag-drop-list-rich-output');
+const tone = { Ready: 'success', 'In review': 'secondary', Blocked: 'destructive' };
+list.renderItem = (item, context) => html\`<span>\${item.label} <tp-badge variant=\${tone[item.status]}>\${item.status}</tp-badge></span>
+  <tp-button slot="actions" size="sm" variant="outline" .disabled=\${context.preview}
+    @click=\${() => (output.textContent = 'Opened ' + item.label)}>Open</tp-button>\`;
+list.renderOverlay = (item) => html\`<tp-list-item variant="outline">\${item.label}
+  <tp-badge slot="actions" variant="outline">Moving</tp-badge></tp-list-item>\`;
+list.defaultValue = [
+  { id: 'v2-4', label: 'v2.4 Billing', status: 'Ready' },
+  { id: 'v2-5', label: 'v2.5 Audit log', status: 'In review' },
+  { id: 'v2-6', label: 'v2.6 SSO groups', status: 'Blocked' },
+];
+document.querySelector('#drag-drop-list-rich').prepend(list);`}
 />
 
 ### Horizontal

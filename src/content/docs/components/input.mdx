@@ -55,6 +55,24 @@ Labels, descriptions and errors belong to `tp-field`; the Input owns the native 
 </div>`}
 />
 
+### Controlled value
+
+`default-value` leaves the text to the Input. Supply `value` instead, before the first render, and every edit becomes a proposal: `onValueChange` receives it, and what you assign back to `value` is what commits. Here the owner rewrites each edit into a URL-safe handle.
+
+<Preview
+  title="Owner-shaped value"
+  align="stretch"
+  code={`<tp-field label="Workspace handle" description="Lowercase letters, numbers and dashes." style="max-inline-size:22rem">
+  <tp-input id="input-controlled" mono value="northwind-studio"></tp-input>
+</tp-field>`}
+  script={`const input = document.querySelector('#input-controlled');
+input.onValueChange = (event) => {
+  input.value = event.detail.value.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+};`}
+/>
+
+Without an assignment the proposal is rejected and the committed text stays.
+
 ### Validation
 
 Native constraints such as `required`, `pattern` and `minlength` validate through the owning Field, which shows the error and wires `aria-describedby`. `error` and `invalid` set an explicit error from your own validation.
