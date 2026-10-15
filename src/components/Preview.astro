@@ -1,12 +1,15 @@
 ---
 /**
  * A live example: the markup renders as-is on a canvas, and the same markup is the copyable code.
- * Each preview has a Default/Compact density selector (shared by every preview on the page) and a
- * Code toggle that reveals the source in the library's Code block, with its copy action.
+ * Each preview has a Default/Compact density selector (shared by every preview on the page), a
+ * Refresh button that remounts the demo in its initial state, and a Code toggle that reveals the
+ * source in the library's Code block, with its copy action.
  *
  * `script` is for behavior markup can't express (opening a dialog, feeding chart data, raising a
  * toast). It runs as a module after the markup, and the copyable code shows it in a script tag.
  * Scripts on one page share the document, so they select their elements by page-unique ids.
+ * Refresh runs the script again against the fresh markup, so a script that listens on `document`
+ * or `window` ignores events once its own elements are disconnected.
  */
 interface Props {
   code: string;
@@ -48,20 +51,32 @@ const source = behavior
         <tp-toggle value="default">Default</tp-toggle>
         <tp-toggle value="compact">Compact</tp-toggle>
       </tp-toggle-group>
+      <tp-tooltip>
+        <tp-button
+          slot="trigger"
+          data-refresh-control
+          size="icon-sm"
+          variant="outline"
+          aria-label="Refresh preview"
+        />
+        Restart from the initial state
+      </tp-tooltip>
       <tp-toggle data-code-control size="sm" variant="outline" default-pressed={showCode || undefined}>
         Code
       </tp-toggle>
     </div>
   </div>
   <div class="preview__canvas" data-align={align} set:html={markup} />
-  {behavior && <script is:inline type="module" set:html={behavior} />}
+  <template data-source set:html={markup} />
+  {behavior && <script is:inline type="module" data-behavior set:html={behavior} />}
   <div class="preview__code" hidden={!showCode} data-code>
     <tp-code-block language={language} copyable>{source}</tp-code-block>
   </div>
 </figure>
 
 <script>
-  import type { TpToggle, TpToggleGroup } from '@tweakpad/ui';
+  import type { TpButton, TpToggle, TpToggleGroup } from '@tweakpad/ui';
+  import { refreshIcon } from '@tweakpad/ui/icons/refresh';
 
   type Density = 'default' | 'compact';
   const STORAGE_KEY = 'tp-site-density';
@@ -90,7 +105,28 @@ const source = behavior
   await Promise.all([
     customElements.whenDefined('tp-toggle-group'),
     customElements.whenDefined('tp-toggle'),
+    customElements.whenDefined('tp-button'),
   ]);
+
+  /**
+   * Puts the demo back as the page first rendered it: the markup is replaced from its template,
+   * which disconnects the old elements (closing their popups and timers), and the behavior script
+   * runs again as a new module against the new elements.
+   */
+  function refresh(preview: HTMLElement) {
+    const canvas = preview.querySelector<HTMLElement>('.preview__canvas');
+    const source = preview.querySelector<HTMLTemplateElement>('template[data-source]');
+    if (!canvas || !source) return;
+    canvas.replaceChildren(source.content.cloneNode(true));
+
+    const behavior = preview.querySelector<HTMLScriptElement>('script[data-behavior]');
+    if (!behavior) return;
+    const rerun = document.createElement('script');
+    rerun.type = 'module';
+    rerun.dataset.behavior = '';
+    rerun.textContent = behavior.textContent;
+    behavior.replaceWith(rerun);
+  }
 
   for (const preview of document.querySelectorAll<HTMLElement>('[data-preview]')) {
     // Demo forms validate and show their states, but never leave the page.
@@ -107,6 +143,12 @@ const source = behavior
       }
       queueMicrotask(() => applyDensity(next));
     });
+
+    const refreshButton = preview.querySelector<TpButton>('[data-refresh-control]');
+    if (refreshButton) {
+      refreshButton.icon = refreshIcon;
+      refreshButton.addEventListener('click', () => refresh(preview));
+    }
 
     const codeToggle = preview.querySelector<TpToggle>('[data-code-control]');
     const code = preview.querySelector<HTMLElement>('[data-code]');
