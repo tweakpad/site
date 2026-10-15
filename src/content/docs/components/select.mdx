@@ -176,6 +176,57 @@ select.items = [
 ];`}
 />
 
+### Large lists
+
+`virtualized` mounts only the rows near the visible part of the list while keeping its full scroll height, so hundreds or thousands of `items` open instantly. Keyboard navigation and typeahead still cover every option.
+
+<Preview
+  title="Virtualized time zones"
+  align="stretch"
+  code={`<tp-field label="Time zone" style="max-inline-size:20rem">
+  <tp-select id="select-virtualized" name="time-zone" searchable virtualized placeholder="Search time zones"></tp-select>
+</tp-field>`}
+  script={`const select = document.querySelector('#select-virtualized');
+select.items = Intl.supportedValuesOf('timeZone').map((zone) => ({
+  value: zone,
+  label: zone.replaceAll('_', ' '),
+}));`}
+/>
+
+### Remote search
+
+A `source` supplies the options for each query, such as a server endpoint. A query waits `search-delay` milliseconds after the last keystroke, a newer query aborts the previous one through `signal`, and the list shows a loading row meanwhile.
+
+<Preview
+  title="Search source"
+  align="stretch"
+  code={`<tp-field label="Customer" style="max-inline-size:20rem">
+  <tp-select id="select-source" name="customer" searchable search-delay="250" placeholder="Search customers"></tp-select>
+</tp-field>`}
+  script={`const customers = [
+  'Acme Logistics', 'Birchwood Dental', 'Cobalt Robotics', 'Delta Freight', 'Evergreen Grocers',
+  'Fjord Outfitters', 'Granite Legal', 'Harbor Coffee', 'Ironclad Security', 'Juniper Health',
+  'Keystone Builders', 'Lumen Studios', 'Meridian Travel', 'Northwind Traders', 'Orchard Bakery',
+];
+const select = document.querySelector('#select-source');
+select.source = {
+  // Stands in for fetch('/api/customers?q=' + query, { signal }).
+  search: (query, { signal }) =>
+    new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        const needle = query.trim().toLowerCase();
+        resolve(customers
+          .filter((name) => name.toLowerCase().includes(needle))
+          .map((name) => ({ value: name.toLowerCase().replaceAll(' ', '-'), label: name })));
+      }, 600);
+      signal.addEventListener('abort', () => {
+        clearTimeout(timer);
+        reject(signal.reason);
+      });
+    }),
+};`}
+/>
+
 ### Value changes
 
 `tp-value-change` reports each proposed selection with its `reason`, and is cancelable. Read the committed value from `value`.

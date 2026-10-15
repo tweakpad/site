@@ -78,6 +78,23 @@ Alignment alone does not identify a sender. Give every row an accessible name th
 </div>`}
 />
 
+### Delivery status
+
+`pending` shows a Sending status in the footer, and `failed` shows Failed to send, announced as an alert. Your application sets and clears both. The status is the footer's fallback, so it appears only while the `footer` slot is empty.
+
+<Preview
+  title="Sending and failed"
+  align="stretch"
+  code={`<div style="display:flex;flex-direction:column;gap:var(--tp-space-6);max-inline-size:26rem;margin-inline:auto">
+  <tp-message align="end" aria-label="You" pending>
+    <tp-bubble align="end" variant="default">Can we move the design review to 3pm?</tp-bubble>
+  </tp-message>
+  <tp-message align="end" aria-label="You" failed>
+    <tp-bubble align="end" variant="default">Uploading the updated mockups now.</tp-bubble>
+  </tp-message>
+</div>`}
+/>
+
 ### Group
 
 `tp-message-group` stacks consecutive messages from one sender with tighter spacing. An empty avatar slot keeps the column on earlier rows so the bubbles line up under the final avatar.
