@@ -13,32 +13,67 @@ const { title, description, headings = [] } = Astro.props;
 const groups = await docsByGroup();
 const current = Astro.url.pathname.replace(/\/$/, '');
 const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const currentGroup = groups.find((group) =>
+  group.entries.some((entry) => url(`/docs/${entry.id}`) === current),
+);
 ---
 
 <BaseLayout title={title} description={description}>
   <div class:list={['container', 'docs-shell', { 'docs-shell--toc': toc.length > 0 }]}>
     <aside class="sidebar">
-      <nav aria-label="Documentation">
-        {
-          groups.map((group) => (
-            <section>
-              <h2>{group.label}</h2>
-              <ul>
-                {group.entries.map((entry) => {
-                  const href = url(`/docs/${entry.id}`);
-                  return (
-                    <li>
-                      <a href={href} aria-current={current === href ? 'page' : undefined}>
-                        {entry.data.title}
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          ))
-        }
-      </nav>
+      <!--
+        One nav for every width. On phones it folds into a disclosure that names the current page,
+        so the long component list doesn't push the page below the fold. It starts open, which is
+        also the no-script fallback; the script below closes it on narrow screens before paint and
+        keeps it open on wide ones, where the summary is hidden.
+      -->
+      <details class="sidebar__disclosure" open>
+        <summary class="sidebar__summary">
+          <span class="sidebar__summary-label">{currentGroup?.label ?? 'Docs'}</span>
+          <span class="sidebar__summary-current">{title}</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </summary>
+        <nav aria-label="Documentation">
+          {
+            groups.map((group) => (
+              <section>
+                <h2>{group.label}</h2>
+                <ul>
+                  {group.entries.map((entry) => {
+                    const href = url(`/docs/${entry.id}`);
+                    return (
+                      <li>
+                        <a href={href} aria-current={current === href ? 'page' : undefined}>
+                          {entry.data.title}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))
+          }
+        </nav>
+      </details>
+      <script is:inline>
+        (() => {
+          const nav = document.currentScript?.previousElementSibling;
+          if (!(nav instanceof HTMLDetailsElement)) return;
+          const narrow = window.matchMedia('(width < 48rem)');
+          const sync = () => (nav.open = !narrow.matches);
+          sync();
+          narrow.addEventListener('change', sync);
+          // Opening the menu on a phone shows where the current page sits in the list.
+          nav.addEventListener('toggle', () => {
+            const list = nav.querySelector('nav');
+            const link = nav.querySelector('[aria-current="page"]');
+            if (!nav.open || !narrow.matches || !list || !link) return;
+            list.scrollTop = link.offsetTop - list.offsetTop - list.clientHeight / 2;
+          });
+        })();
+      </script>
     </aside>
     <article class="docs-main">
       <slot />
