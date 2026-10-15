@@ -78,4 +78,48 @@ The default slot takes text plus inline marks such as an icon or a Spinner. Keep
 </div>`}
 />
 
-Write counts with their noun, like "12 unread", rather than a bare number. A Badge inside a Button or link stays passive, so the composition keeps one interactive target. For a clickable or removable label, use Button or Toggle instead.
+Write counts with their noun, like "12 unread", rather than a bare number. A Badge inside a Button or link stays passive, so the composition keeps one interactive target.
+
+<Preview
+  title="Counts in buttons"
+  code={`<tp-button variant="outline">Inbox <tp-badge variant="secondary">8</tp-badge></tp-button>
+<tp-button variant="ghost">Pull requests <tp-badge variant="outline">3 open</tp-badge></tp-button>`}
+/>
+
+A bare number is fine here because the button text supplies the noun. The button owns the action and its accessible name includes the count.
+
+### Buttons and links
+
+<Preview
+  title="Interactive badges"
+  code={`<div id="badge-filters" style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--tp-space-4);padding-block:var(--tp-space-2)">
+  <tp-badge interactive variant="secondary" data-filter="open">Open · 12</tp-badge>
+  <tp-badge interactive variant="outline" data-filter="mine">Assigned to me · 4</tp-badge>
+  <tp-badge interactive variant="outline" data-filter="archived" disabled>Archived · 0</tp-badge>
+  <tp-badge interactive variant="link" data-link>Release notes</tp-badge>
+</div>`}
+  script={`import { html } from 'lit';
+
+await customElements.whenDefined('tp-badge');
+const asButton = {
+  badge: {
+    renderDelegate: ({ state, bind, content }) =>
+      html\`<button type="button" ?disabled=\${state.disabled} \${bind}>\${content}</button>\`,
+  },
+};
+const asLink = {
+  badge: {
+    renderDelegate: ({ bind, content }) => html\`<a href="#buttons-and-links" \${bind}>\${content}</a>\`,
+  },
+};
+for (const badge of document.querySelectorAll('#badge-filters tp-badge')) {
+  badge.partContracts = badge.hasAttribute('data-link') ? asLink : asButton;
+  if (badge.dataset.filter) {
+    badge.addEventListener('click', () => {
+      badge.variant = badge.variant === 'secondary' ? 'outline' : 'secondary';
+    });
+  }
+}`}
+/>
+
+`interactive` declares that a badge acts, and `partContracts` supplies the native element that does: a `button` for filter chips, an `a` for a link. Keep `bind` on that element and render `content` inside it. The pill keeps its size while its pointer target grows to the minimum, so leave room between interactive badges. The `link` variant alone never navigates.

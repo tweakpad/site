@@ -96,6 +96,71 @@ document.querySelector('#toast-promise-trigger').addEventListener('click', () =>
 });`}
 />
 
+### Anchored to a control
+
+`positionerProperties` pins a notification to the element that caused it instead of the stack, which suits short confirmations such as a copied link. `anchor` takes the element; `side` and `showArrow` place it.
+
+<Preview
+  title="Anchored"
+  code={`<tp-button id="toast-anchor-trigger" variant="outline">Copy invite link</tp-button>
+<tp-toast id="toast-anchor"></tp-toast>`}
+  script={`const toaster = document.querySelector('#toast-anchor');
+const button = document.querySelector('#toast-anchor-trigger');
+button.addEventListener('click', () => {
+  toaster.add({
+    identifier: 'invite-link',
+    title: 'Invite link copied',
+    timeout: 1500,
+    positionerProperties: { anchor: button, side: 'top', sideOffset: 8, showArrow: true },
+  });
+});`}
+/>
+
+A fixed `identifier` updates the same notification on repeated presses instead of stacking copies. Use a separate `tp-toast` for anchored notifications when your stacked ones follow a different position or limit.
+
+### A shared manager
+
+`createToastManager()` from `@tweakpad/ui` creates the queue on its own, so any module can raise notifications without a reference to the element. Hand it to the viewport through `toastManager`, usually once in the app shell.
+
+<Preview
+  title="Manager"
+  code={`<div style="display:flex;flex-wrap:wrap;gap:var(--tp-space-2);justify-content:center">
+  <tp-button id="toast-manager-sync" variant="outline">Sync calendar</tp-button>
+  <tp-button id="toast-manager-clear" variant="ghost">Dismiss all</tp-button>
+</div>
+<tp-toast id="toast-manager" label="Calendar notifications"></tp-toast>`}
+  script={`import { createToastManager } from '@tweakpad/ui';
+
+const notifications = createToastManager({ timeout: 4000 });
+document.querySelector('#toast-manager').toastManager = notifications;
+
+// Elsewhere in the app, only the manager is needed.
+let synced = 0;
+document.querySelector('#toast-manager-sync').addEventListener('click', () => {
+  synced += 3;
+  notifications.add({
+    title: 'Calendar synced',
+    description: \`\${synced} events imported from Google Calendar.\`,
+    type: 'success',
+  });
+});
+document.querySelector('#toast-manager-clear').addEventListener('click', () => notifications.close());`}
+/>
+
+`close()` without an identifier dismisses every notification in the queue.
+
+### Declarative notification
+
+A `tp-toast` with `open` shows its own content as one notification, with `title` as the heading. `setOpen()` shows or hides it from code, and `duration="persistent"` keeps it until dismissed.
+
+<Preview
+  title="Host content"
+  code={`<tp-button id="toast-content-trigger" variant="outline">Save draft</tp-button>
+<tp-toast id="toast-content" duration="persistent" title="Draft saved">Your post will stay here until you publish it.</tp-toast>`}
+  script={`const toaster = document.querySelector('#toast-content');
+document.querySelector('#toast-content-trigger').addEventListener('click', () => toaster.setOpen(true));`}
+/>
+
 ### Position and lifetime
 
 `position` places the stack in one of six logical positions. `timeout` sets the default lifetime in milliseconds (`0` keeps notifications until dismissed), and `limit` caps how many stay visible; older ones wait behind the newest.

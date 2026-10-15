@@ -49,7 +49,7 @@ Both actions are disabled while there is no code. The `copy()`, `download()`, `t
 
 ### Live value
 
-Assign `value` as the source changes and the code re-encodes. `status` is `empty`, `encoded` or `error`, reflected as `data-status`, and the tile keeps its size while empty.
+Assign `value` as the source changes and the code re-encodes. `status` is `empty`, `encoded` or `error`, reflected as `data-status`, and the tile keeps its size while empty. The button here calls `download()` with a larger size of its own for printing.
 
 <Preview
   title="Live value"
@@ -58,6 +58,7 @@ Assign `value` as the source changes and the code re-encodes. `status` is `empty
     <tp-input default-value="Northwind Guest"></tp-input>
   </tp-field>
   <tp-qr-code size="lg" error-correction="Q" label="Scan to join the guest Wi-Fi"></tp-qr-code>
+  <tp-button variant="outline" size="sm" data-download>Download print-ready PNG</tp-button>
 </div>`}
   script={`const root = document.getElementById('qr-code-live');
 const input = root.querySelector('tp-input');
@@ -67,6 +68,9 @@ await customElements.whenDefined('tp-input');
 code.value = encode(input.value);
 input.addEventListener('tp-value-change', (event) => {
   code.value = String(event.detail.value ?? '').trim() ? encode(event.detail.value) : '';
+});
+root.querySelector('[data-download]').addEventListener('click', () => {
+  code.download('png', { size: 2048, filename: 'guest-wifi' });
 });`}
 />
 

@@ -280,3 +280,329 @@ questionnaire.addEventListener('tp-submit', (event) => {
   output.textContent = 'Submitted: ' + JSON.stringify(event.detail.answers);
 });`}
 />
+
+### Controlled checkpoint
+
+Set `item` and accept moves in `onItemChange` to own which question is active, for example to keep it in the URL. Owners are fixed when the element connects, so create it in script and configure it first. Owning the checkpoint also lets a submit handler check answers against each other, mark a question `invalid` with an `error`, and send the person back to it.
+
+<Preview
+  title="Checkpoint and cross-answer validation"
+  code={`<div id="questionnaire-controlled" style="display:grid;gap:var(--tp-space-4);inline-size:28rem;max-inline-size:100%">
+  <output style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)"></output>
+</div>`}
+  script={`const root = document.querySelector('#questionnaire-controlled');
+const output = root.querySelector('output');
+const questionnaire = document.createElement('tp-questionnaire');
+questionnaire.label = 'Incident report';
+questionnaire.questions = [
+  {
+    name: 'detail',
+    title: 'How much detail should the report include?',
+    required: true,
+    choices: [
+      { value: 'summary', label: 'Short summary' },
+      { value: 'timeline', label: 'Full timeline with root cause' },
+    ],
+  },
+  {
+    name: 'audience',
+    title: 'Who will read it?',
+    description: 'Customer-facing reports need the full timeline.',
+    required: true,
+    choices: [
+      { value: 'internal', label: 'Engineering only' },
+      { value: 'customers', label: 'Affected customers' },
+    ],
+  },
+];
+questionnaire.actions = { submit: { label: 'Publish report' } };
+const titleOf = (name) => questionnaire.questions.find((question) => question.name === name).title;
+questionnaire.item = 'detail';
+questionnaire.onItemChange = (event) => {
+  if (event.defaultPrevented || event.detail.cancelled) return;
+  questionnaire.item = event.detail.value;
+  output.textContent = \`Checkpoint: \${titleOf(event.detail.value)}\`;
+};
+questionnaire.addEventListener('tp-value-change', () => {
+  questionnaire.questions = questionnaire.questions.map((question) => ({ ...question, invalid: false, error: '' }));
+});
+questionnaire.addEventListener('tp-submit', (event) => {
+  event.preventDefault();
+  const { detail, audience } = event.detail.answers;
+  if (audience === 'customers' && detail === 'summary') {
+    questionnaire.questions = questionnaire.questions.map((question) => ({
+      ...question,
+      invalid: question.name === 'detail',
+      error: question.name === 'detail' ? 'Customers need the full timeline. Choose it to publish.' : '',
+    }));
+    questionnaire.item = 'detail';
+    output.textContent = \`Checkpoint: \${titleOf('detail')}\`;
+    return;
+  }
+  output.textContent = 'Published: ' + JSON.stringify(event.detail.answers);
+});
+output.textContent = \`Checkpoint: \${titleOf('detail')}\`;
+root.prepend(questionnaire);`}
+/>
+
+### Navigation buttons
+
+`actions` sets the label, `variant`, `size`, `disabled` and `hidden` of Previous, Skip, Next and Submit. Derive availability from `status` in each question's `onStatusChange` and after `tp-item-change`, here to keep Next and Submit disabled until the current question has an answer.
+
+<Preview
+  title="Disabled until answered"
+  code={`<div style="inline-size:28rem;max-inline-size:100%">
+  <tp-questionnaire id="questionnaire-actions" label="Access request"></tp-questionnaire>
+</div>`}
+  script={`const questionnaire = document.querySelector('#questionnaire-actions');
+const synchronize = () => {
+  const disabled = questionnaire.status !== 'answered';
+  questionnaire.actions = {
+    next: { variant: 'secondary', disabled },
+    submit: { label: 'Request access', disabled },
+  };
+};
+questionnaire.questions = [
+  {
+    name: 'resource',
+    title: 'Which environment do you need?',
+    required: true,
+    choices: [
+      { value: 'staging', label: 'Staging' },
+      { value: 'production-read', label: 'Production, read-only' },
+      { value: 'production', label: 'Production, full access' },
+    ],
+  },
+  {
+    name: 'duration',
+    title: 'For how long?',
+    required: true,
+    choices: [
+      { value: '1h', label: 'One hour' },
+      { value: '1d', label: 'Until end of day' },
+      { value: '1w', label: 'One week' },
+    ],
+  },
+].map((question) => ({ ...question, onStatusChange: synchronize }));
+questionnaire.addEventListener('tp-item-change', () => queueMicrotask(synchronize));
+questionnaire.addEventListener('tp-submit', (event) => event.preventDefault());
+await questionnaire.updateComplete;
+synchronize();`}
+/>
+
+### Custom progress
+
+The `questionnaire-progress` part takes `content` for different wording, or a `renderDelegate` that draws its own indicator from `state.current` and `state.total`. Bind `bind` to the element you return so it keeps the part's semantics.
+
+<Preview
+  title="Progress bar"
+  code={`<div style="inline-size:28rem;max-inline-size:100%">
+  <tp-questionnaire id="questionnaire-progress" label="Bug report"></tp-questionnaire>
+</div>`}
+  script={`import { html } from 'lit';
+const questionnaire = document.querySelector('#questionnaire-progress');
+questionnaire.partContracts = {
+  'questionnaire-progress': {
+    renderDelegate: ({ bind, state }) => html\`<div \${bind} style="display:grid;gap:var(--tp-space-2)">
+      <tp-progress aria-hidden="true" .value=\${state.current} .maximum=\${state.total}></tp-progress>
+      <span>Step \${state.current} of \${state.total}</span>
+    </div>\`,
+  },
+};
+questionnaire.questions = [
+  {
+    name: 'area',
+    title: 'Where did it happen?',
+    required: true,
+    choices: [
+      { value: 'editor', label: 'Editor' },
+      { value: 'billing', label: 'Billing' },
+      { value: 'api', label: 'Public API' },
+    ],
+  },
+  {
+    name: 'frequency',
+    title: 'How often does it happen?',
+    required: true,
+    choices: [
+      { value: 'always', label: 'Every time' },
+      { value: 'sometimes', label: 'Sometimes' },
+      { value: 'once', label: 'Only once' },
+    ],
+  },
+  {
+    name: 'steps',
+    title: 'What were you doing?',
+    required: true,
+    input: { label: 'Steps to reproduce', placeholder: 'Opened a shared doc, then…' },
+  },
+];
+questionnaire.actions = { submit: { label: 'File report' } };
+questionnaire.addEventListener('tp-submit', (event) => event.preventDefault());`}
+/>
+
+### Entrance animation
+
+The `questionnaire-question` part's `elementReference` runs each time a new question becomes active, while progress and buttons stay in place. Animate that element only, scale the duration by the inherited `--tp-motion-scale` so reduced motion turns it off, and cancel the animation when the reference changes.
+
+<Preview
+  title="Animated questions"
+  code={`<div style="inline-size:28rem;max-inline-size:100%">
+  <tp-questionnaire id="questionnaire-animated" label="Event RSVP"></tp-questionnaire>
+</div>`}
+  script={`const questionnaire = document.querySelector('#questionnaire-animated');
+let current;
+let animation;
+questionnaire.partContracts = {
+  'questionnaire-question': {
+    elementReference: (element) => {
+      if (element === current) return;
+      animation?.cancel();
+      current = element;
+      if (!element) return;
+      queueMicrotask(() => {
+        if (current !== element || !element.isConnected) return;
+        const style = getComputedStyle(element);
+        const scale = Number(style.getPropertyValue('--tp-motion-scale').trim() || 1);
+        const duration = parseFloat(style.getPropertyValue('--tp-duration-normal')) * 1000;
+        if (!scale || !duration) return;
+        animation = element.animate(
+          [{ opacity: 0, transform: 'translateY(0.5rem)' }, { opacity: 1, transform: 'none' }],
+          { duration: duration * scale, easing: style.getPropertyValue('--tp-easing-enter') },
+        );
+      });
+    },
+  },
+};
+questionnaire.questions = [
+  {
+    name: 'attending',
+    title: 'Will you join the offsite in Lisbon?',
+    required: true,
+    choices: [
+      { value: 'yes', label: 'Yes, I will be there' },
+      { value: 'remote', label: 'I will join remotely' },
+      { value: 'no', label: 'I cannot make it' },
+    ],
+  },
+  {
+    name: 'diet',
+    title: 'Any dietary requirements?',
+    skippable: true,
+    choices: [
+      { value: 'vegetarian', label: 'Vegetarian' },
+      { value: 'vegan', label: 'Vegan' },
+      { value: 'gluten-free', label: 'Gluten-free' },
+    ],
+  },
+];
+questionnaire.actions = { submit: { label: 'Send RSVP' } };
+questionnaire.addEventListener('tp-submit', (event) => event.preventDefault());`}
+/>
+
+### Card layout
+
+Delegates can rearrange the parts Questionnaire has already rendered. Each part's `state.regions` holds them, so a Card can take the title, description and progress in its header slots, the choices in its body and the buttons in its footer, with the fieldset naming and native form untouched. Render each region once.
+
+<Preview
+  title="Inside a Card"
+  code={`<div style="inline-size:28rem;max-inline-size:100%">
+  <tp-questionnaire id="questionnaire-card" label="Plan upgrade" shortcut-mode="numbers"></tp-questionnaire>
+</div>`}
+  script={`import { html } from 'lit';
+const questionnaire = document.querySelector('#questionnaire-card');
+questionnaire.partContracts = {
+  questionnaire: {
+    renderDelegate: ({ bind, state }) => html\`<form \${bind}>\${state.regions.answers}\${state.regions.question}</form>\`,
+  },
+  'questionnaire-question': {
+    renderDelegate: ({ bind, state }) => html\`<fieldset \${bind}>
+      <tp-card>
+        \${state.regions.title}\${state.regions.description}\${state.regions.progress}
+        \${state.regions.choices}\${state.regions.error}\${state.regions.actions}
+      </tp-card>
+    </fieldset>\`,
+  },
+  'questionnaire-title': {
+    hostProperties: { slot: 'header' },
+    renderDelegate: ({ bind, content }) => html\`<span \${bind}>\${content}</span>\`,
+  },
+  'questionnaire-description': { hostProperties: { slot: 'description' } },
+  'questionnaire-progress': {
+    hostProperties: { slot: 'action' },
+    content: (state) => \`\${state.current} / \${state.total}\`,
+  },
+  'questionnaire-actions': { hostProperties: { slot: 'footer' } },
+};
+questionnaire.questions = [
+  {
+    name: 'plan',
+    title: 'Which plan fits your team?',
+    description: 'You can change plans at any time.',
+    required: true,
+    choices: [
+      { value: 'team', label: 'Team', description: '$12 per seat, up to 50 seats.' },
+      { value: 'business', label: 'Business', description: '$24 per seat with SSO and audit logs.' },
+    ],
+  },
+  {
+    name: 'billing',
+    title: 'How would you like to pay?',
+    description: 'Yearly billing saves two months.',
+    required: true,
+    choices: [
+      { value: 'monthly', label: 'Monthly' },
+      { value: 'yearly', label: 'Yearly' },
+    ],
+  },
+];
+questionnaire.actions = { submit: { label: 'Upgrade' } };
+questionnaire.addEventListener('tp-submit', (event) => event.preventDefault());`}
+/>
+
+### In a dialog
+
+For a short clarification flow, put the Questionnaire in a Dialog. The Dialog owns cancelling, dismissal and returning focus; the Questionnaire owns answers and navigation, and your submit handler closes the Dialog.
+
+<Preview
+  title="Clarification dialog"
+  code={`<div id="questionnaire-dialog" style="display:grid;gap:var(--tp-space-3);justify-items:center">
+  <tp-dialog label="Clarify the export">
+    <tp-button slot="trigger" variant="outline">Export data</tp-button>
+    <tp-questionnaire label="Export options"></tp-questionnaire>
+    <tp-button slot="close" variant="outline">Cancel</tp-button>
+  </tp-dialog>
+  <output style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)"></output>
+</div>`}
+  script={`const root = document.querySelector('#questionnaire-dialog');
+const dialog = root.querySelector('tp-dialog');
+const questionnaire = root.querySelector('tp-questionnaire');
+const output = root.querySelector('output');
+questionnaire.questions = [
+  {
+    name: 'range',
+    title: 'Which records should be exported?',
+    required: true,
+    choices: [
+      { value: 'month', label: 'This month' },
+      { value: 'quarter', label: 'This quarter' },
+      { value: 'all', label: 'Everything' },
+    ],
+  },
+  {
+    name: 'format',
+    title: 'Which file format?',
+    required: true,
+    choices: [
+      { value: 'csv', label: 'CSV' },
+      { value: 'xlsx', label: 'Excel workbook' },
+    ],
+  },
+];
+questionnaire.actions = { submit: { label: 'Start export' } };
+questionnaire.addEventListener('tp-submit', (event) => {
+  event.preventDefault();
+  output.textContent = 'Exporting: ' + JSON.stringify(event.detail.answers);
+  dialog.close();
+});`}
+/>

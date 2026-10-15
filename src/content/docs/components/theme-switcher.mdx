@@ -100,3 +100,36 @@ switcher.addEventListener('tp-value-change', (event) => {
   }
 });`}
 />
+
+### Your own control
+
+The preference store behind the switcher is exported as `colorSchemeStore(target, { storageKey })`. Use it to drive the scheme from any control: `set()` applies and persists a preference, and `subscribe()` reports every change, including ones made by switchers on the same target and key. Here a Radio group and a button switcher share one store.
+
+<Preview
+  title="Color scheme store"
+  code={`<tp-card id="theme-switcher-store" style="inline-size:22rem;max-inline-size:100%">
+  <span slot="header">Appearance</span>
+  <tp-theme-switcher slot="action" variant="button" storage-key="docs-theme-switcher-store"></tp-theme-switcher>
+  <tp-radio-group id="theme-switcher-store-choice" label="Appearance" value="system">
+    <tp-radio-group-item value="light">Light</tp-radio-group-item>
+    <tp-radio-group-item value="dark">Dark</tp-radio-group-item>
+    <tp-radio-group-item value="system">Match system</tp-radio-group-item>
+  </tp-radio-group>
+</tp-card>`}
+  script={`import { colorSchemeStore } from '@tweakpad/ui';
+
+await customElements.whenDefined('tp-theme-switcher');
+const card = document.querySelector('#theme-switcher-store');
+const choice = document.querySelector('#theme-switcher-store-choice');
+card.querySelector('tp-theme-switcher').target = card;
+
+const scheme = colorSchemeStore(card, { storageKey: 'docs-theme-switcher-store' });
+choice.value = scheme.preference;
+choice.onValueChange = (event) => {
+  if (scheme.set(event.detail.value)) choice.value = event.detail.value;
+};
+const stop = scheme.subscribe(({ preference }) => {
+  if (!card.isConnected) return stop();
+  choice.value = preference;
+});`}
+/>

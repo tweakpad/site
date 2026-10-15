@@ -29,6 +29,25 @@ import Preview from '../../../components/Preview.astro';
 
 Markdown is parsed by a built-in CommonMark and GitHub Flavored Markdown parser and rendered as real elements, never injected as HTML. The source comes from the `source` property or, when that is unset, from the element's text content, dedented. Set `source` from script for dynamic content.
 
+### Authored source
+
+Plain text content is parsed by the browser first, so a literal `<tag>` in it would become an element. Wrap the source in a `<script type="text/markdown">` child to keep `<` and `&` exactly as written; HTML the element policy allows, such as `kbd`, still renders.
+
+<Preview
+  title="Script child"
+  align="stretch"
+  code={`<tp-markdown style="max-inline-size:36rem;margin-inline:auto">
+  <script type="text/markdown">
+    Embed the widget with a \`<script async>\` tag and set \`data-theme="dark" & data-compact\` on it.
+
+    Press <kbd>Ctrl</kbd> + <kbd>K</kbd> to open the command palette, then:
+
+    3. Search for **Widgets**
+    4. Copy the *embed snippet*
+  </script>
+</tp-markdown>`}
+/>
+
 ### Headings
 
 `heading-offset` shifts every heading level so the document fits under the page's own outline: with an offset of 2, `#` renders as `h3`. Headings get ids, prefixed with `id-prefix` when several documents share a page.
@@ -131,4 +150,92 @@ Raw HTML is never inserted as markup. Tags in the `elements` policy become real 
   script={`const markdown = document.querySelector('#markdown-elements');
 markdown.elements = { 'tp-badge': ['variant'] };
 markdown.source = 'Workspace analytics <tp-badge variant="secondary">Beta</tp-badge>\\n\\nTrack active members and storage per project. Press <kbd>G</kbd> then <kbd>A</kbd> to open it.';`}
+/>
+
+### Renderers
+
+`renderers` replaces how one node type renders. Each renderer receives the parsed node and a context with `children()` and `fallback()`, the default rendering, and returns DOM or a Lit template, or `undefined` to keep the default. Here a `checklist` fence becomes a list of Checkboxes and links to other hosts get an outbound marker, while every other node renders as usual.
+
+<Preview
+  title="Custom node rendering"
+  align="stretch"
+  code={`<tp-markdown id="markdown-renderers" style="max-inline-size:36rem;margin-inline:auto"></tp-markdown>`}
+  script={`import { html } from 'lit';
+
+const markdown = document.querySelector('#markdown-renderers');
+markdown.renderers = {
+  code: (node) => {
+    if (node.lang !== 'checklist') return undefined;
+    return html\`<div style="display:grid;gap:var(--tp-space-2);margin-block:var(--tp-space-3)">
+      \${node.value.split('\\n').map((step) => html\`<tp-checkbox>\${step}</tp-checkbox>\`)}
+    </div>\`;
+  },
+  link: (node, { fallback }) =>
+    node.url.startsWith('http') ? html\`\${fallback()}<span aria-hidden="true"> ↗</span>\` : undefined,
+};
+markdown.source = [
+  'Before the launch call, read the [rollout plan](#renderers) and the [status page](https://status.example.com/).',
+  '',
+  '\`\`\`checklist',
+  'Freeze the release branch',
+  'Run the migration on staging',
+  'Post the changelog',
+  '\`\`\`',
+].join('\\n');`}
+/>
+
+### Outline
+
+`headings` lists the rendered headings as `{ element, id, label, depth }`, and `tp-markdown-render` fires after every render, so a Table of contents can follow a document whose source changes. Each item targets a heading element directly.
+
+<Preview
+  title="With a table of contents"
+  align="stretch"
+  code={`<tp-scroll-area label="Onboarding guide" style="block-size:22rem">
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 10rem;gap:var(--tp-space-8);padding:var(--tp-space-6);align-items:start">
+    <tp-markdown id="markdown-outline" id-prefix="onboarding-">
+      <script type="text/markdown">
+        ## Create your workspace
+
+        Pick a name and a URL. The URL can change later, but links shared before the change stop working, so choose one your team will keep.
+
+        Invite at least one other admin so the workspace never depends on a single account.
+
+        ## Connect your tools
+
+        ### Calendar
+
+        Connecting a calendar lets due dates appear next to meetings. Only events you create in the workspace are written back.
+
+        ### Chat
+
+        Choose which channels receive project updates. Mentions always reach the person directly, whatever the channel settings.
+
+        ## Invite your team
+
+        Send invites from Members, or share a join link limited to your company's email domain. Guests see only the projects they are added to.
+
+        Once everyone has joined, archive the sample project so new members start from a clean list.
+      </script>
+    </tp-markdown>
+    <aside style="position:sticky;top:0">
+      <tp-table-of-contents id="markdown-outline-toc" label="On this page" navigation="scroll"></tp-table-of-contents>
+    </aside>
+  </div>
+</tp-scroll-area>`}
+  script={`const markdown = document.querySelector('#markdown-outline');
+const toc = document.querySelector('#markdown-outline-toc');
+const update = () => {
+  toc.replaceChildren(...markdown.headings.map((heading) => {
+    const item = document.createElement('tp-table-of-contents-item');
+    item.target = heading.element;
+    item.depth = heading.depth - 1;
+    item.textContent = heading.label;
+    return item;
+  }));
+};
+await customElements.whenDefined('tp-markdown');
+await markdown.updateComplete;
+update();
+markdown.addEventListener('tp-markdown-render', update);`}
 />

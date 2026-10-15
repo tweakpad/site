@@ -50,6 +50,46 @@ A Skeleton has no size or shape attributes: ordinary layout sets its width and h
 
 Compose placeholders inside the real container so the page does not shift when content arrives.
 
+### Media and text
+
+Wrap a Skeleton in Aspect Ratio to hold the exact frame of an image or video, and use a few full-width lines with a shorter last one for a paragraph.
+
+<Preview
+  title="Video and description"
+  align="stretch"
+  code={`<div aria-busy="true" aria-label="Loading video" style="display:grid;gap:var(--tp-space-3);max-inline-size:24rem;margin-inline:auto;inline-size:100%">
+  <tp-aspect-ratio ratio="2" style="border-radius:var(--tp-radius-xl)">
+    <tp-skeleton style="border-radius:inherit"></tp-skeleton>
+  </tp-aspect-ratio>
+  <tp-skeleton style="inline-size:60%;block-size:var(--tp-space-5)"></tp-skeleton>
+  <div style="display:grid;gap:var(--tp-space-2)">
+    <tp-skeleton style="block-size:var(--tp-space-4)"></tp-skeleton>
+    <tp-skeleton style="block-size:var(--tp-space-4)"></tp-skeleton>
+    <tp-skeleton style="inline-size:75%;block-size:var(--tp-space-4)"></tp-skeleton>
+  </div>
+</div>`}
+/>
+
+### Forms
+
+Reserve each label, control and the submit button at their real heights, using the control-height tokens, so the form lands in place when its data arrives.
+
+<Preview
+  title="Settings form"
+  align="stretch"
+  code={`<div aria-busy="true" aria-label="Loading account settings" style="display:grid;gap:var(--tp-space-6);max-inline-size:24rem;margin-inline:auto;inline-size:100%">
+  <div style="display:grid;gap:var(--tp-space-2)">
+    <tp-skeleton style="inline-size:calc(var(--tp-spacing) * 20);block-size:var(--tp-space-4)"></tp-skeleton>
+    <tp-skeleton style="block-size:var(--tp-control-height-md)"></tp-skeleton>
+  </div>
+  <div style="display:grid;gap:var(--tp-space-2)">
+    <tp-skeleton style="inline-size:calc(var(--tp-spacing) * 28);block-size:var(--tp-space-4)"></tp-skeleton>
+    <tp-skeleton style="block-size:var(--tp-control-height-md)"></tp-skeleton>
+  </div>
+  <tp-skeleton style="inline-size:calc(var(--tp-spacing) * 24);block-size:var(--tp-control-height-md)"></tp-skeleton>
+</div>`}
+/>
+
 ### Lists
 
 <Preview

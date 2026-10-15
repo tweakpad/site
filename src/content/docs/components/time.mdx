@@ -77,6 +77,46 @@ A date-only value stays on its calendar day in every time zone and compares by d
 </div>`}
 />
 
+Relative date-only values compare by calendar days too, which suits due dates in a task list.
+
+<Preview
+  title="Due dates"
+  align="stretch"
+  code={`<tp-list id="time-due" aria-label="Your tasks" style="max-inline-size:24rem;margin-inline:auto;inline-size:100%">
+  <tp-list-item description="Maya Chen">Design review<span slot="footer">Due <tp-time data-days="0"></tp-time></span></tp-list-item>
+  <tp-list-separator></tp-list-separator>
+  <tp-list-item description="Jonas Weber">Release notes<span slot="footer">Due <tp-time data-days="3"></tp-time></span></tp-list-item>
+  <tp-list-separator></tp-list-separator>
+  <tp-list-item description="Priya Patel">Vendor contract<span slot="footer" style="color:var(--tp-destructive)">Due <tp-time data-days="-1"></tp-time></span></tp-list-item>
+</tp-list>`}
+  script={`const pad = (value) => String(value).padStart(2, '0');
+for (const time of document.querySelectorAll('#time-due tp-time')) {
+  const date = new Date(Date.now() + Number(time.dataset.days) * 86400000);
+  time.datetime = \`\${date.getFullYear()}-\${pad(date.getMonth() + 1)}-\${pad(date.getDate())}\`;
+}`}
+/>
+
+### Calendar phrases
+
+`mode="calendar"` names nearby days, such as "Today at 09:12" or "Last Friday at 16:40", and falls back to an absolute date beyond a week. Month and weekday names come from the locale; the surrounding phrases come from the `messages` property, with `{time}`, `{weekday}` and `{date}` placeholders, so you can translate or reword them.
+
+<Preview
+  title="Calendar"
+  code={`<dl id="time-calendar" style="display:grid;grid-template-columns:auto auto;gap:var(--tp-space-2) var(--tp-space-6);margin:0;font-size:var(--tp-text-sm)">
+  <dt style="color:var(--tp-muted-foreground)">Last login</dt><dd style="margin:0"><tp-time mode="calendar" data-offset="-3600"></tp-time></dd>
+  <dt style="color:var(--tp-muted-foreground)">Invoice sent</dt><dd style="margin:0"><tp-time mode="calendar" data-offset="-90000"></tp-time></dd>
+  <dt style="color:var(--tp-muted-foreground)">Plan changed</dt><dd style="margin:0"><tp-time mode="calendar" data-offset="-345600"></tp-time></dd>
+  <dt lang="es" style="color:var(--tp-muted-foreground)">Último acceso</dt><dd lang="es" style="margin:0"><tp-time mode="calendar" data-offset="-3600" data-spanish></tp-time></dd>
+</dl>`}
+  script={`for (const time of document.querySelectorAll('#time-calendar tp-time')) {
+  time.datetime = new Date(Date.now() + Number(time.dataset.offset) * 1000);
+}
+document.querySelector('#time-calendar [data-spanish]').messages = {
+  today: 'Hoy a las {time}',
+  yesterday: 'Ayer a las {time}',
+};`}
+/>
+
 ### Relative style
 
 `relative-style` shortens relative text for dense layouts; the long form stays available to assistive technology. `numeric="always"` replaces phrases like "yesterday" with counts.
@@ -92,6 +132,21 @@ A date-only value stays on its calendar day in every time zone and compares by d
   script={`for (const time of document.querySelectorAll('#time-styles tp-time')) {
   time.datetime = new Date(Date.now() + Number(time.dataset.offset) * 1000);
 }`}
+/>
+
+### Other precisions
+
+A value keeps the precision it was written with: a month, a yearless date such as a birthday, an ISO week or a time of day each format as exactly that, never as a full date with invented parts.
+
+<Preview
+  title="Precisions"
+  code={`<dl style="display:grid;grid-template-columns:auto auto;gap:var(--tp-space-2) var(--tp-space-6);margin:0;font-size:var(--tp-text-sm)">
+  <dt style="color:var(--tp-muted-foreground)">Billing period</dt><dd style="margin:0"><tp-time datetime="2026-10"></tp-time></dd>
+  <dt style="color:var(--tp-muted-foreground)">Birthday</dt><dd style="margin:0"><tp-time datetime="--03-14"></tp-time></dd>
+  <dt style="color:var(--tp-muted-foreground)">Sprint</dt><dd style="margin:0"><tp-time datetime="2026-W42"></tp-time></dd>
+  <dt style="color:var(--tp-muted-foreground)">Daily backup</dt><dd style="margin:0"><tp-time datetime="02:30" hour-cycle="h23"></tp-time></dd>
+  <dt style="color:var(--tp-muted-foreground)">Average response</dt><dd style="margin:0"><tp-time datetime="PT2H15M"></tp-time></dd>
+</dl>`}
 />
 
 ### Countdowns and elapsed time
@@ -119,4 +174,13 @@ The tooltip shows `tooltip-pattern` (default `dd/MM/yy HH:mm`) and makes the val
 <Preview
   title="Description"
   code={`<span style="font-size:var(--tp-text-sm)">Published <tp-time mode="absolute" preset="date-long" datetime="2026-10-05T14:30:00Z" tooltip-pattern="EEEE HH:mm xxx"></tp-time></span>`}
+/>
+
+### Unreadable input
+
+Input that cannot be read as a date, time or duration keeps the authored content and exposes `data-invalid`, so a server-rendered label never turns into a wrong date.
+
+<Preview
+  title="Fallback"
+  code={`<span style="font-size:var(--tp-text-sm)">Last sync: <tp-time>sometime yesterday</tp-time></span>`}
 />

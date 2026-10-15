@@ -235,3 +235,96 @@ panel.querySelector('[data-icon="panel"]').icon = { viewBox: '0 0 24 24', paths:
   'navigation-panel': { styleHook: { blockSize: 'calc(20rem - var(--tp-space-4))' } },
 };`}
 />
+
+### Menus
+
+A `tp-menu` can be an item's main content, like a team switcher or account menu, or sit beside a link as its row actions. Put a `tp-navigation-panel-action` in the menu's `trigger` slot; `show-on-hover` hides a row action until its item is hovered or focused, while still reserving its space.
+
+<Preview
+  title="Team switcher and row actions"
+  align="stretch"
+  code={`<div style="block-size:30rem;overflow:hidden;border:1px solid var(--tp-border);border-radius:var(--tp-radius-lg)">
+  <tp-navigation-panel id="navigation-panel-menus" label="Projects" compact="false" collapse-mode="none" wide-width="calc(var(--tp-spacing) * 64)">
+    <tp-navigation-panel-header>
+      <tp-navigation-panel-menu>
+        <tp-navigation-panel-item>
+          <tp-menu label="Teams" placement="inline-end start">
+            <tp-navigation-panel-action slot="trigger" size="lg" aria-label="Switch team">
+              <tp-avatar slot="icon-start" size="sm" fallback="NW" alt="" data-team-avatar></tp-avatar>
+              <span data-team-name>Northwind</span><br><small data-team-plan>Team plan</small>
+            </tp-navigation-panel-action>
+            <tp-menu-item value="northwind">Northwind</tp-menu-item>
+            <tp-menu-item value="lumen">Lumen Labs</tp-menu-item>
+            <tp-menu-item value="harbor">Harbor Studio</tp-menu-item>
+          </tp-menu>
+        </tp-navigation-panel-item>
+      </tp-navigation-panel-menu>
+    </tp-navigation-panel-header>
+    <tp-navigation-panel-content>
+      <tp-navigation-panel-group>
+        <tp-navigation-panel-group-label>Projects</tp-navigation-panel-group-label>
+        <tp-navigation-panel-menu>
+          <tp-navigation-panel-item>
+            <tp-navigation-panel-link href="#website-refresh" active>Website refresh</tp-navigation-panel-link>
+            <tp-menu label="Website refresh actions" placement="inline-end start">
+              <tp-navigation-panel-action slot="trigger" show-on-hover size="icon" aria-label="Website refresh actions" data-icon="more"></tp-navigation-panel-action>
+              <tp-menu-item value="Share Website refresh">Share project</tp-menu-item>
+              <tp-menu-item value="Archive Website refresh">Archive</tp-menu-item>
+            </tp-menu>
+          </tp-navigation-panel-item>
+          <tp-navigation-panel-item>
+            <tp-navigation-panel-link href="#mobile-onboarding">Mobile onboarding</tp-navigation-panel-link>
+            <tp-menu label="Mobile onboarding actions" placement="inline-end start">
+              <tp-navigation-panel-action slot="trigger" show-on-hover size="icon" aria-label="Mobile onboarding actions" data-icon="more"></tp-navigation-panel-action>
+              <tp-menu-item value="Share Mobile onboarding">Share project</tp-menu-item>
+              <tp-menu-item value="Archive Mobile onboarding">Archive</tp-menu-item>
+            </tp-menu>
+          </tp-navigation-panel-item>
+        </tp-navigation-panel-menu>
+      </tp-navigation-panel-group>
+    </tp-navigation-panel-content>
+    <tp-navigation-panel-footer>
+      <tp-navigation-panel-menu>
+        <tp-navigation-panel-item>
+          <tp-menu label="Account" placement="inline-end end">
+            <tp-navigation-panel-action slot="trigger" size="lg" aria-label="Account: Priya Shah">
+              <tp-avatar slot="icon-start" size="sm" fallback="PS" alt=""></tp-avatar>
+              <span>Priya Shah</span><br><small>priya@northwind.io</small>
+            </tp-navigation-panel-action>
+            <tp-menu-item value="Profile">Profile</tp-menu-item>
+            <tp-menu-item value="Billing">Billing</tp-menu-item>
+            <tp-separator></tp-separator>
+            <tp-menu-item value="Log out">Log out</tp-menu-item>
+          </tp-menu>
+        </tp-navigation-panel-item>
+      </tp-navigation-panel-menu>
+    </tp-navigation-panel-footer>
+    <tp-navigation-panel-inset>
+      <h2 style="margin:0">Website refresh</h2>
+      <p id="navigation-panel-menus-status" role="status" style="color:var(--tp-muted-foreground)">Northwind workspace</p>
+    </tp-navigation-panel-inset>
+  </tp-navigation-panel>
+</div>`}
+  script={`const panel = document.querySelector('#navigation-panel-menus');
+const status = document.querySelector('#navigation-panel-menus-status');
+const teams = {
+  northwind: ['Northwind', 'Team plan', 'NW'],
+  lumen: ['Lumen Labs', 'Enterprise', 'LL'],
+  harbor: ['Harbor Studio', 'Free', 'HS'],
+};
+for (const action of panel.querySelectorAll('[data-icon="more"]')) {
+  action.icon = { viewBox: '0 0 24 24', paths: [{ d: 'M5 12h.01M12 12h.01M19 12h.01', strokeWidth: 3 }] };
+}
+panel.partContracts = { 'navigation-panel': { styleHook: { blockSize: '30rem' } } };
+panel.addEventListener('tp-action', (event) => {
+  const team = teams[event.detail.value];
+  if (!team) {
+    status.textContent = \`Selected: \${event.detail.value}\`;
+    return;
+  }
+  panel.querySelector('[data-team-name]').textContent = team[0];
+  panel.querySelector('[data-team-plan]').textContent = team[1];
+  panel.querySelector('[data-team-avatar]').fallback = team[2];
+  status.textContent = \`\${team[0]} workspace\`;
+});`}
+/>

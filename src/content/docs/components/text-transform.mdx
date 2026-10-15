@@ -172,4 +172,31 @@ for (const value of document.querySelectorAll('#text-transform-formatter tp-text
 }`}
 />
 
-For options beyond the attributes, assign `Intl.NumberFormatOptions` to the `format` property, or `{ style, guide }` for `duration`. To reuse a format across the page, define a named preset once with `defineTextPreset()` from `@tweakpad/ui`.
+For options beyond the attributes, assign `Intl.NumberFormatOptions` to the `format` property, or `{ style, guide }` for `duration`.
+
+### Named presets
+
+`defineTextPreset(name, definition)` from `@tweakpad/ui` names a format once for the whole page, either a built-in preset with options or a formatter. Elements then use it like any preset, and every element with that name updates when it is defined or replaced. Built-in names are reserved.
+
+<Preview
+  title="Named presets"
+  code={`<div style="display:grid;gap:var(--tp-space-2);font-size:var(--tp-text-sm)">
+  <span>Team plan <tp-text-transform preset="plan-price" value="480"></tp-text-transform> per year</span>
+  <span>Business plan <tp-text-transform preset="plan-price" value="1200"></tp-text-transform> per year</span>
+  <span>Assigned to <tp-text-transform preset="desk" value="14"></tp-text-transform></span>
+</div>`}
+  script={`import { defineTextPreset } from '@tweakpad/ui';
+
+defineTextPreset('plan-price', { preset: 'currency', format: { currency: 'EUR', maximumFractionDigits: 0 } });
+defineTextPreset('desk', ({ value }) => ({
+  text: \`D-\${String(value).padStart(3, '0')}\`,
+  accessibleText: \`Desk \${value}\`,
+}));`}
+/>
+
+An element that names a preset before it exists shows its input as text until the definition arrives. The same goes for input a numeric preset cannot read: it stays as written, and the element exposes `data-invalid` for styling.
+
+<Preview
+  title="Unreadable input"
+  code={`<p style="margin:0;font-size:var(--tp-text-sm)">Launch price <tp-text-transform preset="currency" currency="USD">to be announced</tp-text-transform></p>`}
+/>

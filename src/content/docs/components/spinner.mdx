@@ -34,7 +34,8 @@ Sizes follow the theme's icon sizes and scale with base spacing.
 <Preview
   title="Buttons"
   code={`<tp-button loading-position="leading">Saving</tp-button>
-<tp-button loading-position="leading" variant="outline" disabled>Publishing</tp-button>`}
+<tp-button loading-position="leading" variant="outline" disabled>Publishing</tp-button>
+<tp-button loading-position="leading" variant="outline" size="icon" aria-label="Refreshing feed" disabled></tp-button>`}
 />
 
 Buttons compose their own Spinner through `loading-position`, which hides it from assistive technology and marks the Button busy. Prefer that over placing a Spinner inside a Button.
@@ -48,6 +49,20 @@ Buttons compose their own Spinner through `loading-position`, which hides it fro
 />
 
 The badge text already names the activity, so the Spinner stays decorative.
+
+### In an input group
+
+<Preview
+  title="Input group"
+  code={`<tp-field label="Teammates" description="Looking up people in your workspace.">
+  <tp-input-group>
+    <tp-input type="search" name="teammate" value="Priya" placeholder="Search by name or email"></tp-input>
+    <tp-spinner slot="prefix" size="sm" label="Searching teammates"></tp-spinner>
+  </tp-input-group>
+</tp-field>`}
+/>
+
+A small Spinner in the prefix slot shows a lookup in flight without moving the field.
 
 ### In an empty state
 

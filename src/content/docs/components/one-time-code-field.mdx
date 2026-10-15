@@ -81,6 +81,36 @@ form.addEventListener('submit', (event) => {
 });`}
 />
 
+### Controlled
+
+Set `value` to own the code, and accept each edit from `tp-value-change` by assigning `event.detail.value`. Your application can then clear or prefill the field directly, for example after requesting a new code.
+
+<Preview
+  title="Controlled value"
+  code={`<div id="otc-controlled" style="display:grid;gap:var(--tp-space-3);justify-items:start">
+  <tp-field label="Two-factor code">
+    <tp-one-time-code-field length="6" validation-type="numeric" group-lengths="[3,3]" value=""></tp-one-time-code-field>
+  </tp-field>
+  <div style="display:flex;gap:var(--tp-space-3);align-items:center">
+    <tp-button variant="outline" size="sm" data-resend>Send a new code</tp-button>
+    <output aria-live="polite" style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">0 of 6 digits</output>
+  </div>
+</div>`}
+  script={`const root = document.querySelector('#otc-controlled');
+const field = root.querySelector('tp-one-time-code-field');
+const output = root.querySelector('output');
+field.addEventListener('tp-value-change', (event) => {
+  if (event.defaultPrevented || event.detail.cancelled) return;
+  field.value = event.detail.value;
+  output.textContent = \`\${field.value.length} of 6 digits\`;
+});
+root.querySelector('[data-resend]').addEventListener('click', () => {
+  field.value = '';
+  output.textContent = 'New code sent. The old one no longer works.';
+  field.focus();
+});`}
+/>
+
 ### States
 
 <Preview

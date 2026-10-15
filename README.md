@@ -43,7 +43,7 @@ import Preview from '../../../components/Preview.astro';
 <Preview title="Variants" code={`<tp-badge>New</tp-badge>`} />
 ```
 
-The markup in `code` is rendered live and shown as the copyable code.
+The markup in `code` is rendered live and shown as the copyable code. A `script` runs after it as a module and may import from `@tweakpad/ui` or `lit` like app code does; the page swaps those imports for the site's bundled copies, and the copyable code keeps them as written.
 
 ## Deploy
 

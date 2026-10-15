@@ -76,3 +76,25 @@ Empty states inherit their container's background, so they sit naturally inside 
   </tp-empty-state>
 </tp-card>`}
 />
+
+### Surface styles
+
+The component paints no surface of its own. Style its `empty-state` part for a border, a dashed drop-zone outline or a muted fill. Use the `description` slot when the description needs a link.
+
+<Preview
+  title="Bordered and filled"
+  align="stretch"
+  code={`<style>
+  #empty-state-surfaces .dashed::part(empty-state) { border:var(--tp-border-width) dashed var(--tp-border); border-radius:var(--tp-radius-xl); }
+  #empty-state-surfaces .muted::part(empty-state) { background:var(--tp-muted); border-radius:var(--tp-radius-xl); }
+</style>
+<div id="empty-state-surfaces" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:var(--tp-space-6)">
+  <tp-empty-state class="dashed" title="No files uploaded" media-treatment="icon">
+    <svg slot="media" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 1 0-1.4-8.8A6 6 0 1 0 6 17.7"/><path d="M12 12v9M8.5 15.5 12 12l3.5 3.5"/></svg>
+    <span slot="description">Drop contracts here or <a href="#surface-styles" style="color:inherit;text-underline-offset:var(--tp-space-1)">browse your computer</a>.</span>
+  </tp-empty-state>
+  <tp-empty-state class="muted" title="No saved filters" description="Save a search to reuse it from the sidebar.">
+    <tp-button slot="actions" variant="outline">Save current search</tp-button>
+  </tp-empty-state>
+</div>`}
+/>

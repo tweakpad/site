@@ -110,6 +110,38 @@ form.addEventListener('tp-value-change', () => {
 });`}
 />
 
+### Controlled
+
+Set `value` to own the selection and accept each proposal in `onValueChange` by assigning `event.detail.value`. Leave `value` unchanged to reject a pick; the native picker snaps back to the committed option.
+
+<Preview
+  title="Controlled value"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-3);max-inline-size:22rem">
+  <tp-field label="Seat limit" description="18 members are active in this workspace.">
+    <tp-native-select id="native-select-seats" value="25">
+      <option value="10">10 seats — $96/mo</option>
+      <option value="25">25 seats — $240/mo</option>
+      <option value="50">50 seats — $480/mo</option>
+    </tp-native-select>
+  </tp-field>
+  <output id="native-select-seats-note" style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">Current plan: 25 seats.</output>
+</div>`}
+  script={`const select = document.querySelector('#native-select-seats');
+const note = document.querySelector('#native-select-seats-note');
+const activeMembers = 18;
+select.onValueChange = (event) => {
+  if (event.defaultPrevented || event.detail.cancelled) return;
+  const seats = Number(event.detail.value);
+  if (seats < activeMembers) {
+    note.textContent = \`Remove \${activeMembers - seats} members before dropping to \${seats} seats.\`;
+    return;
+  }
+  select.value = event.detail.value;
+  note.textContent = \`Current plan: \${seats} seats.\`;
+};`}
+/>
+
 ### States
 
 <Preview

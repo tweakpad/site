@@ -59,6 +59,34 @@ Next to a short read-only value, an icon-only Copy button keeps the row compact 
 </dl>`}
 />
 
+Inside an Input group's `action` slot or as a Field group member, the Copy button joins the control's border while the input next to it stays untouched.
+
+<Preview
+  title="In an input group and a field group"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-4);inline-size:100%;max-inline-size:26rem;margin-inline:auto">
+  <tp-field label="Webhook signing secret">
+    <tp-input-group>
+      <tp-input readonly default-value="whsec_9b1e7c42d0"></tp-input>
+      <tp-copy-button slot="action" value="whsec_9b1e7c42d0" label="Copy signing secret"></tp-copy-button>
+    </tp-input-group>
+  </tp-field>
+  <tp-field-group label="Map center">
+    <tp-input-group>
+      <span slot="prefix">Lat</span>
+      <tp-input label="Latitude" default-value="38.7223"></tp-input>
+    </tp-input-group>
+    <tp-input-group>
+      <span slot="prefix">Lng</span>
+      <tp-input label="Longitude" default-value="-9.1393"></tp-input>
+    </tp-input-group>
+    <tp-copy-button variant="outline" size="sm" value="38.7223, -9.1393" label="Copy coordinates"></tp-copy-button>
+  </tp-field-group>
+</div>`}
+/>
+
+The copy action in a [Code block](../code-block/) is this same control, labelled by the block's `copy`, `copied` and `copyFailed` messages.
+
 ### Events
 
 `tp-copy` fires before the write and can be canceled to skip it. `tp-copied` and `tp-copy-error` report the outcome; both are already announced, so use them for analytics or follow-up UI rather than duplicate messages.

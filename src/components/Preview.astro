@@ -10,6 +10,10 @@
  * Scripts on one page share the document, so they select their elements by page-unique ids.
  * Refresh runs the script again against the fresh markup, so a script that listens on `document`
  * or `window` ignores events once its own elements are disconnected.
+ *
+ * A script may import from `@tweakpad/ui` or `lit` as an app would. Inline scripts can't resolve
+ * bare specifiers, so the page runs a copy where each such import reads the module from the site's
+ * own bundle (see `previewModules` below); the copyable code keeps the import as written.
  */
 interface Props {
   code: string;
@@ -32,6 +36,18 @@ const {
 } = Astro.props;
 const markup = code.trim();
 const behavior = script?.trim();
+
+/** Named imports of the modules the site hands to preview scripts at runtime. */
+const BARE_IMPORT =
+  /^import\s*\{([^}]*)\}\s*from\s*['"](@tweakpad\/ui(?:\/(?:drag-drop|emoji|carousel|media|map|markdown|qr|flow|widgets))?|lit)['"];?$/gm;
+const runnable = behavior?.replace(BARE_IMPORT, (_, names: string, specifier: string) => {
+  const bindings = names
+    .split(',')
+    .map((name) => name.trim().replace(/\s+as\s+/, ': '))
+    .filter(Boolean)
+    .join(', ');
+  return `const { ${bindings} } = await (await window.__tpPreviewModules.ready)('${specifier}');`;
+});
 const source = behavior
   ? `${markup}\n\n<script type="module">\n${behavior}\n</script>`
   : markup;
@@ -68,7 +84,7 @@ const source = behavior
   </div>
   <div class="preview__canvas" data-align={align} set:html={markup} />
   <template data-source set:html={markup} />
-  {behavior && <script is:inline type="module" data-behavior set:html={behavior} />}
+  {runnable && <script is:inline type="module" data-behavior set:html={runnable} />}
   <div class="preview__code" hidden={!showCode} data-code>
     <tp-code-block language={language} copyable>{source}</tp-code-block>
   </div>
@@ -77,6 +93,33 @@ const source = behavior
 <script>
   import type { TpButton, TpToggle, TpToggleGroup } from '@tweakpad/ui';
   import { refreshIcon } from '@tweakpad/ui/icons/refresh';
+
+  /** The modules preview scripts may import, loaded on first use; see the BARE_IMPORT rewrite above. */
+  const previewModules: Record<string, () => Promise<unknown>> = {
+    '@tweakpad/ui': () => import('@tweakpad/ui'),
+    '@tweakpad/ui/drag-drop': () => import('@tweakpad/ui/drag-drop'),
+    '@tweakpad/ui/emoji': () => import('@tweakpad/ui/emoji'),
+    '@tweakpad/ui/carousel': () => import('@tweakpad/ui/carousel'),
+    '@tweakpad/ui/media': () => import('@tweakpad/ui/media'),
+    '@tweakpad/ui/map': () => import('@tweakpad/ui/map'),
+    '@tweakpad/ui/markdown': () => import('@tweakpad/ui/markdown'),
+    '@tweakpad/ui/qr': () => import('@tweakpad/ui/qr'),
+    '@tweakpad/ui/flow': () => import('@tweakpad/ui/flow'),
+    '@tweakpad/ui/widgets': () => import('@tweakpad/ui/widgets'),
+    lit: () => import('lit'),
+  };
+  window.__tpPreviewModules?.resolve((specifier) => previewModules[specifier]!());
+
+  type PreviewImport = (specifier: string) => Promise<unknown>;
+
+  declare global {
+    interface Window {
+      __tpPreviewModules?: {
+        ready: Promise<PreviewImport>;
+        resolve(load: PreviewImport): void;
+      };
+    }
+  }
 
   type Density = 'default' | 'compact';
   const STORAGE_KEY = 'tp-site-density';

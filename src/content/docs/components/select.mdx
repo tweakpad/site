@@ -176,6 +176,29 @@ select.items = [
 ];`}
 />
 
+A record's `label` can be a Lit template for rich rows, such as an avatar or a badge. Give those records a plain `text` too; it drives typeahead and what the closed trigger reads.
+
+<Preview
+  title="Rich labels"
+  align="stretch"
+  code={`<tp-field label="Reviewer" style="max-inline-size:20rem">
+  <tp-select id="select-rich" name="reviewer" placeholder="Choose a reviewer"></tp-select>
+</tp-field>`}
+  script={`import { html } from 'lit';
+const person = (name, initials, badge) => html\`<tp-avatar size="sm" fallback=\${initials} alt=""></tp-avatar>\${name}\${badge ? html\` <tp-badge variant="secondary">\${badge}</tp-badge>\` : ''}\`;
+document.querySelector('#select-rich').items = [
+  { type: 'group', label: 'Suggested', items: [
+    { value: 'u_131', text: 'Priya Natarajan', label: person('Priya Natarajan', 'PN', 'Code owner') },
+    { value: 'u_118', text: 'Tomás Herrera', label: person('Tomás Herrera', 'TH') },
+  ] },
+  { type: 'separator' },
+  { type: 'group', label: 'Everyone else', items: [
+    { value: 'u_140', text: 'Jonas Becker', label: person('Jonas Becker', 'JB') },
+    { value: 'u_152', text: 'Aiko Sato', label: person('Aiko Sato', 'AS', 'Away') },
+  ] },
+];`}
+/>
+
 ### Large lists
 
 `virtualized` mounts only the rows near the visible part of the list while keeping its full scroll height, so hundreds or thousands of `items` open instantly. Keyboard navigation and typeahead still cover every option.
@@ -279,4 +302,24 @@ A Field's `disabled`, `invalid` and `error` reach the Select. Read-only Selects 
     </tp-select>
   </tp-field>
 </div>`}
+/>
+
+### In a dialog
+
+A Select works inside a Dialog without extra setup: its popup belongs to the dialog, so it opens above the modal and stays interactive while the rest of the page is inert.
+
+<Preview
+  title="Select in a dialog"
+  code={`<tp-dialog label="Move to project" description="The issue keeps its history and comments.">
+  <tp-button slot="trigger" variant="outline">Move issue</tp-button>
+  <tp-field label="Project">
+    <tp-select name="project" placeholder="Choose a project">
+      <option value="web">Web app</option>
+      <option value="mobile">Mobile app</option>
+      <option value="platform">Platform</option>
+      <option value="growth">Growth experiments</option>
+    </tp-select>
+  </tp-field>
+  <tp-button slot="close">Move</tp-button>
+</tp-dialog>`}
 />

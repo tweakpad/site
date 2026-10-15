@@ -72,6 +72,42 @@ document.querySelector('#text-motion-demo-play').addEventListener('click', () =>
 </div>`}
 />
 
+### Custom animation
+
+The reveal runs through the `reveal` motion role, so you can claim it from a `tp-motion-request` listener and animate the pieces yourself, with the Web Animations API as here or an animation library. The pieces are on `owner.words`, `owner.chars` or `owner.lines`; return the animation's `finished` promise and a `cancel` so interruptions settle cleanly.
+
+<Preview
+  title="Custom reveal"
+  script={`const headline = document.querySelector('#text-motion-custom');
+document.addEventListener('tp-motion-request', (event) => {
+  if (!headline.isConnected) return;
+  const { owner, role } = event.request;
+  if (owner !== headline || role !== 'reveal') return;
+  event.respondWith({
+    play: () => {
+      const animations = owner.words.map((word, index) =>
+        word.animate(
+          [
+            { opacity: 0, transform: 'translateY(0.6em) rotate(6deg)' },
+            { opacity: 1, transform: 'none' },
+          ],
+          { duration: 600, delay: index * 70, easing: 'cubic-bezier(0.2, 0.9, 0.3, 1.2)', fill: 'backwards' },
+        ),
+      );
+      return {
+        finished: Promise.all(animations.map((animation) => animation.finished)),
+        cancel: () => animations.forEach((animation) => animation.cancel()),
+      };
+    },
+  });
+});`}
+  code={`<p style="margin:0;inline-size:100%;font-size:2rem;line-height:1.2;font-weight:600;text-align:center">
+  <tp-text-motion id="text-motion-custom" split="words" reveal="fade" reveal-repeat>Launch week starts Monday</tp-text-motion>
+</p>`}
+/>
+
+While your driver plays, the built-in transitions are off. If the animation depends on line positions, rebuild it on `tp-text-split`, which fires whenever the lines change.
+
 ### Rich text
 
 Formatting is kept around the pieces and links stay the original element, wrapping like ordinary text. Screen readers read the sentence once, with the link and its full name.

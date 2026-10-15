@@ -114,3 +114,45 @@ collapsible.addEventListener('tp-open-change', (event) => {
 />
 
 `disabled` blocks the trigger but keeps the current open state, so a disclosure can be locked open or closed.
+
+### Content motion
+
+<Preview
+  title="Line-by-line reveal"
+  align="stretch"
+  code={`<tp-collapsible id="collapsible-motion" style="inline-size:100%;max-inline-size:28rem;margin-inline:auto">
+  <span slot="label">What's new in 2.4</span>
+  <ul style="display:grid;gap:var(--tp-space-2);margin:0;padding-inline-start:var(--tp-space-5)">
+    <li>Single sign-on with SAML and OIDC on every plan</li>
+    <li>An audit log that keeps permission changes for 400 days</li>
+    <li>CSV exports that finish up to five times sooner</li>
+    <li>Scheduled reports, emailed every Monday</li>
+  </ul>
+</tp-collapsible>`}
+  script={`const collapsible = document.getElementById('collapsible-motion');
+
+collapsible.addEventListener('tp-motion-request', (event) => {
+  if (event.request.role !== 'content') return;
+  event.respondWith({
+    play(request) {
+      const entering = request.phase === 'enter';
+      const items = [...request.owner.querySelectorAll('li')];
+      if (!entering) items.reverse();
+      const animations = items.map((item, index) =>
+        item.animate(
+          entering
+            ? [{ opacity: 0, transform: 'translateX(-8px)' }, { opacity: 1, transform: 'none' }]
+            : [{ opacity: 1 }, { opacity: 0 }],
+          { duration: entering ? 240 : 120, delay: index * 60, easing: 'ease-out', fill: 'both' },
+        ),
+      );
+      const finished = Promise.all(animations.map((animation) => animation.finished)).then(() =>
+        animations.forEach((animation) => animation.cancel()),
+      );
+      return { finished, cancel: () => animations.forEach((animation) => animation.cancel()) };
+    },
+  });
+});`}
+/>
+
+The Collapsible asks for motion through a bubbling `tp-motion-request` for three roles: `disclosure` animates the panel's height, `indicator` turns the chevron and `content` targets the panel body, which has no motion by default. Claiming `content` lets you stagger the list items while the Collapsible still measures the panel, keeps it in the page during the exit and hides it once your animation finishes.

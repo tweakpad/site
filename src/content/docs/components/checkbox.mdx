@@ -97,6 +97,38 @@ for (const item of items) {
 
 The mixed state is presentation only: the parent's submitted value stays a plain Boolean.
 
+### Group controller
+
+<Preview
+  title="CheckboxGroupController"
+  align="stretch"
+  code={`<fieldset id="checkbox-group" style="display:grid;gap:var(--tp-space-3);margin:0 auto;padding:0;border:0;max-inline-size:22rem">
+  <legend style="padding:0;margin-block-end:var(--tp-space-3);font-weight:var(--tp-font-medium)">Notify me about new comments</legend>
+  <tp-checkbox parent>All channels</tp-checkbox>
+  <div style="display:grid;gap:var(--tp-space-3);padding-inline-start:var(--tp-space-6)">
+    <tp-checkbox name="channels" value="email">Email</tp-checkbox>
+    <tp-checkbox name="channels" value="push">Push notifications</tp-checkbox>
+    <tp-checkbox name="channels" value="slack">Slack</tp-checkbox>
+    <tp-checkbox name="channels" value="sms" disabled>SMS (add a phone number first)</tp-checkbox>
+  </div>
+  <output style="font-size:var(--tp-text-sm);color:var(--tp-muted-foreground)">Channels: email</output>
+</fieldset>`}
+  script={`import { CheckboxGroupController } from '@tweakpad/ui';
+
+await customElements.whenDefined('tp-checkbox');
+const fieldset = document.getElementById('checkbox-group');
+const output = fieldset.querySelector('output');
+const group = new CheckboxGroupController(fieldset, {
+  defaultValue: ['email'],
+  allValues: ['email', 'push', 'slack', 'sms'],
+});
+group.onValueChange = (event) => {
+  output.textContent = 'Channels: ' + (event.detail.value.join(', ') || 'none');
+};`}
+/>
+
+For a plain list with a "select all" box, `CheckboxGroupController` does the bookkeeping above for you. Bind it to an authored `fieldset` that holds a `parent` checkbox and valued children; it shows the parent as checked or mixed, checks or clears every enabled child when the parent is pressed, and keeps the group's value as a list. Each child still submits under its own `name`. Call `group.disconnect()` when the fieldset is removed.
+
 ### States
 
 <Preview

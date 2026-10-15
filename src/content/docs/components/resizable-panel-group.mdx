@@ -134,6 +134,45 @@ group.addEventListener('tp-layout-change', (event) => {
 });`}
 />
 
+### Controlled sizes
+
+Set `sizes` to own the layout, in panel order, and accept each proposal in `onSizesChange` by assigning `event.detail.value` back; ignoring it keeps the previous layout. Strings are percentages and numbers are pixels. Like the persistence adapter, `sizes` must be set before the group connects.
+
+<Preview
+  title="Layout presets"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-3)">
+  <div style="display:flex;gap:var(--tp-space-2)">
+    <tp-button id="resizable-preset-split" variant="outline" size="sm">Side by side</tp-button>
+    <tp-button id="resizable-preset-focus" variant="outline" size="sm">Focus on code</tp-button>
+  </div>
+  <tp-resizable-panel-group id="resizable-controlled" style="block-size:10rem;border:var(--tp-border-width) solid var(--tp-border);border-radius:var(--tp-radius-lg)">
+    <tp-resizable-panel id="resizable-controlled-code" min-size="20%">
+      <div style="padding:var(--tp-space-4);font-size:var(--tp-text-sm)">checkout.tsx</div>
+    </tp-resizable-panel>
+    <tp-resizable-handle label="Resize code" with-handle></tp-resizable-handle>
+    <tp-resizable-panel id="resizable-controlled-preview" min-size="15%">
+      <div style="padding:var(--tp-space-4);font-size:var(--tp-text-sm)">Preview</div>
+    </tp-resizable-panel>
+  </tp-resizable-panel-group>
+</div>`}
+  script={`// sizes must be set before the group first connects, so this demo swaps in a fresh copy.
+await customElements.whenDefined('tp-resizable-panel-group');
+const authored = document.querySelector('#resizable-controlled');
+const group = authored.cloneNode(true);
+group.sizes = ['50%', '50%'];
+group.onSizesChange = (event) => {
+  if (!event.defaultPrevented) group.sizes = event.detail.value;
+};
+authored.replaceWith(group);
+document.querySelector('#resizable-preset-split').addEventListener('click', () => {
+  group.sizes = ['50%', '50%'];
+});
+document.querySelector('#resizable-preset-focus').addEventListener('click', () => {
+  group.sizes = ['80%', '20%'];
+});`}
+/>
+
 ### Saved layout
 
 Give the group a `persistence-key` and a `persistenceAdapter` with `load(key)` and `save(key, layout)`, and it restores the saved layout on connect and saves each settled one. The library has no storage policy of its own, and the adapter must be in place before the group connects.

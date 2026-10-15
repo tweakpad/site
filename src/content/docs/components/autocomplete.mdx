@@ -112,6 +112,35 @@ autocomplete.matchFields = (item) => commands.find((command) => command.value ==
 
 The `items` property accepts strings, records and groups when the list comes from data. `matchFields` adds searchable text that is never displayed, such as aliases or keywords. Results can also come from a server through the `source` property.
 
+### Records
+
+<Preview
+  title="Ranking over several fields"
+  align="stretch"
+  code={`<tp-field label="Help center" description="Try: refund, password, seats" style="inline-size:100%;max-inline-size:22rem;margin-inline:auto">
+  <tp-autocomplete style="inline-size:100%" id="autocomplete-articles" placeholder="Search articles"></tp-autocomplete>
+</tp-field>`}
+  script={`import { createIndexSource } from '@tweakpad/ui';
+
+const articles = [
+  { title: 'Request a refund', summary: 'Refunds for annual plans within 30 days of purchase.' },
+  { title: 'Reset your password', summary: 'Get a sign-in link by email when you forget your password.' },
+  { title: 'Add or remove seats', summary: 'Change how many members your plan pays for.' },
+  { title: 'Download invoices', summary: 'Receipts and refund credit notes for every billing period.' },
+  { title: 'Turn on two-step sign-in', summary: 'Protect your password with an authenticator app.' },
+];
+await customElements.whenDefined('tp-autocomplete');
+const autocomplete = document.querySelector('#autocomplete-articles');
+autocomplete.itemToText = (article) => article.title;
+autocomplete.source = createIndexSource(articles, {
+  fields: ['title', 'summary'],
+  boost: { title: 3 },
+  extract: (article, field) => article[field],
+});`}
+/>
+
+`createIndexSource()` builds the same typo-tolerant index the component uses, over any records you pass. Here it searches each article's title and summary but weights the title three times, so "refund" lists *Request a refund* before the invoices article that only mentions it. `itemToText` names each record in the list and the field.
+
 ### Server search
 
 <Preview
@@ -151,9 +180,9 @@ A source's `search(query, context)` returns results directly or as a promise, in
 <Preview
   title="In a form"
   align="stretch"
-  code={`<form style="display:grid;gap:var(--tp-space-4);inline-size:100%;max-inline-size:22rem;margin-inline:auto">
+  code={`<form id="autocomplete-form" style="display:grid;gap:var(--tp-space-4);inline-size:100%;max-inline-size:22rem;margin-inline:auto">
   <tp-field label="Job title">
-    <tp-autocomplete style="inline-size:100%" name="title" required placeholder="e.g. Product designer">
+    <tp-autocomplete style="inline-size:100%" name="title" required submit-on-item-click placeholder="e.g. Product designer">
       <option>Product designer</option>
       <option>Product manager</option>
       <option>Frontend engineer</option>
@@ -161,7 +190,13 @@ A source's `search(query, context)` returns results directly or as a promise, in
     </tp-autocomplete>
   </tp-field>
   <tp-button type="submit" style="justify-self:start">Save profile</tp-button>
+  <output id="autocomplete-form-result" style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)"></output>
 </form>`}
+  script={`const form = document.querySelector('#autocomplete-form');
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  form.querySelector('#autocomplete-form-result').value = 'Saved: ' + new FormData(form).get('title');
+});`}
 />
 
-With `name`, the form receives the text, including text that matches no suggestion. `required` requires text. Enter with nothing highlighted submits the form, and Escape first closes the suggestions, then clears the text.
+With `name`, the form receives the text, including text that matches no suggestion. `required` requires text. Enter with nothing highlighted submits the form, and Escape first closes the suggestions, then clears the text. `submit-on-item-click` submits as soon as a suggestion is picked, which suits a search box that has nothing else to fill in.
