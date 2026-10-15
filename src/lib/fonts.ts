@@ -5,7 +5,14 @@ import { url } from './url';
 /**
  * Fivo Sans is self-hosted from public/fonts/. A weight gets an @font-face only when its file is
  * there, so the page never requests a missing font; until then the body falls back to Geist.
+ *
+ * Fivo Sans ships ascent 750 / descent 200 with a 700 cap height, which centers its line box 75
+ * units below the cap middle: every label in a fixed-height control (buttons, inputs, tabs) sits
+ * ~0.075em high. Shifting 75 units from ascent to descent centers caps in the line box the way
+ * Inter, the library's default face, already does. Total height, and so `line-height: normal`, is
+ * unchanged.
  */
+const METRICS = 'ascent-override:82.5%;descent-override:12.5%';
 const WEIGHTS: Record<string, number> = {
   thin: 100,
   extralight: 200,
@@ -33,6 +40,6 @@ export const bodyFontFaces = files
     const weight = WEIGHTS[(match.groups.weight ?? 'regular').toLowerCase()] ?? 400;
     const style = match.groups.italic ? 'italic' : 'normal';
     const format = FORMATS[match.groups.ext.toLowerCase()];
-    return `@font-face{font-family:'Fivo Sans';src:url('${url(`/fonts/${file}`)}') format('${format}');font-weight:${weight};font-style:${style};font-display:swap}`;
+    return `@font-face{font-family:'Fivo Sans';src:url('${url(`/fonts/${file}`)}') format('${format}');font-weight:${weight};font-style:${style};font-display:swap;${METRICS}}`;
   })
   .filter(Boolean);
