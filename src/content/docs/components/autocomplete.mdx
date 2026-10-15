@@ -112,6 +112,40 @@ autocomplete.matchFields = (item) => commands.find((command) => command.value ==
 
 The `items` property accepts strings, records and groups when the list comes from data. `matchFields` adds searchable text that is never displayed, such as aliases or keywords. Results can also come from a server through the `source` property.
 
+### Server search
+
+<Preview
+  title="Search source"
+  align="stretch"
+  code={`<tp-field label="Departure airport" description="Results arrive after a simulated 600 ms request." style="inline-size:100%;max-inline-size:22rem;margin-inline:auto">
+  <tp-autocomplete style="inline-size:100%" id="autocomplete-server" search-delay="250" placeholder="City or airport code"></tp-autocomplete>
+</tp-field>`}
+  script={`const airports = [
+  'Amsterdam Schiphol (AMS)', 'Barcelona El Prat (BCN)', 'Berlin Brandenburg (BER)',
+  'Dublin (DUB)', 'Frankfurt (FRA)', 'Lisbon Humberto Delgado (LIS)', 'London Heathrow (LHR)',
+  'London Gatwick (LGW)', 'Madrid Barajas (MAD)', 'Milan Malpensa (MXP)', 'Munich (MUC)',
+  'Paris Charles de Gaulle (CDG)', 'Rome Fiumicino (FCO)', 'Vienna (VIE)', 'Zurich (ZRH)',
+];
+await customElements.whenDefined('tp-autocomplete');
+document.querySelector('#autocomplete-server').source = {
+  // Stands in for fetch('/api/airports?q=' + query, { signal }).
+  search(query, { signal }) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        const text = query.trim().toLowerCase();
+        resolve(airports.filter((airport) => airport.toLowerCase().includes(text)).slice(0, 8));
+      }, 600);
+      signal.addEventListener('abort', () => {
+        clearTimeout(timer);
+        reject(signal.reason);
+      });
+    });
+  },
+};`}
+/>
+
+A source's `search(query, context)` returns results directly or as a promise, in the order they should appear. `search-delay` waits for a pause in typing, and each new query aborts the previous one through `context.signal`. While a request is pending the list is marked busy and keeps the previous suggestions, or shows a loading row when there are none. `createRequestSource()` wraps a URL and a response mapper into a source for you.
+
 ### Forms
 
 <Preview

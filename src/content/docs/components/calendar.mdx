@@ -113,6 +113,29 @@ Disabled and unavailable dates are skipped by keyboard movement and cannot be se
 </tp-card>`}
 />
 
+### Locale
+
+`locale` takes a BCP 47 tag and formats the caption, weekday names, day numbers and accessible date names through `Intl`. Without it the Calendar follows the document language, then the browser. The first day of the week also comes from the locale, Monday in French and Sunday in Brazilian Portuguese, unless `week-starts-on` sets it.
+
+<Preview
+  title="French and Brazilian Portuguese"
+  code={`<div style="display:flex;flex-wrap:wrap;gap:var(--tp-space-4);justify-content:center">
+  <tp-card section-colors="off" style="inline-size:fit-content">
+    <tp-calendar id="calendar-locale-fr" label="Date de livraison" locale="fr" today="2026-06-08" default-value="2026-06-12"></tp-calendar>
+  </tp-card>
+  <tp-card section-colors="off" style="inline-size:fit-content">
+    <tp-calendar label="Data de entrega" locale="pt-BR" today="2026-06-08" default-value="2026-06-12"></tp-calendar>
+  </tp-card>
+</div>`}
+  script={`await customElements.whenDefined('tp-calendar');
+document.getElementById('calendar-locale-fr').messages = {
+  previous: (_month, caption) => 'Mois précédent, ' + caption,
+  next: (_month, caption) => 'Mois suivant, ' + caption,
+};`}
+/>
+
+The value stays a `YYYY-MM-DD` string in every locale. `label` names the group; the remaining control names and validation messages come from the `messages` property, which falls back to English. The French calendar above names its navigation buttons that way.
+
 ### Forms and events
 
 With a `name`, the Calendar submits its value and takes part in validation; `required` reports a missing date through Field. Each selection emits a cancelable `tp-value-change` whose `detail.value` holds the new selection.
