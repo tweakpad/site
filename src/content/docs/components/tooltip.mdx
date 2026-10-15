@@ -75,6 +75,79 @@ Descriptions can include an Icon or Key Hint. Links, buttons and inputs cannot g
 </tp-tooltip>`}
 />
 
+### Toolbar groups
+
+In a toolbar, the first tooltip should wait but the next ones should not. Give the tooltips one `TooltipProvider` from `@tweakpad/ui`: after one opens, moving to a neighbour opens its tooltip at once, until the pointer has rested away for `restTimeout` (400 ms by default). Only one tooltip in the group is open at a time.
+
+<Preview
+  title="Shared provider"
+  code={`<div id="tooltip-toolbar" role="toolbar" aria-label="Formatting" style="display:flex;gap:var(--tp-space-1)">
+  <tp-tooltip>
+    <tp-button slot="trigger" variant="ghost" size="icon-sm" aria-label="Bold" data-glyph="bold"></tp-button>
+    Bold
+  </tp-tooltip>
+  <tp-tooltip>
+    <tp-button slot="trigger" variant="ghost" size="icon-sm" aria-label="Italic" data-glyph="italic"></tp-button>
+    Italic
+  </tp-tooltip>
+  <tp-tooltip>
+    <tp-button slot="trigger" variant="ghost" size="icon-sm" aria-label="Underline" data-glyph="underline"></tp-button>
+    Underline
+  </tp-tooltip>
+  <tp-tooltip>
+    <tp-button slot="trigger" variant="ghost" size="icon-sm" aria-label="Insert link" data-glyph="link"></tp-button>
+    Insert link
+  </tp-tooltip>
+</div>`}
+  script={`import { TooltipProvider } from '@tweakpad/ui';
+
+const glyphs = {
+  bold: { viewBox: '0 0 24 24', paths: [{ d: 'M6 12h8a4 4 0 0 1 0 8H6V4h7a4 4 0 0 1 0 8', strokeWidth: 2 }] },
+  italic: { viewBox: '0 0 24 24', paths: [{ d: 'M19 4h-9M14 20H5M15 4 9 20', strokeWidth: 2 }] },
+  underline: { viewBox: '0 0 24 24', paths: [{ d: 'M6 3v7a6 6 0 0 0 12 0V3M4 21h16', strokeWidth: 2 }] },
+  link: { viewBox: '0 0 24 24', paths: [{ d: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71', strokeWidth: 2 }] },
+};
+const provider = new TooltipProvider({ openDelay: 600, restTimeout: 400 });
+await customElements.whenDefined('tp-tooltip');
+for (const tooltip of document.querySelectorAll('#tooltip-toolbar tp-tooltip')) {
+  tooltip.provider = provider;
+  const button = tooltip.querySelector('tp-button');
+  button.icon = glyphs[button.dataset.glyph];
+}`}
+/>
+
+### One tooltip for many triggers
+
+A long list does not need a tooltip per row. Create a handle with `createTooltipHandle()`, attach one Tooltip to it, and register each trigger with a `payload`. The Tooltip's `content` renders the payload of whichever trigger is active, here with `html` from `lit`.
+
+<Preview
+  title="Shared handle"
+  code={`<div id="tooltip-handle" style="display:flex;gap:var(--tp-space-2)">
+  <tp-avatar fallback="MC" alt="Maya Chen" tabindex="0" data-name="Maya Chen" data-role="Design lead"></tp-avatar>
+  <tp-avatar fallback="JW" alt="Jonas Weber" tabindex="0" data-name="Jonas Weber" data-role="Backend engineer"></tp-avatar>
+  <tp-avatar fallback="PP" alt="Priya Patel" tabindex="0" data-name="Priya Patel" data-role="Product manager"></tp-avatar>
+  <tp-avatar fallback="LR" alt="Luca Rossi" tabindex="0" data-name="Luca Rossi" data-role="Support"></tp-avatar>
+</div>
+<tp-tooltip id="tooltip-handle-tip"></tp-tooltip>`}
+  script={`import { createTooltipHandle } from '@tweakpad/ui';
+import { html } from 'lit';
+
+const handle = createTooltipHandle();
+const tooltip = document.querySelector('#tooltip-handle-tip');
+tooltip.handle = handle;
+tooltip.content = (person) =>
+  person ? html\`<span style="display:grid"><strong>\${person.name}</strong>\${person.role}</span>\` : '';
+for (const avatar of document.querySelectorAll('#tooltip-handle tp-avatar')) {
+  handle.registerTrigger(avatar, {
+    identifier: avatar.dataset.name,
+    payload: { name: avatar.dataset.name, role: avatar.dataset.role },
+    openDelay: 200,
+  });
+}`}
+/>
+
+`registerTrigger()` returns a cleanup function, and `handle.open(identifier)` opens the tooltip for one trigger from code.
+
 ### Disabled
 
 <Preview

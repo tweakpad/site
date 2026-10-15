@@ -149,6 +149,57 @@ Give each control in a row a name that includes the row, such as "Actions for Re
 </tp-table>`}
 />
 
+A Select in a cell works the same way for picking from a fixed list, such as reassigning work without leaving the table.
+
+<Preview
+  title="Selects"
+  align="stretch"
+  code={`<tp-table label="Task assignments">
+  <tp-table-header>
+    <tp-table-row>
+      <tp-table-head>Task</tp-table-head>
+      <tp-table-head>Assignee</tp-table-head>
+      <tp-table-head>Due</tp-table-head>
+    </tp-table-row>
+  </tp-table-header>
+  <tp-table-body>
+    <tp-table-row>
+      <tp-table-head scope="row">Review vendor contract</tp-table-head>
+      <tp-table-cell style="inline-size:12rem">
+        <tp-select label="Assignee for Review vendor contract" default-value="jonas">
+          <tp-select-option value="maya">Maya Chen</tp-select-option>
+          <tp-select-option value="jonas">Jonas Weber</tp-select-option>
+          <tp-select-option value="priya">Priya Patel</tp-select-option>
+        </tp-select>
+      </tp-table-cell>
+      <tp-table-cell>Due Friday</tp-table-cell>
+    </tp-table-row>
+    <tp-table-row>
+      <tp-table-head scope="row">Prepare Q3 board deck</tp-table-head>
+      <tp-table-cell style="inline-size:12rem">
+        <tp-select label="Assignee for Prepare Q3 board deck" default-value="maya">
+          <tp-select-option value="maya">Maya Chen</tp-select-option>
+          <tp-select-option value="jonas">Jonas Weber</tp-select-option>
+          <tp-select-option value="priya">Priya Patel</tp-select-option>
+        </tp-select>
+      </tp-table-cell>
+      <tp-table-cell>Due next week</tp-table-cell>
+    </tp-table-row>
+    <tp-table-row>
+      <tp-table-head scope="row">Renew SSL certificates</tp-table-head>
+      <tp-table-cell style="inline-size:12rem">
+        <tp-select label="Assignee for Renew SSL certificates" default-value="priya">
+          <tp-select-option value="maya">Maya Chen</tp-select-option>
+          <tp-select-option value="jonas">Jonas Weber</tp-select-option>
+          <tp-select-option value="priya">Priya Patel</tp-select-option>
+        </tp-select>
+      </tp-table-cell>
+      <tp-table-cell>Overdue</tp-table-cell>
+    </tp-table-row>
+  </tp-table-body>
+</tp-table>`}
+/>
+
 ### Row selection
 
 <Preview
@@ -189,7 +240,7 @@ Give each control in a row a name that includes the row, such as "Actions for Re
 <Preview
   title="Sticky edges"
   align="stretch"
-  code={`<tp-table label="Monthly revenue by region" sticky-header sticky-footer sticky-start-columns="1" style="max-block-size:18rem">
+  code={`<tp-table label="Monthly revenue by region" sticky-header sticky-footer sticky-start-columns="1" sticky-end-columns="1" style="max-block-size:18rem">
   <tp-table-header>
     <tp-table-row>
       <tp-table-head>Region</tp-table-head>
@@ -199,23 +250,24 @@ Give each control in a row a name that includes the row, such as "Actions for Re
       <tp-table-head style="text-align:end">April</tp-table-head>
       <tp-table-head style="text-align:end">May</tp-table-head>
       <tp-table-head style="text-align:end">June</tp-table-head>
+      <tp-table-head style="text-align:end">Half year</tp-table-head>
     </tp-table-row>
   </tp-table-header>
   <tp-table-body>
-    <tp-table-row><tp-table-head scope="row">North America</tp-table-head><tp-table-cell style="text-align:end">$48,200</tp-table-cell><tp-table-cell style="text-align:end">$51,900</tp-table-cell><tp-table-cell style="text-align:end">$55,300</tp-table-cell><tp-table-cell style="text-align:end">$53,800</tp-table-cell><tp-table-cell style="text-align:end">$58,100</tp-table-cell><tp-table-cell style="text-align:end">$61,400</tp-table-cell></tp-table-row>
-    <tp-table-row><tp-table-head scope="row">South America</tp-table-head><tp-table-cell style="text-align:end">$12,400</tp-table-cell><tp-table-cell style="text-align:end">$13,100</tp-table-cell><tp-table-cell style="text-align:end">$12,800</tp-table-cell><tp-table-cell style="text-align:end">$14,600</tp-table-cell><tp-table-cell style="text-align:end">$15,200</tp-table-cell><tp-table-cell style="text-align:end">$16,000</tp-table-cell></tp-table-row>
-    <tp-table-row><tp-table-head scope="row">Western Europe</tp-table-head><tp-table-cell style="text-align:end">$39,700</tp-table-cell><tp-table-cell style="text-align:end">$41,200</tp-table-cell><tp-table-cell style="text-align:end">$43,900</tp-table-cell><tp-table-cell style="text-align:end">$42,500</tp-table-cell><tp-table-cell style="text-align:end">$45,800</tp-table-cell><tp-table-cell style="text-align:end">$47,300</tp-table-cell></tp-table-row>
-    <tp-table-row><tp-table-head scope="row">Eastern Europe</tp-table-head><tp-table-cell style="text-align:end">$9,800</tp-table-cell><tp-table-cell style="text-align:end">$10,400</tp-table-cell><tp-table-cell style="text-align:end">$11,100</tp-table-cell><tp-table-cell style="text-align:end">$10,900</tp-table-cell><tp-table-cell style="text-align:end">$11,700</tp-table-cell><tp-table-cell style="text-align:end">$12,300</tp-table-cell></tp-table-row>
-    <tp-table-row><tp-table-head scope="row">Middle East</tp-table-head><tp-table-cell style="text-align:end">$7,200</tp-table-cell><tp-table-cell style="text-align:end">$7,900</tp-table-cell><tp-table-cell style="text-align:end">$8,300</tp-table-cell><tp-table-cell style="text-align:end">$8,100</tp-table-cell><tp-table-cell style="text-align:end">$8,800</tp-table-cell><tp-table-cell style="text-align:end">$9,400</tp-table-cell></tp-table-row>
-    <tp-table-row><tp-table-head scope="row">Africa</tp-table-head><tp-table-cell style="text-align:end">$5,100</tp-table-cell><tp-table-cell style="text-align:end">$5,600</tp-table-cell><tp-table-cell style="text-align:end">$6,000</tp-table-cell><tp-table-cell style="text-align:end">$6,400</tp-table-cell><tp-table-cell style="text-align:end">$6,900</tp-table-cell><tp-table-cell style="text-align:end">$7,300</tp-table-cell></tp-table-row>
-    <tp-table-row><tp-table-head scope="row">South Asia</tp-table-head><tp-table-cell style="text-align:end">$14,300</tp-table-cell><tp-table-cell style="text-align:end">$15,800</tp-table-cell><tp-table-cell style="text-align:end">$16,900</tp-table-cell><tp-table-cell style="text-align:end">$17,400</tp-table-cell><tp-table-cell style="text-align:end">$18,600</tp-table-cell><tp-table-cell style="text-align:end">$19,900</tp-table-cell></tp-table-row>
-    <tp-table-row><tp-table-head scope="row">East Asia</tp-table-head><tp-table-cell style="text-align:end">$31,600</tp-table-cell><tp-table-cell style="text-align:end">$33,200</tp-table-cell><tp-table-cell style="text-align:end">$34,700</tp-table-cell><tp-table-cell style="text-align:end">$36,100</tp-table-cell><tp-table-cell style="text-align:end">$37,900</tp-table-cell><tp-table-cell style="text-align:end">$39,500</tp-table-cell></tp-table-row>
-    <tp-table-row><tp-table-head scope="row">Oceania</tp-table-head><tp-table-cell style="text-align:end">$6,700</tp-table-cell><tp-table-cell style="text-align:end">$7,100</tp-table-cell><tp-table-cell style="text-align:end">$7,400</tp-table-cell><tp-table-cell style="text-align:end">$7,900</tp-table-cell><tp-table-cell style="text-align:end">$8,200</tp-table-cell><tp-table-cell style="text-align:end">$8,800</tp-table-cell></tp-table-row>
+    <tp-table-row><tp-table-head scope="row">North America</tp-table-head><tp-table-cell style="text-align:end">$48,200</tp-table-cell><tp-table-cell style="text-align:end">$51,900</tp-table-cell><tp-table-cell style="text-align:end">$55,300</tp-table-cell><tp-table-cell style="text-align:end">$53,800</tp-table-cell><tp-table-cell style="text-align:end">$58,100</tp-table-cell><tp-table-cell style="text-align:end">$61,400</tp-table-cell><tp-table-cell style="text-align:end"><strong>$328,700</strong></tp-table-cell></tp-table-row>
+    <tp-table-row><tp-table-head scope="row">South America</tp-table-head><tp-table-cell style="text-align:end">$12,400</tp-table-cell><tp-table-cell style="text-align:end">$13,100</tp-table-cell><tp-table-cell style="text-align:end">$12,800</tp-table-cell><tp-table-cell style="text-align:end">$14,600</tp-table-cell><tp-table-cell style="text-align:end">$15,200</tp-table-cell><tp-table-cell style="text-align:end">$16,000</tp-table-cell><tp-table-cell style="text-align:end"><strong>$84,100</strong></tp-table-cell></tp-table-row>
+    <tp-table-row><tp-table-head scope="row">Western Europe</tp-table-head><tp-table-cell style="text-align:end">$39,700</tp-table-cell><tp-table-cell style="text-align:end">$41,200</tp-table-cell><tp-table-cell style="text-align:end">$43,900</tp-table-cell><tp-table-cell style="text-align:end">$42,500</tp-table-cell><tp-table-cell style="text-align:end">$45,800</tp-table-cell><tp-table-cell style="text-align:end">$47,300</tp-table-cell><tp-table-cell style="text-align:end"><strong>$260,400</strong></tp-table-cell></tp-table-row>
+    <tp-table-row><tp-table-head scope="row">Eastern Europe</tp-table-head><tp-table-cell style="text-align:end">$9,800</tp-table-cell><tp-table-cell style="text-align:end">$10,400</tp-table-cell><tp-table-cell style="text-align:end">$11,100</tp-table-cell><tp-table-cell style="text-align:end">$10,900</tp-table-cell><tp-table-cell style="text-align:end">$11,700</tp-table-cell><tp-table-cell style="text-align:end">$12,300</tp-table-cell><tp-table-cell style="text-align:end"><strong>$66,200</strong></tp-table-cell></tp-table-row>
+    <tp-table-row><tp-table-head scope="row">Middle East</tp-table-head><tp-table-cell style="text-align:end">$7,200</tp-table-cell><tp-table-cell style="text-align:end">$7,900</tp-table-cell><tp-table-cell style="text-align:end">$8,300</tp-table-cell><tp-table-cell style="text-align:end">$8,100</tp-table-cell><tp-table-cell style="text-align:end">$8,800</tp-table-cell><tp-table-cell style="text-align:end">$9,400</tp-table-cell><tp-table-cell style="text-align:end"><strong>$49,700</strong></tp-table-cell></tp-table-row>
+    <tp-table-row><tp-table-head scope="row">Africa</tp-table-head><tp-table-cell style="text-align:end">$5,100</tp-table-cell><tp-table-cell style="text-align:end">$5,600</tp-table-cell><tp-table-cell style="text-align:end">$6,000</tp-table-cell><tp-table-cell style="text-align:end">$6,400</tp-table-cell><tp-table-cell style="text-align:end">$6,900</tp-table-cell><tp-table-cell style="text-align:end">$7,300</tp-table-cell><tp-table-cell style="text-align:end"><strong>$37,300</strong></tp-table-cell></tp-table-row>
+    <tp-table-row><tp-table-head scope="row">South Asia</tp-table-head><tp-table-cell style="text-align:end">$14,300</tp-table-cell><tp-table-cell style="text-align:end">$15,800</tp-table-cell><tp-table-cell style="text-align:end">$16,900</tp-table-cell><tp-table-cell style="text-align:end">$17,400</tp-table-cell><tp-table-cell style="text-align:end">$18,600</tp-table-cell><tp-table-cell style="text-align:end">$19,900</tp-table-cell><tp-table-cell style="text-align:end"><strong>$102,900</strong></tp-table-cell></tp-table-row>
+    <tp-table-row><tp-table-head scope="row">East Asia</tp-table-head><tp-table-cell style="text-align:end">$31,600</tp-table-cell><tp-table-cell style="text-align:end">$33,200</tp-table-cell><tp-table-cell style="text-align:end">$34,700</tp-table-cell><tp-table-cell style="text-align:end">$36,100</tp-table-cell><tp-table-cell style="text-align:end">$37,900</tp-table-cell><tp-table-cell style="text-align:end">$39,500</tp-table-cell><tp-table-cell style="text-align:end"><strong>$213,000</strong></tp-table-cell></tp-table-row>
+    <tp-table-row><tp-table-head scope="row">Oceania</tp-table-head><tp-table-cell style="text-align:end">$6,700</tp-table-cell><tp-table-cell style="text-align:end">$7,100</tp-table-cell><tp-table-cell style="text-align:end">$7,400</tp-table-cell><tp-table-cell style="text-align:end">$7,900</tp-table-cell><tp-table-cell style="text-align:end">$8,200</tp-table-cell><tp-table-cell style="text-align:end">$8,800</tp-table-cell><tp-table-cell style="text-align:end"><strong>$46,100</strong></tp-table-cell></tp-table-row>
   </tp-table-body>
   <tp-table-footer>
-    <tp-table-row><tp-table-head scope="row">Total</tp-table-head><tp-table-cell style="text-align:end">$175,000</tp-table-cell><tp-table-cell style="text-align:end">$186,200</tp-table-cell><tp-table-cell style="text-align:end">$196,400</tp-table-cell><tp-table-cell style="text-align:end">$197,700</tp-table-cell><tp-table-cell style="text-align:end">$211,200</tp-table-cell><tp-table-cell style="text-align:end">$221,900</tp-table-cell></tp-table-row>
+    <tp-table-row><tp-table-head scope="row">Total</tp-table-head><tp-table-cell style="text-align:end">$175,000</tp-table-cell><tp-table-cell style="text-align:end">$186,200</tp-table-cell><tp-table-cell style="text-align:end">$196,400</tp-table-cell><tp-table-cell style="text-align:end">$197,700</tp-table-cell><tp-table-cell style="text-align:end">$211,200</tp-table-cell><tp-table-cell style="text-align:end">$221,900</tp-table-cell><tp-table-cell style="text-align:end"><strong>$1,188,400</strong></tp-table-cell></tp-table-row>
   </tp-table-footer>
 </tp-table>`}
 />
 
-Constrain the Table with ordinary CSS such as `max-block-size`, and it becomes a focusable scroll region named by `label`. `sticky-header`, `sticky-footer` and the column counts pin each edge independently and follow RTL.
+Constrain the Table with ordinary CSS such as `max-block-size`, and it becomes a focusable scroll region named by `label`. `sticky-header`, `sticky-footer`, `sticky-start-columns` and `sticky-end-columns` pin each edge independently and follow RTL: here the region names and the half-year totals stay in view while the months scroll between them.

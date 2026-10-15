@@ -62,6 +62,44 @@ await customElements.whenDefined('tp-icon');
 for (const icon of document.querySelectorAll('#toggle-icons tp-icon')) icon.icon = bookmark;`}
 />
 
+### Artwork that follows the state
+
+To swap artwork with the pressed state, such as an outlined bookmark that fills in, render the content from the state through `partContracts`. The `toggle-content` part's `content` receives the committed state, and `html` from `lit` builds the template.
+
+<Preview
+  title="Pressed artwork"
+  code={`<div id="toggle-artwork" style="display:flex;gap:var(--tp-space-2)">
+  <tp-toggle variant="outline" data-label="Save"></tp-toggle>
+  <tp-toggle variant="outline" data-label="Save" default-pressed></tp-toggle>
+</div>`}
+  script={`import { html } from 'lit';
+
+const bookmark = { viewBox: '0 0 24 24', paths: [{ d: 'M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16l-7-4-7 4Z', strokeWidth: 2 }] };
+const filled = { ...bookmark, paths: bookmark.paths.map((path) => ({ ...path, fill: 'currentColor' })) };
+await customElements.whenDefined('tp-toggle');
+for (const toggle of document.querySelectorAll('#toggle-artwork tp-toggle')) {
+  toggle.partContracts = {
+    'toggle-content': {
+      content: (state) => html\`<tp-icon data-icon="inline-start" .icon=\${state.pressed ? filled : bookmark}></tp-icon> \${state.pressed ? 'Saved' : 'Save'}\`,
+    },
+  };
+}`}
+/>
+
+### Beside Buttons
+
+Toggles share the Button's variants and sizes, so a Toggle and a Button of the same size line up in a toolbar. Use the Button for a one-off action and the Toggle for a state that stays on.
+
+<Preview
+  title="With Buttons"
+  code={`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--tp-space-2)">
+  <tp-button variant="outline" size="sm">Insert link</tp-button>
+  <tp-toggle variant="outline" size="sm">Spell check</tp-toggle>
+  <tp-button variant="outline">Insert link</tp-button>
+  <tp-toggle variant="outline" default-pressed>Spell check</tp-toggle>
+</div>`}
+/>
+
 ### Listening to changes
 
 Every press proposes the inverse state through a cancelable `tp-value-change`. Read `event.detail.value` to react, or call `event.preventDefault()` to keep the current state.

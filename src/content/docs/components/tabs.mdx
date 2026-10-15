@@ -122,6 +122,65 @@ document.querySelector('#tabs-demo-report-jump').addEventListener('click', () =>
 
 Selection publishes a cancelable `tp-value-change` with the proposed `value`; call `preventDefault()` to keep the current tab, for example while a panel has unsaved edits. `setValue()` selects a tab from code through the same proposal and returns whether it was accepted. For controlled Tabs, set the `value` property from the start and write each accepted `detail.value` back to it.
 
+### Guarding unsaved edits
+
+For controlled Tabs, set `value` from the start and accept proposals in `onValueChange`. Skipping the write-back, or calling `preventDefault()`, keeps the current tab. Edit the name below, then try to leave the tab. The profile panel is `keep-mounted`, so its draft survives while another tab is showing.
+
+<Preview
+  title="Controlled with a veto"
+  align="stretch"
+  script={`const tabs = document.querySelector('#tabs-guard');
+const name = document.querySelector('#tabs-guard-name');
+const status = document.querySelector('#tabs-guard-status');
+const save = document.querySelector('#tabs-guard-save');
+await customElements.whenDefined('tp-input');
+await name.updateComplete;
+let saved = name.value;
+const dirty = () => name.value !== saved;
+tabs.onValueChange = (event) => {
+  if (dirty()) {
+    event.preventDefault();
+    status.textContent = 'Save or discard your changes before leaving Profile.';
+    return;
+  }
+  status.textContent = '';
+  tabs.value = event.detail.value;
+};
+name.addEventListener('input', () => { status.textContent = ''; });
+save.addEventListener('click', () => {
+  saved = name.value;
+  status.textContent = 'Saved.';
+});
+document.querySelector('#tabs-guard-discard').addEventListener('click', () => {
+  name.setValue(saved);
+  status.textContent = '';
+});`}
+  code={`<tp-tabs id="tabs-guard" value="profile" label="Account settings" style="max-inline-size:26rem;margin-inline:auto">
+  <button slot="tab" value="profile">Profile</button>
+  <button slot="tab" value="notifications">Notifications</button>
+  <section slot="panel" value="profile" keep-mounted>
+    <tp-card>
+      <span slot="header">Profile</span>
+      <span slot="description">Shown on comments and assignments.</span>
+      <tp-field label="Display name">
+        <tp-input id="tabs-guard-name" name="display-name" default-value="Maya Chen"></tp-input>
+      </tp-field>
+      <p id="tabs-guard-status" role="status" style="margin:0;color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)"></p>
+      <div slot="footer" style="display:flex;gap:var(--tp-space-2)">
+        <tp-button id="tabs-guard-save">Save</tp-button>
+        <tp-button id="tabs-guard-discard" variant="ghost">Discard</tp-button>
+      </div>
+    </tp-card>
+  </section>
+  <section slot="panel" value="notifications">
+    <tp-card>
+      <span slot="header">Notifications</span>
+      <span slot="description">Email me when someone mentions me or assigns me a task.</span>
+    </tp-card>
+  </section>
+</tp-tabs>`}
+/>
+
 ### Disabled tabs
 
 <Preview
@@ -137,7 +196,7 @@ Selection publishes a cancelable `tp-value-change` with the proposed `value`; ca
 </tp-tabs>`}
 />
 
-`aria-disabled="true"` keeps a tab discoverable through arrow navigation; native `disabled` removes it from focus. Neither can be activated.
+`aria-disabled="true"` keeps a tab discoverable through arrow navigation; native `disabled` removes it from focus. Neither can be activated. Setting `disabled` on Tabs itself locks the whole list, for example while the content behind it is loading.
 
 ### Panel mounting
 

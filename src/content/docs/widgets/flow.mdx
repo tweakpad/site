@@ -91,6 +91,37 @@ A node definition sets `type`, `label`, `shape` (`card` by default, `compact`, `
 
 Properties name a `key` of the node data and a `control`: `slider`, `number`, `text`, `textarea`, `select`, `switch`, `checkbox`, `color` or `easing`, each rendered by the library component of that name. Editing a control inside a node proposes a change to the document like any other edit, so it can be undone.
 
+### Edge kinds
+
+An edge's `kind` is `smoothstep` (the default), `bezier`, `step`, `straight` or `orthogonal`; `rules.defaultEdgeKind` sets it for new connections. `animated` marches a dashed stroke from source to target so the direction reads at a glance, and adds a closed arrow that keeps it readable when reduced motion pauses the dash. `label` renders as a Badge pill on the path.
+
+<Preview
+  title="Kinds and animation"
+  align="stretch"
+  code={`<tp-flow id="flow-edges" label="Edge kinds" fit-view controls="" size="sm" style="inline-size:100%;block-size:22.5rem"></tp-flow>`}
+  script={`await customElements.whenDefined('tp-flow');
+const flow = document.querySelector('#flow-edges');
+const io = [{ id: 'in', label: 'In', direction: 'input', multiple: true }, { id: 'out', label: 'Out', direction: 'output' }];
+flow.schema = {
+  nodes: [
+    { type: 'source', label: 'Source', tone: 'chart-1', shape: 'compact', ports: [{ id: 'out', label: 'Out', direction: 'output' }] },
+    { type: 'sink', label: 'Sink', tone: 'chart-4', shape: 'compact', ports: io },
+  ],
+};
+const kinds = ['smoothstep', 'bezier', 'step', 'straight', 'orthogonal'];
+flow.load({
+  version: 1,
+  nodes: [
+    { id: 'events', type: 'source', position: { x: 0, y: 160 }, label: 'Order events', data: {} },
+    ...kinds.map((kind, index) => ({ id: kind, type: 'sink', position: { x: 380, y: index * 80 }, label: kind, data: {} })),
+  ],
+  edges: kinds.map((kind, index) => ({
+    id: 'edge-' + kind, source: 'events', sourcePort: 'out', target: kind, targetPort: 'in',
+    kind, animated: index % 2 === 0,
+  })),
+});`}
+/>
+
 ### Declarative nodes
 
 Nodes and edges can be written as `tp-flow-node` and `tp-flow-edge` children. They are adopted into the document by `id`; `x` and `y` place a node, `data` is JSON, and an edge takes `source`, `source-port`, `target`, `target-port`, `kind`, `label`, `animated` and `marker-end`. Dragging writes back only the `x`, `y`, `width` and `height` attributes. Content inside a node renders in its body, and a library control with `data-flow-property` edits that key of the node data.
@@ -190,11 +221,13 @@ flow.load({
   ],
   edges: [
     { id: 'p1', source: 'hook', sourcePort: 'out', target: 'filter', targetPort: 'in', markerEnd: 'arrowclosed' },
-    { id: 'p2', source: 'filter', sourcePort: 'out', target: 'table', targetPort: 'in', markerEnd: 'arrowclosed' },
-    { id: 'p3', source: 'filter', sourcePort: 'out', target: 'rate', targetPort: 'in', markerEnd: 'arrowclosed' },
+    { id: 'p2', source: 'filter', sourcePort: 'out', target: 'table', targetPort: 'in', markerEnd: 'arrowclosed', label: 'store' },
+    { id: 'p3', source: 'filter', sourcePort: 'out', target: 'rate', targetPort: 'in', markerEnd: 'arrowclosed', label: 'count' },
   ],
 });`}
 />
+
+With a node library, every edge label carries a "+" Button that opens the library to insert a node on that edge, and releasing a new connection on the empty pane opens it to add one at the drop point.
 
 `palette-open` and `inspector-open` (with their `default-` forms) make the panels controlled; `setPaletteOpen()` and `setInspectorOpen()` open them from your own controls, and both report through `tp-open-change`. `inspector="manual"` leaves opening entirely to that lane, and `inspector="none"` never shows it.
 
@@ -246,6 +279,66 @@ document.querySelector('#flow-panels-layout').addEventListener('click', () => fl
 
 `layout(direction)` runs the automatic layout as one undoable step and reports `tp-layout-complete`. `auto-layout` (`horizontal`, `vertical` or `smart`) keeps the graph laid out as nodes are added or dropped.
 
+<Preview
+  title="Automatic layout"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-3);inline-size:100%">
+  <tp-toggle-group id="flow-layout-mode" label="Layout direction" variant="outline" spacing="0" default-value='["horizontal"]' style="justify-self:center">
+    <tp-toggle value="horizontal">Horizontal</tp-toggle>
+    <tp-toggle value="vertical">Vertical</tp-toggle>
+    <tp-toggle value="smart">Smart</tp-toggle>
+  </tp-toggle-group>
+  <tp-flow id="flow-layout" label="Support triage" auto-layout="horizontal" controls="fit layout undo redo" controls-position="bottom-center" controls-orientation="horizontal" fit-view size="sm" style="inline-size:100%;block-size:24rem"></tp-flow>
+  <output id="flow-layout-output" style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">Drag a node, or switch the direction.</output>
+</div>`}
+  script={`await customElements.whenDefined('tp-flow');
+const flow = document.querySelector('#flow-layout');
+const mode = document.querySelector('#flow-layout-mode');
+const output = document.querySelector('#flow-layout-output');
+const ports = [{ id: 'in', label: 'In', direction: 'input' }, { id: 'out', label: 'Out', direction: 'output' }];
+flow.schema = {
+  nodes: [
+    { type: 'trigger', label: 'Trigger', tone: 'chart-1', ports: [{ id: 'out', label: 'Out', direction: 'output' }] },
+    { type: 'step', label: 'Step', tone: 'chart-3', ports },
+    { type: 'branch', label: 'Condition', tone: 'chart-2',
+      ports: [{ id: 'in', label: 'In', direction: 'input' }, { id: 'yes', label: 'Urgent', direction: 'output' }, { id: 'no', label: 'Normal', direction: 'output' }] },
+  ],
+};
+flow.load({
+  version: 1,
+  nodes: [
+    { id: 'ticket', type: 'trigger', position: { x: 0, y: 0 }, label: 'New ticket', data: {} },
+    { id: 'classify', type: 'step', position: { x: 0, y: 0 }, label: 'Classify topic', data: {} },
+    { id: 'urgent', type: 'branch', position: { x: 0, y: 0 }, label: 'Is it urgent?', data: {} },
+    { id: 'page', type: 'step', position: { x: 0, y: 0 }, label: 'Page on-call', data: {} },
+    { id: 'queue', type: 'step', position: { x: 0, y: 0 }, label: 'Add to queue', data: {} },
+  ],
+  edges: [
+    { id: 't1', source: 'ticket', sourcePort: 'out', target: 'classify', targetPort: 'in' },
+    { id: 't2', source: 'classify', sourcePort: 'out', target: 'urgent', targetPort: 'in' },
+    { id: 't3', source: 'urgent', sourcePort: 'yes', target: 'page', targetPort: 'in', label: 'yes' },
+    { id: 't4', source: 'urgent', sourcePort: 'no', target: 'queue', targetPort: 'in', label: 'no' },
+  ],
+});
+flow.layout('horizontal');
+mode.addEventListener('tp-value-change', (event) => {
+  const [direction] = event.detail.value;
+  if (!direction) {
+    event.preventDefault();
+    return;
+  }
+  flow.autoLayout = direction;
+  flow.layout(direction);
+});
+flow.addEventListener('tp-layout-complete', (event) => {
+  const { direction, stats } = event.detail;
+  output.textContent = \`Laid out \${direction}: \${stats.layers} layers, \${stats.crossings} crossings\`;
+  flow.fitViewTo({ duration: 200 });
+});`}
+/>
+
+In an automatic mode a node you drag is pinned where you drop it and the rest of the graph flows around it in one undoable `layout` step; a node with `pinned: true` in the document starts that way.
+
 ### Listening to changes
 
 Every edit is a cancelable `tp-value-change` whose `detail.metadata.changes` lists the fine-grained changes (`node-add`, `node-position`, `edge-add`, `node-data` and so on). One `tp-value-commit` follows each settled interaction, such as a drag release or a new connection; save there. `toJSON()` returns the canonical document without runtime state. `tp-selection-change`, `tp-viewport-change` and `tp-history-change` report the other lanes.
@@ -288,6 +381,55 @@ flow.addEventListener('tp-selection-change', (event) => {
 />
 
 Cancel a `tp-value-change` to refuse an edit, or set `isValidConnection` to a function that returns `false` or a message for connections the schema cannot express. For a controlled widget, supply `value` before the element connects and write each accepted `detail.value` back to it.
+
+<Preview
+  title="Controlled owner"
+  align="stretch"
+  code={`<div id="flow-controlled" style="display:grid;gap:var(--tp-space-3);inline-size:100%">
+  <output id="flow-controlled-output" style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">Try connecting Classify topic straight to Send auto-reply.</output>
+</div>`}
+  script={`await customElements.whenDefined('tp-flow');
+const host = document.querySelector('#flow-controlled');
+const output = document.querySelector('#flow-controlled-output');
+const ports = [{ id: 'in', label: 'In', direction: 'input' }, { id: 'out', label: 'Out', direction: 'output' }];
+let doc = {
+  version: 1,
+  nodes: [
+    { id: 'ticket', type: 'step', position: { x: 0, y: 60 }, label: 'New ticket', data: {} },
+    { id: 'classify', type: 'step', position: { x: 290, y: 0 }, label: 'Classify topic', data: {} },
+    { id: 'urgent', type: 'step', position: { x: 290, y: 140 }, label: 'Is it urgent?', data: {} },
+    { id: 'reply', type: 'step', position: { x: 580, y: 60 }, label: 'Send auto-reply', data: {} },
+  ],
+  edges: [
+    { id: 'c1', source: 'ticket', sourcePort: 'out', target: 'classify', targetPort: 'in' },
+    { id: 'c2', source: 'ticket', sourcePort: 'out', target: 'urgent', targetPort: 'in' },
+  ],
+};
+
+// The value lane is fixed when the element connects, so set it first.
+const flow = document.createElement('tp-flow');
+flow.label = 'Support triage';
+flow.setAttribute('fit-view', '');
+flow.setAttribute('confirm-delete', '');
+flow.setAttribute('size', 'sm');
+flow.setAttribute('controls', 'fit undo redo');
+flow.setAttribute('controls-position', 'bottom-center');
+flow.setAttribute('controls-orientation', 'horizontal');
+flow.style.cssText = 'inline-size:100%;block-size:22.5rem';
+flow.schema = { nodes: [{ type: 'step', label: 'Step', tone: 'chart-3', ports }] };
+flow.value = doc;
+flow.isValidConnection = (connection) =>
+  connection.target !== 'reply' || connection.source === 'urgent' || 'The auto-reply only follows the urgency check.';
+flow.addEventListener('tp-value-change', (event) => {
+  if (event.defaultPrevented) return;
+  doc = event.detail.value;
+  flow.value = doc;
+  output.textContent = \`\${doc.nodes.length} nodes, \${doc.edges.length} edges in your state\`;
+});
+host.prepend(flow);`}
+/>
+
+`confirm-delete` asks before a deletion removes nodes, from the keyboard, the node toolbar or the context menu: an Alert dialog names the node, or the count, and removes the nodes with their edges in one change.
 
 ### Run state
 
@@ -339,8 +481,156 @@ flow.run = {
 };`}
 />
 
+`runnable` adds the Run actions; `execute` and `run-summary` put Run and the status counts in your toolbars, here the opt-in header, whose `header-start`, `header-center` and `header-end` slots appear only when one has content. The widget asks through `tp-run-request` with the scope and the node ids in execution order, and your backend answers with run events through `pushRunEvent()`. This mock backend waits on an approval and fails the publish step. `validate` shows design problems before any run: the CDN purge has an unconnected required input.
+
+<Preview
+  title="Run requests"
+  align="stretch"
+  code={`<tp-flow id="flow-execute" label="Product photo import" runnable validate fit-view controls="fit" controls-position="bottom-start" size="sm" style="inline-size:100%;block-size:26rem">
+  <strong slot="header-start" style="font-size:var(--tp-text-sm)">Product photo import</strong>
+  <tp-flow-controls slot="header-center" actions="run-summary" orientation="horizontal"></tp-flow-controls>
+  <tp-flow-controls slot="header-end" actions="execute" orientation="horizontal"></tp-flow-controls>
+</tp-flow>`}
+  script={`await customElements.whenDefined('tp-flow');
+const flow = document.querySelector('#flow-execute');
+const input = { id: 'in', label: 'In', direction: 'input', required: true };
+const output = { id: 'out', label: 'Out', direction: 'output' };
+flow.schema = {
+  nodes: [
+    { type: 'source', label: 'Source', tone: 'chart-1', ports: [output] },
+    { type: 'step', label: 'Step', tone: 'chart-3', ports: [input, output] },
+    { type: 'sink', label: 'Destination', tone: 'chart-4', ports: [input] },
+  ],
+};
+flow.load({
+  version: 1,
+  nodes: [
+    { id: 'upload', type: 'source', position: { x: 0, y: 0 }, label: 'New uploads', data: {} },
+    { id: 'resize', type: 'step', position: { x: 300, y: 0 }, label: 'Resize images', data: {} },
+    { id: 'review', type: 'step', position: { x: 600, y: 0 }, label: 'Art director review', data: { wait: 'Waiting for approval' } },
+    { id: 'publish', type: 'sink', position: { x: 600, y: 160 }, label: 'Publish to store', data: { error: 'Store API returned 503' } },
+    { id: 'purge', type: 'sink', position: { x: 300, y: 160 }, label: 'Purge CDN cache', data: {} },
+  ],
+  edges: [
+    { id: 'x1', source: 'upload', sourcePort: 'out', target: 'resize', targetPort: 'in' },
+    { id: 'x2', source: 'resize', sourcePort: 'out', target: 'review', targetPort: 'in' },
+    { id: 'x3', source: 'review', sourcePort: 'out', target: 'publish', targetPort: 'in' },
+  ],
+});
+
+let token = 0;
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const push = (event) => flow.pushRunEvent({ ...event, at: performance.now() });
+flow.addEventListener('tp-run-request', async (event) => {
+  const { action, scope, nodeIds } = event.detail;
+  const run = ++token;
+  const alive = () => run === token && flow.isConnected;
+  if (action === 'clear') return flow.clearRun();
+  if (action === 'stop') return push({ type: 'run_cancelled' });
+  push({ type: 'run_started', ...(scope === 'graph' ? {} : { scope: nodeIds }) });
+  for (const nodeId of nodeIds) {
+    const node = flow.nodes.find((item) => item.id === nodeId);
+    if (!flow.edges.some((edge) => edge.target === nodeId) && node.type !== 'source') {
+      push({ type: 'node_skipped', nodeId, reason: 'not connected' });
+      continue;
+    }
+    push({ type: 'node_started', nodeId });
+    await wait(500);
+    if (!alive()) return;
+    if (node.data.wait) {
+      push({ type: 'node_waiting', nodeId, reason: node.data.wait });
+      await wait(1500);
+      if (!alive()) return;
+    }
+    if (node.data.error) {
+      push({ type: 'node_failed', nodeId, error: node.data.error });
+      push({ type: 'run_failed', error: node.data.error });
+      return;
+    }
+    push({ type: 'node_completed', nodeId });
+  }
+  push({ type: 'run_completed' });
+});`}
+/>
+
 ### Modes and forms
 
 `readonly` keeps pan, zoom, selection and run state but refuses every edit. `mode="view"` also hides the ports, the node toolbar and the node library, for monitors. `locked` refuses edits while the toolbar stays usable, and the `lock` control toggles it. `disabled` makes the canvas inert.
 
 The widget is a form control: the document submits as JSON under `name`, `required` fails on an empty document, and a form reset restores the default document.
+
+<Preview
+  title="Read-only dependency viewer"
+  align="stretch"
+  code={`<tp-flow id="flow-viewer" label="Service dependencies" mode="view" readonly router="orthogonal" minimap fit-view controls="zoom-in zoom-out fit" size="sm" style="inline-size:100%;block-size:26rem"></tp-flow>`}
+  script={`await customElements.whenDefined('tp-flow');
+const flow = document.querySelector('#flow-viewer');
+flow.schema = {
+  nodes: [{
+    type: 'service', label: 'Service', tone: 'chart-2', shape: 'compact',
+    ports: [{ id: 'in', label: 'In', direction: 'input', multiple: true }, { id: 'out', label: 'Out', direction: 'output' }],
+  }],
+};
+const layers = [
+  ['web', 'mobile-api', 'admin'],
+  ['auth', 'catalog', 'checkout', 'search'],
+  ['payments', 'inventory', 'notifications'],
+  ['postgres', 'redis', 'queue'],
+];
+const nodes = layers.flatMap((layer, column) =>
+  layer.map((id, row) => ({ id, type: 'service', position: { x: column * 260, y: row * 110 + (4 - layer.length) * 55 }, label: id, data: {} })));
+const links = [
+  ['web', 'auth'], ['web', 'catalog'], ['web', 'checkout'], ['web', 'search'],
+  ['mobile-api', 'auth'], ['mobile-api', 'catalog'], ['mobile-api', 'checkout'],
+  ['admin', 'auth'], ['admin', 'inventory'],
+  ['checkout', 'payments'], ['checkout', 'inventory'], ['checkout', 'notifications'],
+  ['catalog', 'inventory'], ['search', 'redis'], ['auth', 'postgres'],
+  ['payments', 'postgres'], ['inventory', 'postgres'], ['notifications', 'queue'], ['catalog', 'redis'],
+];
+flow.load({
+  version: 1,
+  nodes,
+  edges: links.map(([source, target]) => ({ id: source + '-' + target, source, sourcePort: 'out', target, targetPort: 'in', kind: 'orthogonal' })),
+});`}
+/>
+
+`router="orthogonal"` routes every edge around the padded node boxes and spreads parallel segments apart. With `mode="view"` and `readonly`, pan, zoom, selection and the minimap still work; the minimap pans on press and drag.
+
+<Preview
+  title="In a form"
+  align="stretch"
+  code={`<form id="flow-form" style="display:grid;gap:var(--tp-space-4);inline-size:100%">
+  <tp-field label="Approval chain" description="Submitted as JSON under its name.">
+    <tp-flow id="flow-form-editor" name="approval-chain" required fit-view controls="fit undo redo" size="sm" style="inline-size:100%;block-size:22.5rem"></tp-flow>
+  </tp-field>
+  <div style="display:flex;gap:var(--tp-space-2)">
+    <tp-button type="submit">Save chain</tp-button>
+    <tp-button type="reset" variant="outline">Reset</tp-button>
+  </div>
+</form>
+<output id="flow-form-output" style="display:block;margin-block-start:var(--tp-space-3);color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">Move or connect a step, then save.</output>`}
+  script={`await customElements.whenDefined('tp-flow');
+const form = document.querySelector('#flow-form');
+const flow = document.querySelector('#flow-form-editor');
+const output = document.querySelector('#flow-form-output');
+const ports = [{ id: 'in', label: 'In', direction: 'input' }, { id: 'out', label: 'Out', direction: 'output' }];
+flow.schema = { nodes: [{ type: 'approver', label: 'Approver', tone: 'chart-5', ports }] };
+const chain = {
+  version: 1,
+  nodes: [
+    { id: 'manager', type: 'approver', position: { x: 0, y: 40 }, label: 'Team manager', data: {} },
+    { id: 'finance', type: 'approver', position: { x: 290, y: 40 }, label: 'Finance', data: {} },
+    { id: 'legal', type: 'approver', position: { x: 580, y: 40 }, label: 'Legal', data: {} },
+  ],
+  edges: [{ id: 'a1', source: 'manager', sourcePort: 'out', target: 'finance', targetPort: 'in' }],
+};
+flow.defaultValue = chain;
+flow.load(chain);
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const doc = JSON.parse(new FormData(form).get('approval-chain'));
+  output.textContent = \`Saved \${doc.nodes.length} approvers and \${doc.edges.length} handoffs\`;
+});`}
+/>
+
+`default-value` or `defaultValue` is what Reset restores.

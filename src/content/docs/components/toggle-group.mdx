@@ -70,6 +70,61 @@ The group's `size` and `variant` override the items' own. `orientation="vertical
 </tp-toggle-group>`}
 />
 
+### Icons with labels
+
+An item can pair an Icon with its text. With visible text the item needs no `aria-label`, and `data-icon="inline-start"` tightens the padding beside the icon.
+
+<Preview
+  title="View switcher"
+  code={`<tp-toggle-group id="toggle-group-views" label="View" variant="outline" default-value='["board"]'>
+  <tp-toggle value="list"><tp-icon data-icon="inline-start" data-glyph="list"></tp-icon> List</tp-toggle>
+  <tp-toggle value="board"><tp-icon data-icon="inline-start" data-glyph="board"></tp-icon> Board</tp-toggle>
+  <tp-toggle value="calendar"><tp-icon data-icon="inline-start" data-glyph="calendar"></tp-icon> Calendar</tp-toggle>
+</tp-toggle-group>`}
+  script={`const glyphs = {
+  list: { viewBox: '0 0 24 24', paths: [{ d: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', strokeWidth: 2 }] },
+  board: { viewBox: '0 0 24 24', paths: [{ d: 'M5 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM15 3h4a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z', strokeWidth: 2 }] },
+  calendar: { viewBox: '0 0 24 24', paths: [{ d: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z', strokeWidth: 2 }] },
+};
+await customElements.whenDefined('tp-icon');
+for (const icon of document.querySelectorAll('#toggle-group-views tp-icon')) icon.icon = glyphs[icon.dataset.glyph];`}
+/>
+
+### Rich items
+
+Items can hold more than a word, such as a sample above its name. Reshape an item through its `partContracts`: here `styleHook` stacks the content and gives each item its own weight. A Field names the group, and its description reports the selection.
+
+<Preview
+  title="Font weight"
+  code={`<tp-field label="Heading weight" style="inline-size:auto">
+  <tp-toggle-group id="toggle-group-weight" variant="outline" size="lg" default-value='["medium"]'>
+    <tp-toggle value="light" data-weight="300" aria-label="Light"><span aria-hidden="true">Aa</span><span>Light</span></tp-toggle>
+    <tp-toggle value="regular" data-weight="400" aria-label="Regular"><span aria-hidden="true">Aa</span><span>Regular</span></tp-toggle>
+    <tp-toggle value="medium" data-weight="500" aria-label="Medium"><span aria-hidden="true">Aa</span><span>Medium</span></tp-toggle>
+    <tp-toggle value="bold" data-weight="700" aria-label="Bold"><span aria-hidden="true">Aa</span><span>Bold</span></tp-toggle>
+  </tp-toggle-group>
+  <span slot="description">Headings use <strong id="toggle-group-weight-output">Medium</strong></span>
+</tp-field>`}
+  script={`const group = document.querySelector('#toggle-group-weight');
+const output = document.querySelector('#toggle-group-weight-output');
+await customElements.whenDefined('tp-toggle');
+for (const item of group.querySelectorAll('tp-toggle')) {
+  item.partContracts = {
+    toggle: { styleHook: { 'block-size': 'auto', 'padding-block': 'var(--tp-space-2)' } },
+    'toggle-content': { styleHook: { 'flex-direction': 'column', 'font-weight': item.dataset.weight } },
+  };
+}
+group.addEventListener('tp-value-change', (event) => {
+  if (event.target !== group) return;
+  const [value] = event.detail.value;
+  if (!value) {
+    event.preventDefault();
+    return;
+  }
+  output.textContent = group.querySelector(\`tp-toggle[value="\${value}"]\`).getAttribute('aria-label');
+});`}
+/>
+
 ### Keeping one selected
 
 In single mode, pressing the selected item clears the selection. When an empty selection makes no sense, cancel that proposal in `tp-value-change`.
