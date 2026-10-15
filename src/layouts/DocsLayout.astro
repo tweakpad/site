@@ -51,6 +51,11 @@ const currentGroup = groups.find((group) =>
                       </li>
                     );
                   })}
+                  {group.id === 'getting-started' && (
+                    <li>
+                      <a href={url('/docs')}>All components</a>
+                    </li>
+                  )}
                 </ul>
               </section>
             ))
@@ -61,7 +66,37 @@ const currentGroup = groups.find((group) =>
         (() => {
           const nav = document.currentScript?.previousElementSibling;
           if (!(nav instanceof HTMLDetailsElement)) return;
+          const sidebar = nav.parentElement;
           const narrow = window.matchMedia('(width < 48rem)');
+          // On wide screens the sidebar scrolls on its own. Keep its position across docs pages so
+          // following a link doesn't jump the list back to the top; on a first visit, bring the
+          // current page into view instead.
+          const key = 'tp-docs-sidebar-scroll';
+          if (sidebar && !narrow.matches) {
+            let saved = null;
+            try {
+              saved = sessionStorage.getItem(key);
+            } catch {}
+            const link = nav.querySelector('[aria-current="page"]');
+            if (saved !== null) sidebar.scrollTop = Number(saved);
+            if (link instanceof HTMLElement) {
+              const box = sidebar.getBoundingClientRect();
+              const rect = link.getBoundingClientRect();
+              if (rect.top < box.top || rect.bottom > box.bottom) {
+                sidebar.scrollTop += rect.top - box.top - box.height / 2;
+              }
+            }
+          }
+          const save = () => {
+            if (!sidebar || narrow.matches) return;
+            try {
+              sessionStorage.setItem(key, String(sidebar.scrollTop));
+            } catch {}
+          };
+          nav.addEventListener('click', (event) => {
+            if (event.target instanceof Element && event.target.closest('a')) save();
+          });
+          window.addEventListener('pagehide', save);
           const sync = () => (nav.open = !narrow.matches);
           sync();
           narrow.addEventListener('change', sync);
