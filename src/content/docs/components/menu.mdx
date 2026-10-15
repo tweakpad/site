@@ -61,6 +61,26 @@ menu.addEventListener('tp-action', (event) => {
 });`}
 />
 
+### Inset items
+
+`inset` indents an item's label to line up with the text of items that have a leading icon, so a menu that mixes both keeps one text column.
+
+<Preview
+  title="Inset"
+  code={`<tp-menu id="menu-inset" label="Document">
+  <tp-button slot="trigger" variant="outline">Document</tp-button>
+  <tp-menu-item value="duplicate"><tp-icon data-icon="copy"></tp-icon>Duplicate</tp-menu-item>
+  <tp-menu-item value="share"><tp-icon data-icon="share"></tp-icon>Share</tp-menu-item>
+  <tp-menu-item value="rename" inset>Rename</tp-menu-item>
+  <tp-menu-item value="move" inset>Move to…</tp-menu-item>
+</tp-menu>`}
+  script={`const icons = {
+  copy: { viewBox: '0 0 24 24', paths: [{ d: 'M8 8h13v13H8zM16 8V3H3v13h5', strokeWidth: 2 }] },
+  share: { viewBox: '0 0 24 24', paths: [{ d: 'M4 12v8h16v-8M12 3v13M7 8l5-5 5 5', strokeWidth: 2 }] },
+};
+for (const icon of document.querySelectorAll('#menu-inset tp-icon')) icon.icon = icons[icon.dataset.icon];`}
+/>
+
 ### Checks and radio choices
 
 Checkbox items toggle independently; a radio group keeps exactly one choice. Both stay open on activation so several settings can change in one visit. A child with `data-menu-label` labels the group.

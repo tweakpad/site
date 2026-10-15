@@ -131,6 +131,27 @@ With both `searchable` and `multiple`, selections show as removable chips beside
 </tp-field>`}
 />
 
+### Grid
+
+In a searchable Select with `grid`, `columns` lays each group's options out in rows of that many, and the arrow keys move in two dimensions. Filtering reflows the rows. It suits short, scannable options such as sizes, flags or symbols.
+
+<Preview
+  title="Columns"
+  align="stretch"
+  code={`<tp-field label="Size" style="max-inline-size:20rem">
+  <tp-select name="size" searchable grid columns="4" placeholder="Pick a size">
+    <option value="XS">XS</option>
+    <option value="S">S</option>
+    <option value="M">M</option>
+    <option value="L">L</option>
+    <option value="XL">XL</option>
+    <option value="2XL">2XL</option>
+    <option value="3XL">3XL</option>
+    <option value="4XL">4XL</option>
+  </tp-select>
+</tp-field>`}
+/>
+
 ### Data
 
 Assign `items` when choices come from your data. Records take a `value` and `label`, groups take `type: 'group'` with nested `items`, and `type: 'separator'` divides them.

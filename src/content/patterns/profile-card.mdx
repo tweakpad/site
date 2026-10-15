@@ -4,7 +4,7 @@ description: A person, their role and a few numbers, with follow and message act
 category: Account
 order: 11
 featured: true
-components: [card, avatar, badge, button]
+components: [card, avatar, badge, status-dot, button]
 example: |
   <tp-card style="inline-size:min(100%, 20rem)">
     <div style="display:grid;justify-items:center;gap:var(--tp-space-3);text-align:center">
@@ -13,9 +13,9 @@ example: |
         <strong style="display:block;font-size:var(--tp-text-lg)">Grace Hopper</strong>
         <span style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">Compiler engineer · Arlington</span>
       </div>
-      <div style="display:flex;gap:var(--tp-space-2)">
+      <div style="display:flex;align-items:center;gap:var(--tp-space-3)">
         <tp-badge variant="secondary">Admin</tp-badge>
-        <tp-badge variant="outline">Available</tp-badge>
+        <tp-status-dot variant="success" label="Available" show-label></tp-status-dot>
       </div>
     </div>
     <tp-button slot="footer" variant="outline" style="flex:1">Message</tp-button>
@@ -26,7 +26,7 @@ example: |
 ## How it's composed
 
 - **Avatar** shows initials until a photo loads, and names the person for assistive technology.
-- **Badge** pairs a role with a status without turning either into an action.
+- **Badge** shows the role, and a **Status dot** with a visible label shows availability; neither is an action.
 - **Button** gives follow the primary weight and message the secondary.
 
 ## Make it yours

@@ -53,6 +53,19 @@ The `icon` slot takes an Icon or a decorative Spinner. The icon region is hidden
 for (const icon of document.querySelectorAll('#marker-icons tp-icon')) icon.icon = icons[icon.dataset.icon];`}
 />
 
+### Shimmer
+
+`shimmer` sweeps a highlight across the text while a status is still streaming, such as an agent step in progress. Remove it when the step finishes; reduced motion shows the text without the sweep. `--tp-shimmer-color`, `--tp-shimmer-duration`, `--tp-shimmer-spread` and `--tp-shimmer-angle` tune it.
+
+<Preview
+  title="Shimmer"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-6);max-inline-size:32rem;margin-inline:auto;inline-size:100%">
+  <tp-marker role="status" shimmer>Searching 14 files for “retry policy”</tp-marker>
+  <tp-marker variant="separator" role="status" shimmer>Thinking</tp-marker>
+</div>`}
+/>
+
 ### Actions
 
 A Marker owns no action state, but its content can hold a link or a Button. The control keeps its own focus and semantics.

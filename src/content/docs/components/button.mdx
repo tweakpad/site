@@ -35,6 +35,22 @@ import Preview from '../../../components/Preview.astro';
 <tp-button size="lg">Large</tp-button>`}
 />
 
+### Icon only
+
+In an icon size only the marks are visible. The label stays in the content, hidden visually, and names the Button for assistive technology, so write the action as the label instead of adding `aria-label`.
+
+<Preview
+  title="Icon only"
+  code={`<tp-button size="icon" variant="outline">
+  <svg slot="icon-start" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+  New document
+</tp-button>
+<tp-button size="icon-sm" variant="ghost">
+  <svg slot="icon-start" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+  Delete
+</tp-button>`}
+/>
+
 ### Marks
 
 Use the `icon-start` and `icon-end` slots for custom marks, and mark them decorative. `loading-position` composes the library's Spinner and exposes busy semantics without disabling the action.
