@@ -327,6 +327,10 @@ a {
   padding-block: 2rem;
 }
 
+.sidebar__summary {
+  display: none;
+}
+
 .sidebar h2 {
   margin: 1.5rem 0 0.5rem;
   color: var(--tp-foreground);
@@ -428,23 +432,78 @@ a {
   .sidebar {
     position: static;
     max-block-size: none;
-    padding-block: 1.25rem 0;
+    overflow: visible;
+    padding-block: 0;
     border-block-end: 1px solid var(--site-line);
   }
 
-  .sidebar nav {
+  .sidebar__summary {
     display: flex;
-    gap: 1.5rem;
-    overflow-x: auto;
-    padding-block-end: 1rem;
+    align-items: center;
+    gap: 0.5rem;
+    min-block-size: 3rem;
+    font-size: var(--tp-text-sm);
+    list-style: none;
+    cursor: pointer;
   }
 
-  .sidebar h2 {
-    margin-block-start: 0;
+  .sidebar__summary::-webkit-details-marker {
+    display: none;
   }
 
-  .sidebar section {
+  .sidebar__summary-label {
+    color: var(--tp-muted-foreground);
+  }
+
+  .sidebar__summary-label::after {
+    content: '/';
+    margin-inline-start: 0.5rem;
+    color: var(--tp-border);
+  }
+
+  .sidebar__summary-current {
+    flex: 1;
+    overflow: hidden;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sidebar__summary svg {
     flex: none;
+    inline-size: 1rem;
+    block-size: 1rem;
+    color: var(--tp-muted-foreground);
+    transition: transform 200ms var(--site-ease);
+  }
+
+  .sidebar__disclosure[open] .sidebar__summary svg {
+    transform: rotate(180deg);
+  }
+
+  .sidebar nav {
+    max-block-size: 60dvh;
+    overflow-y: auto;
+    margin-inline: -0.6rem;
+    padding: 0.5rem 0.6rem 1.25rem;
+    overscroll-behavior: contain;
+  }
+
+  .sidebar section + section {
+    margin-block-start: 1.25rem;
+  }
+
+  .sidebar ul {
+    columns: 2 9rem;
+    column-gap: 0.5rem;
+  }
+
+  .sidebar li {
+    break-inside: avoid;
+  }
+
+  .sidebar a {
+    padding-block: 0.45rem;
   }
 }
 
@@ -570,6 +629,8 @@ a.chip:hover {
 /* ---------- Preview ---------- */
 
 .preview {
+  /* Positioned so it also clips absolutely placed parts of the demos, such as hidden labels. */
+  position: relative;
   margin: 1.5rem 0 2.5rem;
   border: 1px solid var(--site-line);
   border-radius: var(--tp-radius-xl);
