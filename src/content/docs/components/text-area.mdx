@@ -64,6 +64,26 @@ Native constraints such as `required`, `minlength` and `maxlength` validate thro
 </tp-field>`}
 />
 
+### Listening to changes
+
+<Preview
+  title="Character count"
+  align="stretch"
+  script={`const message = document.querySelector('#text-area-demo-status');
+const count = document.querySelector('#text-area-demo-count');
+message.addEventListener('tp-value-change', (event) => {
+  count.textContent = \`\${event.detail.value.length} / 280\`;
+});`}
+  code={`<div style="display:grid;gap:var(--tp-space-2);max-inline-size:26rem;margin-inline:auto">
+  <tp-field label="Status update">
+    <tp-text-area id="text-area-demo-status" name="status" maxlength="280" default-value="Shipping the new billing dashboard to all workspaces this afternoon."></tp-text-area>
+  </tp-field>
+  <output id="text-area-demo-count" style="justify-self:end;color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">68 / 280</output>
+</div>`}
+/>
+
+Typing, pasting and clearing each publish a cancelable `tp-value-change` with the proposed `value`. Use it for live counters or previews; calling `preventDefault()` rolls the edit back.
+
 ### Forms
 
 <Preview

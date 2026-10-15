@@ -136,6 +136,69 @@ tree.defaultItems = [
 
 Drag a handle, or press Control+Enter (Command+Enter) on an item and move it with the arrow keys. Each move is proposed through a cancelable `tp-items-change`.
 
+### Loading children on demand
+
+A record with `hasChildren: true` shows a chevron before its children exist. On first expansion the tree calls `loadChildren(item, { signal })`, shows a loading row while it waits, and inserts the records it returns. The signal aborts if the item is removed or the tree disconnects first, and a failed load offers a retry.
+
+<Preview
+  title="Lazy folders"
+  code={`<tp-tree-view id="tree-view-lazy" label="Shared drive" size="sm" style="inline-size:18rem"></tp-tree-view>`}
+  script={`await customElements.whenDefined('tp-tree-view');
+const tree = document.querySelector('#tree-view-lazy');
+const folders = {
+  contracts: ['Northwind MSA 2026.pdf', 'Contoso NDA.pdf', 'Fabrikam renewal.pdf'],
+  invoices: ['September.xlsx', 'August.xlsx'],
+};
+tree.defaultItems = [
+  { id: 'contracts', label: 'Contracts', hasChildren: true },
+  { id: 'invoices', label: 'Invoices', hasChildren: true },
+  { id: 'budget', label: 'Budget 2027.xlsx' },
+];
+tree.loadChildren = async (item, { signal }) => {
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  if (signal.aborted) return [];
+  return folders[item.id].map((name) => ({ id: \`\${item.id}/\${name}\`, label: name }));
+};`}
+/>
+
+`reloadChildren(id)` discards loaded children so the next expansion fetches them again.
+
+### Expanding from code
+
+`expandAll()`, `collapseAll()`, `expandItem(id)` and `collapseItem(id)` change expansion through the same `tp-expanded-change` as the keyboard. `revealItem(id, { focus: true })` opens the item's ancestors, scrolls it into view and focuses it.
+
+<Preview
+  title="Expand, collapse and reveal"
+  code={`<div style="display:grid;gap:var(--tp-space-3);justify-items:center">
+  <div style="display:flex;flex-wrap:wrap;gap:var(--tp-space-2);justify-content:center">
+    <tp-button id="tree-view-methods-expand" variant="outline" size="sm">Expand all</tp-button>
+    <tp-button id="tree-view-methods-collapse" variant="outline" size="sm">Collapse all</tp-button>
+    <tp-button id="tree-view-methods-reveal" variant="outline" size="sm">Reveal pricing.ts</tp-button>
+  </div>
+  <tp-tree-view id="tree-view-methods" label="Repository" style="inline-size:16rem">
+    <tp-tree-item value="app">
+      app
+      <tp-tree-item value="routes">
+        routes
+        <tp-tree-item value="pricing.ts">pricing.ts</tp-tree-item>
+        <tp-tree-item value="checkout.ts">checkout.ts</tp-tree-item>
+      </tp-tree-item>
+      <tp-tree-item value="main.ts">main.ts</tp-tree-item>
+    </tp-tree-item>
+    <tp-tree-item value="tests">
+      tests
+      <tp-tree-item value="pricing.test.ts">pricing.test.ts</tp-tree-item>
+    </tp-tree-item>
+  </tp-tree-view>
+</div>`}
+  script={`const tree = document.querySelector('#tree-view-methods');
+document.querySelector('#tree-view-methods-expand').addEventListener('click', () => tree.expandAll());
+document.querySelector('#tree-view-methods-collapse').addEventListener('click', () => tree.collapseAll());
+document.querySelector('#tree-view-methods-reveal').addEventListener('click', () => {
+  tree.revealItem('pricing.ts', { focus: true, select: true });
+});`}
+/>
+
 ### Size and guides
 
 <Preview

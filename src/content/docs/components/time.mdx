@@ -94,6 +94,24 @@ A date-only value stays on its calendar day in every time zone and compares by d
 }`}
 />
 
+### Countdowns and elapsed time
+
+`mode="duration"` on an instant shows the time until or since it as a ticking length, such as a call timer or a sale countdown. `precision` sets the smallest unit shown, which also slows the updates. `tense="past"` shows a slightly future instant, for example from a server clock that runs ahead, as "now" instead of "in 3 seconds".
+
+<Preview
+  title="Timers"
+  code={`<dl id="time-timers" style="display:grid;grid-template-columns:auto auto;gap:var(--tp-space-2) var(--tp-space-6);margin:0;font-size:var(--tp-text-sm)">
+  <dt style="color:var(--tp-muted-foreground)">On call for</dt><dd style="margin:0"><tp-time mode="duration" data-offset="-754"></tp-time></dd>
+  <dt style="color:var(--tp-muted-foreground)">Sale ends in</dt><dd style="margin:0"><tp-time mode="duration" precision="minute" data-offset="9000"></tp-time></dd>
+  <dt style="color:var(--tp-muted-foreground)">Last heartbeat</dt><dd style="margin:0"><tp-time tense="past" data-offset="3"></tp-time></dd>
+</dl>`}
+  script={`for (const time of document.querySelectorAll('#time-timers tp-time')) {
+  time.datetime = new Date(Date.now() + Number(time.dataset.offset) * 1000);
+}`}
+/>
+
+In `auto` mode, `threshold` (an ISO duration, `P30D` by default) sets how far from now values stay relative before they switch to absolute text.
+
 ### Description
 
 The tooltip shows `tooltip-pattern` (default `dd/MM/yy HH:mm`) and makes the value focusable. It is skipped when it would repeat the visible text; `tooltip="false"` removes it and the tab stop.
