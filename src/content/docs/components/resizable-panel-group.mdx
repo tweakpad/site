@@ -134,6 +134,46 @@ group.addEventListener('tp-layout-change', (event) => {
 });`}
 />
 
+### Saved layout
+
+Give the group a `persistence-key` and a `persistenceAdapter` with `load(key)` and `save(key, layout)`, and it restores the saved layout on connect and saves each settled one. The library has no storage policy of its own, and the adapter must be in place before the group connects.
+
+<Preview
+  title="Persisted sizes"
+  align="stretch"
+  code={`<div style="display:grid;gap:var(--tp-space-3)">
+  <tp-resizable-panel-group id="resizable-saved" persistence-key="docs-mail-layout" style="block-size:10rem;border:var(--tp-border-width) solid var(--tp-border);border-radius:var(--tp-radius-lg)">
+    <tp-resizable-panel id="resizable-saved-folders" default-size="25%" min-size="15%">
+      <div style="padding:var(--tp-space-4);font-size:var(--tp-text-sm)">Folders</div>
+    </tp-resizable-panel>
+    <tp-resizable-handle label="Resize folders" with-handle></tp-resizable-handle>
+    <tp-resizable-panel id="resizable-saved-messages" min-size="30%">
+      <div style="padding:var(--tp-space-4);font-size:var(--tp-text-sm)">Messages</div>
+    </tp-resizable-panel>
+  </tp-resizable-panel-group>
+  <span style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)">Drag the handle, then press Refresh or reload the page.</span>
+</div>`}
+  script={`// The adapter must be set before the group first connects, so this demo swaps in a fresh copy.
+await customElements.whenDefined('tp-resizable-panel-group');
+const authored = document.querySelector('#resizable-saved');
+const group = authored.cloneNode(true);
+group.persistenceAdapter = {
+  load: (key) => {
+    try {
+      return JSON.parse(localStorage.getItem(key) ?? 'null');
+    } catch {
+      return null;
+    }
+  },
+  save: (key, layout) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(layout));
+    } catch {}
+  },
+};
+authored.replaceWith(group);`}
+/>
+
 ### Disabled
 
 `disabled` on the group freezes every handle; on a panel, it keeps that panel's pixel size while the others adjust.

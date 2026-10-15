@@ -87,6 +87,18 @@ picker.addEventListener('tp-value-commit', (event) => {
 });`}
 />
 
+### Trimming the panel
+
+The controls around the color surface can each be turned off. `fields="false"` removes the row of value boxes, `format-select="false"` the format Select, `preview="false"` the color swatch and `eyedropper="false"` the screen picker, leaving a surface for quick, approximate choices.
+
+<Preview
+  title="Surface only, and fields without a format choice"
+  code={`<div style="display:flex;flex-wrap:wrap;gap:var(--tp-space-8);justify-content:center;align-items:start">
+  <tp-color-picker label="Sticky note color" fields="false" eyedropper="false" alpha="false" default-value="#fdd835" style="inline-size:15rem"></tp-color-picker>
+  <tp-color-picker label="Link color" format-select="false" preview="false" default-format="hex" alpha="false" default-value="#3949ab" style="inline-size:15rem"></tp-color-picker>
+</div>`}
+/>
+
 ### Sizes and states
 
 <Preview

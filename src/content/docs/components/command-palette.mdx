@@ -95,4 +95,36 @@ When nothing matches, the palette shows “No results found.” Replace it with 
 
 `default-query` sets the starting search text. Use `query` with `onQueryChange` when the application needs to own the query, for example to sync it with the URL.
 
-Set `should-filter` to false when the list is already filtered elsewhere, such as results from a server search. Assign a `filter` function to rank items yourself: return `false` to hide an item or a number to sort by, lowest first.
+### Server results
+
+When a server does the searching, set the `shouldFilter` property to `false` so the palette shows `items` exactly as supplied, then replace `items` whenever the query changes. `tp-query-change` reports each proposed query in `detail.value`.
+
+<Preview
+  title="Server-filtered list"
+  align="stretch"
+  code={`<tp-command-palette id="command-palette-server" inline label="Search docs" placeholder="Search the documentation…" style="max-inline-size:28rem;margin-inline:auto"></tp-command-palette>`}
+  script={`const pages = [
+  'Installing the CLI', 'Inviting teammates', 'Managing billing', 'Exporting data as CSV',
+  'Connecting GitHub', 'Setting up single sign-on', 'Rotating API keys', 'Webhooks reference',
+  'Audit log retention', 'Deleting a workspace',
+];
+await customElements.whenDefined('tp-command-palette');
+const palette = document.getElementById('command-palette-server');
+palette.shouldFilter = false;
+const show = (titles) => {
+  palette.items = titles.map((title) => ({ value: title.toLowerCase().replaceAll(' ', '-'), label: title }));
+};
+show(pages.slice(0, 4));
+let request = 0;
+palette.addEventListener('tp-query-change', (event) => {
+  const query = event.detail.value.trim().toLowerCase();
+  const current = ++request;
+  // Stands in for fetch('/api/search?q=' + query); stale responses are ignored.
+  setTimeout(() => {
+    if (current !== request) return;
+    show(query ? pages.filter((page) => page.toLowerCase().includes(query)) : pages.slice(0, 4));
+  }, 300);
+});`}
+/>
+
+To keep local filtering but change the ranking, assign a `filter` function instead: return `false` to hide an item or a number to sort by, lowest first.

@@ -62,6 +62,23 @@ Values snap to `step` from `minimum`. Arrow keys move one step; Page Up, Page Do
 
 Without a visible label, name each slider with `aria-label`. Vertical sliders use Up and Down.
 
+### Bar
+
+<Preview
+  title="Media timeline"
+  align="stretch"
+  script={`const timeline = document.querySelector('#slider-demo-timeline');
+const clock = (seconds) => Math.floor(seconds / 60) + ':' + String(Math.round(seconds % 60)).padStart(2, '0');
+timeline.buffered = [[0, 150]];
+timeline.getAccessibleValueText = (formatted, value) => clock(value) + ' of 3:45';
+timeline.partContracts = {
+  'slider-output': { content: (state) => clock(state.values[0]) + ' / 3:45' },
+};`}
+  code={`<tp-slider id="slider-demo-timeline" variant="bar" label="Episode 42: Shipping on Fridays" default-value="84" maximum="225" style="max-inline-size:22rem;margin-inline:auto"></tp-slider>`}
+/>
+
+`variant="bar"` paints a thumbless track for scrubbing, as in media timelines; the thumb's input stays for the keyboard and assistive technology. `buffered` takes `[start, end]` ranges in value units and shades them on the track, and `getAccessibleValueText` gives the spoken value its own wording.
+
 ### Thumbs
 
 <Preview

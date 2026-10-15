@@ -26,6 +26,22 @@ import Preview from '../../../components/Preview.astro';
 
 The source comes from the element's text content, dedented and trimmed, or from the `code` property. In markup, escape `<` and `&` as `&lt;` and `&amp;`, or set `code` from script. `label` adds a header with the title and language; the `title` slot replaces it with your own content.
 
+### Custom title
+
+<Preview
+  title="Title slot"
+  align="stretch"
+  code={`<tp-code-block language="bash" style="max-inline-size:40rem;margin-inline:auto">
+  <span slot="title" style="display:inline-flex;align-items:center;gap:var(--tp-space-2)">
+    Deploy to production
+    <tp-badge variant="warning">Requires approval</tp-badge>
+  </span>
+  npx tweakpad deploy --env production --confirm
+</tp-code-block>`}
+/>
+
+Content in the `title` slot replaces the `label` text in the header, for example to add a Badge. Slotted elements are not part of the source, so the copied code stays exactly the command.
+
 ### Line numbers and highlights
 
 `line-numbers` adds a gutter that stays put while long lines scroll. `highlight-lines` takes lines and ranges such as `2,5-7` to draw attention to the part that matters.

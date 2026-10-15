@@ -4,6 +4,7 @@ description: Slotted slides at discrete positions, with buttons, keyboard, swipe
 tag: tp-carousel
 ---
 
+import Code from '../../../components/Code.astro';
 import Preview from '../../../components/Preview.astro';
 
 <Preview
@@ -123,6 +124,19 @@ Use autoplay sparingly: moving content is hard to read and easy to miss. Prefer 
   script={`await customElements.whenDefined('tp-carousel');
 document.getElementById('carousel-vertical').options = { layout: { itemsPerView: 2, gap: 8 } };`}
 />
+
+### Effects
+
+By default the track slides between items. The `effect` property swaps in a richer transition, built by a factory you import, so pages without one bundle none. `carouselCrossfadeEffect()` fades between slides, `carouselLayeredEffect()` turns media away with perspective, `carouselParallaxEffect()` moves media more slowly than its slide, `carouselFocusEffect()` dims and shrinks slides away from the aligned one, and `carouselShaderEffect()` runs a WebGL transition: `wipe`, `displace`, `chromatic`, `crosswarp` or `glass`.
+
+<Code language="typescript" code={`import { carouselCrossfadeEffect, carouselShaderEffect } from '@tweakpad/ui';
+
+carousel.effect = carouselCrossfadeEffect({ duration: 600 });
+// Shader effects draw each slide's data-carousel-media image, video or canvas.
+carousel.effect = carouselShaderEffect({ variant: 'displace' });
+carousel.effect = null; // back to the sliding track`} />
+
+Mark the one image or video per slide that an effect transforms with `data-carousel-media`, and text that should reveal in order with `data-carousel-layer="1"`, `"2"` and so on. Effects follow dragging, play backwards when a navigation reverses and settle instantly under reduced motion; slide semantics and announcements don't change.
 
 ### Events
 

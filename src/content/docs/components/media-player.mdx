@@ -78,6 +78,35 @@ An `<audio>` element works the same way. Give it an in-flow `tp-media-controls` 
 
 Hidden controls are gone, not disabled. Controls the media cannot support, such as picture-in-picture in some browsers, hide themselves.
 
+### Layout regions and speeds
+
+The video layout's `top`, `center`, `bottom-start` and `bottom-end` slots replace that region's default content, here the title in `top`. `playback-rates` sets the options of the speed menu as a space-separated list.
+
+<Preview
+  title="Custom top region"
+  align="stretch"
+  code={`<tp-media-player
+  content-title="Lesson 4: Composition"
+  poster="https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=1280&q=80"
+  playback-rates="0.75 1 1.25 1.5 2"
+  style="max-inline-size:44rem;margin-inline:auto"
+>
+  <video
+    src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+    width="1280"
+    height="720"
+    preload="metadata"
+    playsinline
+  ></video>
+  <tp-media-video-layout>
+    <div slot="top" style="display:flex;align-items:center;gap:var(--tp-space-2);padding:var(--tp-space-4);color:white">
+      <tp-badge variant="secondary">Lesson 4 of 12</tp-badge>
+      <span style="font-weight:500">Composition</span>
+    </div>
+  </tp-media-video-layout>
+</tp-media-player>`}
+/>
+
 ### Custom composition
 
 Skip the layout and place the constituents yourself when you need a different bar. Each control finds its player through the tree, and `tp-media-hotkey` adds or overrides a key binding.

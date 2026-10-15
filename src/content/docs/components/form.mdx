@@ -108,6 +108,36 @@ form.onFormSubmit = () => {
 };`}
 />
 
+### Async validation
+
+A `validator` may return a promise, but submission does not wait for it. To wait, cancel `tp-submit` and await `event.detail.validationRun.completion` before saving.
+
+<Preview
+  title="Wait for async checks"
+  align="stretch"
+  code={`<tp-form id="form-demo-async" aria-label="Choose a username" style="max-inline-size:24rem">
+  <tp-field id="form-demo-async-field" label="Username" description="Try maya, which is already taken.">
+    <tp-input name="username" required default-value="maya"></tp-input>
+  </tp-field>
+  <div slot="actions"><tp-button type="submit">Save username</tp-button></div>
+  <output id="form-demo-async-output" style="color:var(--tp-muted-foreground);font-size:var(--tp-text-sm)"></output>
+</tp-form>`}
+  script={`const form = document.querySelector('#form-demo-async');
+const output = document.querySelector('#form-demo-async-output');
+// Stands in for a request to your server.
+document.querySelector('#form-demo-async-field').validator = (value) =>
+  new Promise((resolve) => {
+    setTimeout(() => resolve(value === 'maya' ? 'maya is already taken.' : null), 600);
+  });
+form.addEventListener('tp-submit', async (event) => {
+  event.preventDefault();
+  output.textContent = 'Checking availability…';
+  const { validationRun, values } = event.detail;
+  const result = await validationRun.completion;
+  output.textContent = result.status === 'valid' ? \`Saved @\${values.username}.\` : '';
+});`}
+/>
+
 ### Submission policy
 
 `submissionPolicy` can disable the submit Buttons while the form is invalid or while async validation is pending. Disabled actions are hard to discover, so prefer the default `always-enabled` unless the form is short and the requirements are obvious.

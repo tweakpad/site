@@ -80,6 +80,28 @@ The `label`, `description` and `error` slots take precedence over the attributes
 </tp-field>`}
 />
 
+### Groups of fields
+
+A Field renders a native `fieldset`. Give it a `legend` and put peer Fields in its `group` slot, here inside one wrapper that sets their spacing, to caption a section of a form, such as an address. `legend-scale="field"` sizes the caption like a field label instead of a section heading. To join the editors of one value into a single row, use Field group instead.
+
+<Preview
+  title="Legend and group"
+  align="stretch"
+  code={`<tp-field legend="Shipping address" style="max-inline-size:24rem">
+  <div slot="group" style="display:grid;gap:var(--tp-space-4)">
+    <tp-field label="Street address">
+      <tp-input name="street" autocomplete="street-address" default-value="221 Market Street"></tp-input>
+    </tp-field>
+    <tp-field label="City">
+      <tp-input name="city" autocomplete="address-level2" default-value="San Francisco"></tp-input>
+    </tp-field>
+    <tp-field label="Postal code">
+      <tp-input name="postal-code" autocomplete="postal-code" default-value="94105"></tp-input>
+    </tp-field>
+  </div>
+</tp-field>`}
+/>
+
 ### Disabled
 
 `disabled` on the Field disables its control and dims the label and description together, so the whole row reads as unavailable.

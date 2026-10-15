@@ -121,6 +121,109 @@ questionnaire.actions = { submit: { label: 'Create workspace' } };
 questionnaire.addEventListener('tp-submit', (event) => event.preventDefault());`}
 />
 
+### Saved progress
+
+To resume a draft, give choices `defaultChecked`, inputs a `defaultValue`, and set `default-item` to the question to open on. These defaults are what `reset()` and a native form reset restore.
+
+<Preview
+  title="Resume a draft"
+  code={`<div style="display:grid;gap:var(--tp-space-4);justify-items:start;inline-size:28rem;max-inline-size:100%">
+  <tp-questionnaire id="questionnaire-resume" label="Migration plan" default-item="verification" style="inline-size:100%"></tp-questionnaire>
+  <tp-button id="questionnaire-resume-reset" variant="outline" size="sm">Discard changes</tp-button>
+</div>`}
+  script={`const questionnaire = document.querySelector('#questionnaire-resume');
+questionnaire.questions = [
+  {
+    name: 'approach',
+    title: 'How should the database move?',
+    required: true,
+    choices: [
+      { value: 'incremental', label: 'Incremental migration', defaultChecked: true },
+      { value: 'cutover', label: 'Single cutover' },
+    ],
+  },
+  {
+    name: 'verification',
+    title: 'How should the migration be verified?',
+    description: 'Saved in your draft on Oct 12.',
+    kind: 'multiple',
+    required: true,
+    choices: [
+      { value: 'tests', label: 'Run migration tests', defaultChecked: true },
+      { value: 'row-counts', label: 'Compare row counts', defaultChecked: true },
+      { value: 'smoke', label: 'Manual smoke test' },
+    ],
+  },
+  {
+    name: 'notes',
+    title: 'Anything else the team should know?',
+    skippable: true,
+    input: { label: 'Notes', defaultValue: 'Keep the public API stable during the move.' },
+  },
+];
+questionnaire.actions = { submit: { label: 'Update draft' } };
+questionnaire.addEventListener('tp-submit', (event) => event.preventDefault());
+document.querySelector('#questionnaire-resume-reset').addEventListener('click', () => questionnaire.reset());`}
+/>
+
+### Conditional questions
+
+A question with `disabled: true` drops out of navigation, progress, validation and submission. Listen for `tp-value-change` and reassign `questions` to include follow-ups only when an answer calls for them.
+
+<Preview
+  title="Follow-up question"
+  code={`<div style="inline-size:28rem;max-inline-size:100%">
+  <tp-questionnaire id="questionnaire-conditional" label="Deployment"></tp-questionnaire>
+</div>`}
+  script={`const questionnaire = document.querySelector('#questionnaire-conditional');
+const questions = [
+  {
+    name: 'target',
+    title: 'Where should this service run?',
+    description: 'Cloud deployments ask for a region next.',
+    required: true,
+    choices: [
+      { value: 'on-premises', label: 'Our own servers' },
+      { value: 'cloud', label: 'Managed cloud' },
+    ],
+  },
+  {
+    name: 'region',
+    title: 'Which region should host it?',
+    required: true,
+    choices: [
+      { value: 'eu-west', label: 'EU West (Dublin)' },
+      { value: 'us-east', label: 'US East (Virginia)' },
+      { value: 'ap-south', label: 'Asia Pacific (Mumbai)' },
+    ],
+  },
+  {
+    name: 'alerts',
+    title: 'Who should be paged when it goes down?',
+    required: true,
+    choices: [
+      { value: 'on-call', label: 'The on-call engineer' },
+      { value: 'team', label: 'The whole platform team' },
+    ],
+  },
+];
+const synchronize = (answers) => {
+  questionnaire.value = answers;
+  questionnaire.questions = questions.map((question) => ({
+    ...question,
+    disabled: question.name === 'region' && answers.target !== 'cloud',
+  }));
+};
+synchronize({});
+questionnaire.addEventListener('tp-value-change', (event) => {
+  if (event.target === questionnaire && !event.defaultPrevented && !event.detail.cancelled) {
+    synchronize(event.detail.value);
+  }
+});
+questionnaire.actions = { submit: { label: 'Deploy' } };
+questionnaire.addEventListener('tp-submit', (event) => event.preventDefault());`}
+/>
+
 ### Shortcuts
 
 `shortcut-mode="letters"` or `"numbers"` assigns a key to each enabled choice and shows it as a key hint. Pressing the key selects the answer; Enter confirms and moves on.
