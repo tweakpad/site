@@ -156,6 +156,19 @@ picker.locale = 'de';
 // A stored reaction, shown with its name and without a tone.
 const record = getEmojiDetails('👍🏽', picker.emojiData);
 console.log(record?.label, stripSkinTone('👍🏽'));`} />
+
+Here the source reads the published `emojibase-data` package from a public CDN, which brings every Unicode emoji with its skin tones and search keywords. While the files load the picker shows its loading state, and if the request fails it offers Retry; later visits read from the cache.
+
+<Preview
+  title="Full Unicode set"
+  code={`<tp-emoji-picker id="emoji-picker-full" label="All emoji"></tp-emoji-picker>`}
+  script={`import { createEmojibaseSource } from '@tweakpad/ui/emoji';
+
+document.querySelector('#emoji-picker-full').data = createEmojibaseSource({
+  url: 'https://cdn.jsdelivr.net/npm/emojibase-data@16',
+});`}
+/>
+
 ### In a field
 
 The picker is a form control: the emoji submits under `name`, `required` validates, and Reset restores `default-value`. Inside a Field, the label names the picker and the Field shows its error.
