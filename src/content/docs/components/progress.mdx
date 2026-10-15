@@ -89,3 +89,29 @@ start.addEventListener('click', () => {
   }, 120);
 });`}
 />
+
+### Formatted value
+
+Instead of writing the `output` text yourself, let the value part render `state.formattedValue` through `partContracts`. It formats for `locale` (by default the nearest `lang`) as a percentage, or with your own `Intl.NumberFormat` options in `format`, which then apply to the raw value rather than the fraction.
+
+<Preview
+  title="Formatted value"
+  align="stretch"
+  code={`<div id="progress-formatted" style="display:grid;gap:var(--tp-space-6);max-inline-size:22rem">
+  <tp-progress value="56" label="Hochladen" lang="de">
+    <span slot="label">Hochladen</span>
+  </tp-progress>
+  <tp-progress value="41.5" maximum="50" label="Storage used" data-format="storage">
+    <span slot="label">Storage used</span>
+  </tp-progress>
+</div>`}
+  script={`await customElements.whenDefined('tp-progress');
+for (const bar of document.querySelectorAll('#progress-formatted tp-progress')) {
+  if (bar.dataset.format === 'storage') {
+    bar.format = { style: 'unit', unit: 'gigabyte', maximumFractionDigits: 1 };
+  }
+  bar.partContracts = {
+    'progress-value-output': { content: (state) => state.formattedValue },
+  };
+}`}
+/>

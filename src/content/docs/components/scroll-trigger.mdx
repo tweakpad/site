@@ -89,6 +89,37 @@ Members without their own `reveal` use the trigger's. `stagger-from` starts the 
 </div>`}
 />
 
+Offsets work like CSS `animation-range`. With `scrub-range="entry 25% contain 40%"` the reveal starts once a quarter of the section has entered and is finished well before it reaches the middle of the frame, so it sits still while people read it. Add `scrub-once` to leave revealed content at rest when scrolling back.
+
+<Preview
+  title="Custom scroll range"
+  align="stretch"
+  code={`<div style="inline-size:100%;block-size:22rem;overflow:auto;border:var(--tp-border-width) solid var(--tp-border);border-radius:var(--tp-radius-lg);padding-inline:var(--tp-space-6)">
+  <div style="display:grid;gap:var(--tp-space-3);align-content:end;block-size:22rem;padding-block:var(--tp-space-6);box-sizing:border-box">
+    <tp-skeleton motion="none" style="block-size:0.75rem;inline-size:45%"></tp-skeleton>
+    <tp-skeleton motion="none" style="block-size:0.75rem;inline-size:90%"></tp-skeleton>
+    <tp-skeleton motion="none" style="block-size:6rem"></tp-skeleton>
+  </div>
+  <tp-scroll-trigger scrub scrub-range="entry 25% contain 40%" scrub-once stagger="200">
+    <h3 style="margin:0 0 var(--tp-space-3);font-size:var(--tp-text-2xl);line-height:var(--tp-leading-tight)">
+      <tp-text-motion split="words" mask="words" reveal="up" stagger="60">Book a room in two taps</tp-text-motion>
+    </h3>
+    <tp-image-group reveal="fade up" stagger="120">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--tp-space-3)">
+        <tp-image ratio="1.5" src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=480&q=75&auto=format&fit=crop" alt="" style="border-radius:var(--tp-radius-md)"></tp-image>
+        <tp-image ratio="1.5" src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=480&q=75&auto=format&fit=crop" alt="" style="border-radius:var(--tp-radius-md)"></tp-image>
+        <tp-image ratio="1.5" src="https://images.unsplash.com/photo-1548516173-3cabfa4607e9?w=480&q=75&auto=format&fit=crop" alt="" style="border-radius:var(--tp-radius-md)"></tp-image>
+      </div>
+    </tp-image-group>
+  </tp-scroll-trigger>
+  <div style="display:grid;gap:var(--tp-space-3);block-size:22rem;padding-block:var(--tp-space-6);box-sizing:border-box">
+    <tp-skeleton motion="none" style="block-size:0.75rem;inline-size:80%"></tp-skeleton>
+    <tp-skeleton motion="none" style="block-size:6rem"></tp-skeleton>
+    <tp-skeleton motion="none" style="block-size:0.75rem;inline-size:60%"></tp-skeleton>
+  </div>
+</div>`}
+/>
+
 ### Pinning
 
 `pin` holds the content in a sticky stage while the scroll advances through an extra length, `--tp-scroll-trigger-pin-length`. With `scrub`, that is the classic pinned scene. Give the scroll container `container-type: size` so the stage fills it exactly; without one, the stage is the viewport.
