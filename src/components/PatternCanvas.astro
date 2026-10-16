@@ -131,10 +131,11 @@ const patterns = await featuredPatterns();
 </style>
 
 <script>
-  const canvas = document.querySelector<HTMLElement>('[data-canvas]');
-  const world = canvas?.querySelector<HTMLElement>('[data-world]');
-
-  if (canvas && world) {
+  function setup() {
+    const canvas = document.querySelector<HTMLElement>('[data-canvas]:not([data-setup])');
+    const world = canvas?.querySelector<HTMLElement>('[data-world]');
+    if (!canvas || !world) return;
+    canvas.dataset.setup = '';
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const originals = [...world.querySelectorAll<HTMLElement>('[data-item]')];
     const templates = originals.map((item) => item.cloneNode(true) as HTMLElement);
@@ -244,6 +245,8 @@ const patterns = await featuredPatterns();
 
     function tick() {
       frame = 0;
+      // The page may have been swapped out under the canvas; nothing is left to animate then.
+      if (!canvas!.isConnected) return;
       if (drifting) {
         pan.x -= 0.25;
         pan.y -= 0.12;
@@ -376,13 +379,18 @@ const patterns = await featuredPatterns();
 
     const resizeObserver = new ResizeObserver(() => layout());
     let resizeTimer = 0;
-    addEventListener('resize', () => {
+    const onResize = () => {
+      if (!canvas.isConnected) {
+        removeEventListener('resize', onResize);
+        return;
+      }
       clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(() => {
         build();
         observe();
       }, 150);
-    });
+    };
+    addEventListener('resize', onResize);
     const observe = () => {
       resizeObserver.disconnect();
       for (const item of items) resizeObserver.observe(item.element);
@@ -406,4 +414,9 @@ const patterns = await featuredPatterns();
     };
     start();
   }
+
+  // The home page arrives through the client router as well as on first load; this module runs
+  // once, so the canvas is set up from the page-load event.
+  document.addEventListener('astro:page-load', setup);
+  setup();
 </script>

@@ -84,7 +84,7 @@ const source = behavior
   </div>
   <div class="preview__canvas" data-align={align} set:html={markup} />
   <template data-source set:html={markup} />
-  {runnable && <script is:inline type="module" data-behavior set:html={runnable} />}
+  {runnable && <script is:inline type="module" data-behavior data-astro-rerun set:html={runnable} />}
   <div class="preview__code" hidden={!showCode} data-code>
     <tp-code-block language={language} copyable>{source}</tp-code-block>
   </div>
@@ -145,7 +145,7 @@ const source = behavior
   }
 
   // Module scripts run in document order; the elements may not be defined yet.
-  await Promise.all([
+  const ready = Promise.all([
     customElements.whenDefined('tp-toggle-group'),
     customElements.whenDefined('tp-toggle'),
     customElements.whenDefined('tp-button'),
@@ -171,7 +171,17 @@ const source = behavior
     behavior.replaceWith(rerun);
   }
 
-  for (const preview of document.querySelectorAll<HTMLElement>('[data-preview]')) {
+  /** Binds the controls of every preview that arrived with the current page. */
+  async function setup() {
+    await ready;
+    for (const preview of document.querySelectorAll<HTMLElement>('[data-preview]:not([data-ready])')) {
+      preview.dataset.ready = '';
+      bind(preview);
+    }
+    if (readDensity() === 'compact') applyDensity('compact');
+  }
+
+  function bind(preview: HTMLElement) {
     // Demo forms validate and show their states, but never leave the page.
     preview.addEventListener('submit', (event) => event.preventDefault());
 
@@ -201,5 +211,7 @@ const source = behavior
     });
   }
 
-  if (readDensity() === 'compact') applyDensity('compact');
+  // Pages arrive through the client router as well as on first load; this module runs once.
+  document.addEventListener('astro:page-load', setup);
+  setup();
 </script>

@@ -25,6 +25,7 @@ Node 24 (see `.nvmrc`).
 | `public/fonts/` | Fivo Sans (SIL Open Font License, see `OFL.txt`), self-hosted for body text. Display type is Anton from Google Fonts. |
 | `src/components/Preview.astro` | Live example with a Default/Compact density selector and a Code toggle that shows the source in `tp-code-block`. |
 | `src/styles/site.css` | Site chrome and the black-and-white tuning of the library's tokens. |
+| `src/layouts/BaseLayout.astro` | The document shell. Astro's client router swaps pages in place, keeping the header and the docs sidebar (`transition:persist`); scripts that bind to page content run from the `astro:page-load` event. |
 
 The site uses the published `@tweakpad/ui` package for every live demo and for its own chrome (theme switcher, search palette, buttons), so the header theme switcher re-themes the demos too.
 

@@ -7,7 +7,8 @@
  *
  * On wide screens it is a sticky column that scrolls inside the library's Scroll area, whose
  * scrollbar shows only on hover; below 48rem it folds into a disclosure that names the current
- * section and page, and the list scrolls natively.
+ * section and page, and the list scrolls natively. The sidebar persists across client-side
+ * navigations, so its scroll position and expanded sections carry over from page to page.
  */
 interface Props {
   /** Accessible name of the navigation and the tree. */
@@ -15,15 +16,13 @@ interface Props {
   groups: { id: string; label: string; items: { id: string; title: string; href: string }[] }[];
   /** The current page's path with no trailing slash, built like the item hrefs. */
   current: string;
-  /** Session storage key for the scroll position kept across this section's pages. */
-  storageKey?: string;
 }
-const { label, groups, current, storageKey = 'tp-docs-sidebar-scroll' } = Astro.props;
+const { label, groups, current } = Astro.props;
 const currentGroup = groups.find((group) => group.items.some((item) => item.href === current));
 const currentItem = currentGroup?.items.find((item) => item.href === current);
 ---
 
-<aside class="sidebar" data-storage-key={storageKey}>
+<aside class="sidebar" transition:persist="sidebar">
   <!--
     One list for every width. It starts open, which is also the no-script state; the script below
     closes it on narrow screens before paint and keeps it open on wide ones, where the summary is
@@ -70,7 +69,12 @@ const currentItem = currentGroup?.items.find((item) => item.href === current);
       </nav>
     </tp-scroll-area>
   </details>
-  <script is:inline>
+  <!--
+    Runs on first load and again whenever a page with a sidebar arrives through the client router
+    (`data-astro-rerun`). A sidebar carried over from the previous page is already set up and keeps
+    its listeners; only a new one is wired.
+  -->
+  <script is:inline data-astro-rerun>
     (() => {
       const sidebar = document.currentScript?.parentElement;
       const disclosure = sidebar?.querySelector('details');
@@ -78,15 +82,26 @@ const currentItem = currentGroup?.items.find((item) => item.href === current);
       const area = sidebar?.querySelector('tp-scroll-area');
       const tree = sidebar?.querySelector('tp-tree-view');
       if (!sidebar || !disclosure || !nav || !area || !tree) return;
-      const key = sidebar.dataset.storageKey;
+      if (sidebar.dataset.ready !== undefined) return;
+      sidebar.dataset.ready = '';
+
       const narrow = window.matchMedia('(width < 48rem)');
       const currentLink = () => sidebar.querySelector('a[aria-current="page"]');
       // Wide screens scroll the Scroll area's viewport; phones scroll the nav natively.
       const scroller = () => (narrow.matches ? nav : (area.viewportElement ?? area));
-      const center = (scroller, link) => {
-        const box = scroller.getBoundingClientRect();
+      const center = (viewport, link) => {
+        const box = viewport.getBoundingClientRect();
         const rect = link.getBoundingClientRect();
-        scroller.scrollTop += rect.top - box.top - box.height / 2 + rect.height / 2;
+        viewport.scrollTop += rect.top - box.top - box.height / 2 + rect.height / 2;
+      };
+      // Brings the current page into view when the list has scrolled past it.
+      const reveal = () => {
+        const link = currentLink();
+        if (!link) return;
+        const viewport = scroller();
+        const box = viewport.getBoundingClientRect();
+        const rect = link.getBoundingClientRect();
+        if (rect.top < box.top || rect.bottom > box.bottom) center(viewport, link);
       };
 
       const sync = () => (disclosure.open = !narrow.matches);
@@ -95,24 +110,43 @@ const currentItem = currentGroup?.items.find((item) => item.href === current);
 
       // Opening the menu on a phone shows where the current page sits in the list.
       disclosure.addEventListener('toggle', () => {
-        const link = currentLink();
-        if (disclosure.open && narrow.matches && link) center(scroller(), link);
+        if (disclosure.open && narrow.matches) reveal();
       });
 
-      // On wide screens the sidebar scrolls on its own. Keep its position across the section's
-      // pages so following a link doesn't jump the list back to the top; on a first visit, bring
-      // the current page into view instead. Row heights settle once the tree upgrades, so the
-      // restore waits for that.
-      const save = () => {
-        if (narrow.matches) return;
-        try {
-          sessionStorage.setItem(key, String(scroller().scrollTop));
-        } catch {}
+      // After a client-side navigation this is the same sidebar, so the current page is marked
+      // from the URL: its link, the tree's selection and the phone summary.
+      const summaryLabel = sidebar.querySelector('.sidebar__summary-label');
+      const summaryCurrent = sidebar.querySelector('.sidebar__summary-current');
+      const markCurrent = () => {
+        const here = location.pathname.replace(/\/$/, '');
+        let current = null;
+        for (const link of tree.querySelectorAll('tp-tree-item > a')) {
+          if (new URL(link.href).pathname.replace(/\/$/, '') === here) {
+            link.setAttribute('aria-current', 'page');
+            current = link;
+          } else {
+            link.removeAttribute('aria-current');
+          }
+        }
+        if (!current) return;
+        const item = current.parentElement;
+        const section = item.parentElement;
+        const sectionLabel = Array.from(section.childNodes).find(
+          (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim(),
+        );
+        if (summaryCurrent) summaryCurrent.textContent = current.textContent.trim();
+        if (summaryLabel && sectionLabel) summaryLabel.textContent = sectionLabel.textContent.trim();
+        if (typeof tree.selectItem === 'function') tree.selectItem(item.getAttribute('value'));
       };
-      sidebar.addEventListener('click', (event) => {
-        if (event.target instanceof Element && event.target.closest('a')) save();
-      });
-      window.addEventListener('pagehide', save);
+      const onPageLoad = () => {
+        if (!sidebar.isConnected) {
+          document.removeEventListener('astro:page-load', onPageLoad);
+          return;
+        }
+        markCurrent();
+        if (!narrow.matches) reveal();
+      };
+      document.addEventListener('astro:page-load', onPageLoad);
 
       Promise.all([customElements.whenDefined('tp-tree-view'), customElements.whenDefined('tp-scroll-area')])
         .then(() => Promise.all([tree.updateComplete, area.updateComplete]))
@@ -125,24 +159,10 @@ const currentItem = currentGroup?.items.find((item) => item.href === current);
             const value = event.detail?.value;
             if (typeof value !== 'string') return;
             const link = tree.querySelector(`tp-tree-item[value="${CSS.escape(value)}"] > a`);
-            if (!link) return;
-            save();
-            window.location.assign(link.href);
+            // Clicking the link hands the navigation to the client router, as a pointer press would.
+            link?.click();
           });
 
-          const place = () => {
-            let saved = null;
-            try {
-              saved = sessionStorage.getItem(key);
-            } catch {}
-            const viewport = scroller();
-            if (saved !== null) viewport.scrollTop = Number(saved);
-            const link = currentLink();
-            if (!link) return;
-            const box = viewport.getBoundingClientRect();
-            const rect = link.getBoundingClientRect();
-            if (rect.top < box.top || rect.bottom > box.bottom) center(viewport, link);
-          };
           // Motion comes back once every section's panel reports itself open; until then the
           // stylesheet holds the panels at their full height, so nothing slides or flashes.
           const sectionsOpen = () =>
@@ -155,7 +175,8 @@ const currentItem = currentGroup?.items.find((item) => item.href === current);
             else requestAnimationFrame(() => restoreMotion(tries + 1));
           };
           // Rows take their height as each item renders, after the elements report their first
-          // update, so the list can grow for a few frames. Once its size has held still, place it.
+          // update, so the list can grow for a few frames. Once its size has held still, bring the
+          // current page into view.
           const settle = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
           let token = 0;
           const observer = new ResizeObserver(async () => {
@@ -163,7 +184,7 @@ const currentItem = currentGroup?.items.find((item) => item.href === current);
             await settle();
             if (current !== token) return;
             observer.disconnect();
-            if (!narrow.matches) place();
+            if (!narrow.matches) reveal();
             restoreMotion();
           });
           observer.observe(tree);

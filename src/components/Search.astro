@@ -49,6 +49,7 @@ const index = [
 
 <script>
   import type { TpCommandPalette } from '@tweakpad/ui';
+  import { navigate } from 'astro:transitions/client';
 
   const palette = document.querySelector<TpCommandPalette>('[data-search]');
   const trigger = document.querySelector<HTMLButtonElement>('[data-search-trigger]');
@@ -60,7 +61,7 @@ const index = [
     palette.registerTrigger(trigger);
     palette.addEventListener('tp-execute', (event) => {
       const target = (event as CustomEvent<{ commandId: unknown }>).detail.commandId;
-      if (typeof target === 'string') window.location.assign(target);
+      if (typeof target === 'string') navigate(target);
     });
 
     if (!/Mac|iPhone|iPad/.test(navigator.platform)) {
