@@ -19,113 +19,119 @@ const currentGroup = groups.find((group) =>
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class:list={['container', 'docs-shell', { 'docs-shell--toc': toc.length > 0 }]}>
-    <aside class="sidebar">
-      <!--
-        One nav for every width. On phones it folds into a disclosure that names the current page,
-        so the long component list doesn't push the page below the fold. It starts open, which is
-        also the no-script fallback; the script below closes it on narrow screens before paint and
-        keeps it open on wide ones, where the summary is hidden.
-      -->
-      <details class="sidebar__disclosure" open>
-        <summary class="sidebar__summary">
-          <span class="sidebar__summary-label">{currentGroup?.label ?? 'Docs'}</span>
-          <span class="sidebar__summary-current">{title}</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path>
-          </svg>
-        </summary>
-        <nav aria-label="Documentation">
-          {
-            groups.map((group) => (
-              <section>
-                <h2>{group.label}</h2>
-                <ul>
-                  {group.entries.map((entry) => {
-                    const href = url(`/docs/${entry.id}`);
-                    return (
-                      <li>
-                        <a href={href} aria-current={current === href ? 'page' : undefined}>
-                          {entry.data.title}
-                        </a>
-                      </li>
-                    );
-                  })}
-                  {group.id === 'getting-started' && (
-                    <li>
-                      <a href={url('/docs')}>All components</a>
-                    </li>
-                  )}
-                </ul>
-              </section>
-            ))
+  <!--
+    The library's navigation panel owns the docs layout: the page list in a sticky column on wide
+    screens, and in a drawer opened from the trigger on phones. `compact` is set by the script
+    below before the elements upgrade, since the panel leaves the breakpoint to the page.
+  -->
+  <tp-navigation-panel
+    class="container docs-panel"
+    label="Documentation"
+    collapse-mode="none"
+    compact="false"
+    wide-width="15rem"
+  >
+    <tp-navigation-panel-trigger class="docs-panel__trigger" size="sm">
+      <span class="docs-panel__trigger-group">{currentGroup?.label ?? 'Docs'}</span>
+      <span class="docs-panel__trigger-current">{title}</span>
+    </tp-navigation-panel-trigger>
+    <tp-navigation-panel-content class="docs-nav">
+      {
+        groups.map((group) => (
+          <tp-navigation-panel-group>
+            <tp-navigation-panel-group-label>{group.label}</tp-navigation-panel-group-label>
+            <tp-navigation-panel-menu>
+              {group.entries.map((entry) => {
+                const href = url(`/docs/${entry.id}`);
+                return (
+                  <tp-navigation-panel-item>
+                    <tp-navigation-panel-link href={href} active={current === href ? '' : undefined}>
+                      {entry.data.title}
+                    </tp-navigation-panel-link>
+                  </tp-navigation-panel-item>
+                );
+              })}
+              {group.id === 'getting-started' && (
+                <tp-navigation-panel-item>
+                  <tp-navigation-panel-link href={url('/docs')}>All components</tp-navigation-panel-link>
+                </tp-navigation-panel-item>
+              )}
+            </tp-navigation-panel-menu>
+          </tp-navigation-panel-group>
+        ))
+      }
+    </tp-navigation-panel-content>
+    <tp-navigation-panel-inset>
+      <div class:list={['docs-body', { 'docs-body--toc': toc.length > 0 }]}>
+        <article class="docs-main">
+          <slot />
+        </article>
+        {
+          toc.length > 0 && (
+            <aside class="toc">
+              <tp-table-of-contents activation-offset="96">
+                {toc.map((heading) => (
+                  <tp-table-of-contents-item href={`#${heading.slug}`} depth={heading.depth - 1}>
+                    {heading.text}
+                  </tp-table-of-contents-item>
+                ))}
+              </tp-table-of-contents>
+            </aside>
+          )
+        }
+      </div>
+    </tp-navigation-panel-inset>
+  </tp-navigation-panel>
+  <script is:inline>
+    (() => {
+      const panel = document.querySelector('.docs-panel');
+      if (!panel) return;
+      const narrow = window.matchMedia('(width < 48rem)');
+      const sync = () => panel.setAttribute('compact', narrow.matches ? '' : 'false');
+      sync();
+      narrow.addEventListener('change', sync);
+
+      // The page list scrolls on its own. Keep its position across docs pages so following a link
+      // doesn't jump it back to the top; on a first visit, bring the current page into view. The
+      // panel moves the list into its own view when it upgrades, so this waits for that.
+      const key = 'tp-docs-sidebar-scroll';
+      // The list scrolls inside the content element's own `navigation-panel-content` part.
+      const list = () => {
+        const content = panel.querySelector('tp-navigation-panel-content');
+        return content?.shadowRoot?.querySelector('[part~="navigation-panel-content"]') ?? content;
+      };
+      const save = () => {
+        const scroller = list();
+        if (!scroller || narrow.matches) return;
+        try {
+          sessionStorage.setItem(key, String(scroller.scrollTop));
+        } catch {}
+      };
+      panel.addEventListener('click', (event) => {
+        if (event.target instanceof Element && event.target.closest('tp-navigation-panel-link')) save();
+      });
+      window.addEventListener('pagehide', save);
+
+      customElements
+        .whenDefined('tp-navigation-panel')
+        .then(() => panel.updateComplete)
+        .then(() => panel.querySelector('tp-navigation-panel-content')?.updateComplete)
+        .then(() => {
+          const scroller = list();
+          if (!scroller || narrow.matches) return;
+          let saved = null;
+          try {
+            saved = sessionStorage.getItem(key);
+          } catch {}
+          if (saved !== null) scroller.scrollTop = Number(saved);
+          const link = panel.querySelector('tp-navigation-panel-link[active]');
+          if (!link) return;
+          const box = scroller.getBoundingClientRect();
+          const rect = link.getBoundingClientRect();
+          if (rect.top < box.top || rect.bottom > box.bottom) {
+            scroller.scrollTop += rect.top - box.top - box.height / 2;
           }
-        </nav>
-      </details>
-      <script is:inline>
-        (() => {
-          const nav = document.currentScript?.previousElementSibling;
-          if (!(nav instanceof HTMLDetailsElement)) return;
-          const sidebar = nav.parentElement;
-          const narrow = window.matchMedia('(width < 48rem)');
-          // On wide screens the sidebar scrolls on its own. Keep its position across docs pages so
-          // following a link doesn't jump the list back to the top; on a first visit, bring the
-          // current page into view instead.
-          const key = 'tp-docs-sidebar-scroll';
-          if (sidebar && !narrow.matches) {
-            let saved = null;
-            try {
-              saved = sessionStorage.getItem(key);
-            } catch {}
-            const link = nav.querySelector('[aria-current="page"]');
-            if (saved !== null) sidebar.scrollTop = Number(saved);
-            if (link instanceof HTMLElement) {
-              const box = sidebar.getBoundingClientRect();
-              const rect = link.getBoundingClientRect();
-              if (rect.top < box.top || rect.bottom > box.bottom) {
-                sidebar.scrollTop += rect.top - box.top - box.height / 2;
-              }
-            }
-          }
-          const save = () => {
-            if (!sidebar || narrow.matches) return;
-            try {
-              sessionStorage.setItem(key, String(sidebar.scrollTop));
-            } catch {}
-          };
-          nav.addEventListener('click', (event) => {
-            if (event.target instanceof Element && event.target.closest('a')) save();
-          });
-          window.addEventListener('pagehide', save);
-          const sync = () => (nav.open = !narrow.matches);
-          sync();
-          narrow.addEventListener('change', sync);
-          // Opening the menu on a phone shows where the current page sits in the list.
-          nav.addEventListener('toggle', () => {
-            const list = nav.querySelector('nav');
-            const link = nav.querySelector('[aria-current="page"]');
-            if (!nav.open || !narrow.matches || !list || !link) return;
-            list.scrollTop = link.offsetTop - list.offsetTop - list.clientHeight / 2;
-          });
-        })();
-      </script>
-    </aside>
-    <article class="docs-main">
-      <slot />
-    </article>
-    {
-      toc.length > 0 && (
-        <aside class="toc">
-          <h2>On this page</h2>
-          <ul>
-            {toc.map((heading) => (
-              <li class={`depth-${heading.depth}`}>
-                <a href={`#${heading.slug}`}>{heading.text}</a>
-              </li>
-            ))}
-          </ul>
-        </aside>
-      )
-    }
-  </div>
+        });
+    })();
+  </script>
 </BaseLayout>
