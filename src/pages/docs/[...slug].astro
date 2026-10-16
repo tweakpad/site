@@ -3,10 +3,11 @@ import { getCollection, render } from 'astro:content';
 import ApiTable from '../../components/ApiTable.astro';
 import RelatedPatterns from '../../components/RelatedPatterns.astro';
 import DocsLayout from '../../layouts/DocsLayout.astro';
-import { docGroup, docSlug, isComponentDoc, type DocEntry } from '../../lib/content';
+import { INTRO_ID, docGroup, docSlug, isComponentDoc, type DocEntry } from '../../lib/content';
 
 export async function getStaticPaths() {
-  const entries = await getCollection('docs');
+  // The introduction is the Docs landing page, rendered by docs/index.astro at /docs.
+  const entries = (await getCollection('docs')).filter((entry) => entry.id !== INTRO_ID);
   return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }
 

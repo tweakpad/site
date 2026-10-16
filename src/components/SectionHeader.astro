@@ -1,7 +1,8 @@
 ---
 /**
  * A section's opening: a solid display line over an outlined one, revealed with the library's
- * Text motion.
+ * Text motion. As a page-wide band by default; `embedded` fits it into a content column, such as
+ * the article of the Docs landing page.
  */
 interface Props {
   eyebrow: string;
@@ -11,12 +12,17 @@ interface Props {
   lede?: string;
   /** Tints the eyebrow dot, the outline and the header glow, for example a kit's accent. */
   accent?: string;
+  /** Sits inside a content column instead of spanning the page: no glow, type sized to the column. */
+  embedded?: boolean;
 }
-const { eyebrow, title, outline, lede, accent } = Astro.props;
+const { eyebrow, title, outline, lede, accent, embedded = false } = Astro.props;
 ---
 
-<section class="section-header" style={accent ? `--accent: ${accent}` : undefined}>
-  <div class="container">
+<section
+  class:list={['section-header', { 'section-header--embedded': embedded }]}
+  style={accent ? `--accent: ${accent}` : undefined}
+>
+  <div class:list={{ container: !embedded }}>
     <p class="eyebrow">{eyebrow}</p>
     <h1 class="display">
       <tp-text-motion split="words lines" mask="lines" reveal="up" stagger="60">{title}</tp-text-motion>

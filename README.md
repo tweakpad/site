@@ -17,7 +17,8 @@ Node 24 (see `.nvmrc`).
 
 | Path | Contents |
 | --- | --- |
-| `src/content/docs/` | Getting-started guides and one MDX page per component. A component page's `tag` frontmatter pulls its API table from the package's custom elements manifest. |
+| `src/content/docs/` | Getting-started guides and one MDX page per component. The introduction is the Docs landing page, shown under the section banner at `/docs`. A component page's `tag` frontmatter pulls its API table from the package's custom elements manifest. |
+| `src/components/SideNav.astro` | A section's page list on the library's Tree view: sections collapse, pages are links, the current page is selected. The docs layout uses it; Patterns can take it once real patterns arrive. |
 | `src/content/patterns/` | Recipes composed from several components. `example` holds the composition, shown live on the pattern page; `featured` puts it on the home page canvas; `components` lists the component pages it uses, which link back under "Related patterns". |
 | `src/content/kits/` | Plans for kits for niche products (audio editor, trading terminal, graph editor). The Kits page shows a coming-soon message for now. |
 | `src/components/PatternCanvas.astro` | The home page: an endless, pannable grid of the featured pattern compositions. |

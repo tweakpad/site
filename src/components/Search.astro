@@ -1,5 +1,5 @@
 ---
-import { docsByGroup, sortedPatterns } from '../lib/content';
+import { docPath, docsByGroup, sortedPatterns } from '../lib/content';
 import { url } from '../lib/url';
 
 // The search index is the site's own page list, built once per page render.
@@ -9,7 +9,7 @@ const index = [
     type: 'group',
     label: group.label,
     items: group.entries.map((entry) => ({
-      value: url(`/docs/${entry.id}`),
+      value: url(docPath(entry)),
       label: entry.data.title,
       keywords: [entry.data.tag ?? '', group.label],
     })),

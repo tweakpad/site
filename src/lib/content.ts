@@ -11,6 +11,10 @@ const byOrder = (a: { data: { order: number; title: string } }, b: typeof a) =>
 export const docGroup = (entry: DocEntry) => entry.id.split('/')[0] ?? '';
 export const docSlug = (entry: DocEntry) => entry.id.split('/').slice(1).join('/');
 
+/** The introduction is the Docs landing page, so it lives at `/docs` rather than under its id. */
+export const INTRO_ID = 'getting-started/introduction';
+export const docPath = (entry: DocEntry) => (entry.id === INTRO_ID ? '/docs' : `/docs/${entry.id}`);
+
 export const DOC_GROUPS = [
   { id: 'getting-started', label: 'Getting started' },
   { id: 'components', label: 'Components' },

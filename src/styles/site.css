@@ -54,7 +54,8 @@ a {
   background: color-mix(in oklab, var(--site-accent) 25%, transparent);
 }
 
-:focus-visible {
+/* Native controls get the site ring. Library elements draw their own on an inner part. */
+:is(a, button, input, select, textarea, summary):focus-visible {
   outline: 2px solid var(--site-accent);
   outline-offset: 2px;
 }
@@ -306,62 +307,145 @@ a {
   text-wrap: pretty;
 }
 
+/* Inside a content column (the Docs landing page): no page-wide glow, type sized to the column. */
+.section-header--embedded {
+  margin-block-end: 2.5rem;
+  padding-block: 0 2.5rem;
+  background: none;
+}
+
+.section-header--embedded .display {
+  font-size: clamp(2.75rem, 6vw, 5rem);
+}
+
 /* ---------- Docs shell ---------- */
 
+.docs-shell {
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 4rem);
+}
+
+.docs-shell--toc {
+  grid-template-columns: 14rem minmax(0, 1fr) 12rem;
+}
+
 /*
- * The panel's own column sticks to the top of the viewport. Its view (the element the panel moves
- * the page list into) sticks again below the site header, so the list is never covered by it.
+ * Sidebar: the section's page list on the library's Tree view (SideNav.astro). Rows fill with the
+ * accent role on hover and when selected; in the sidebar that role is the neutral muted one.
  */
-.docs-panel[compact='false'] > [data-tp-navigation-view] {
+.sidebar {
   position: sticky;
   inset-block-start: var(--site-header-height);
-  block-size: calc(100svh - var(--site-header-height));
+  align-self: start;
+
+  --tp-accent: var(--tp-muted);
+  --tp-accent-foreground: var(--tp-foreground);
 }
 
-/* Before the elements upgrade, hold the same two columns so the page doesn't jump. */
-.docs-panel:not(:defined) {
-  display: grid;
-  grid-template-columns: 15rem minmax(0, 1fr);
-}
-
-.docs-panel:not(:defined) > tp-navigation-panel-trigger {
+.sidebar__summary {
   display: none;
 }
 
-:is(
-    tp-navigation-panel-content,
-    tp-navigation-panel-group,
-    tp-navigation-panel-group-label,
-    tp-navigation-panel-link,
-    tp-table-of-contents-item
-  ):not(:defined) {
+/* The Scroll area fills the column; its scrollbar shows on hover, and the edges fade where the list goes on. */
+.sidebar__scroll {
+  display: block;
+  block-size: calc(100dvh - var(--site-header-height));
+}
+
+.sidebar__scroll:not(:defined) {
+  overflow: hidden;
+}
+
+.sidebar__scroll[data-overflow-y-end] {
+  mask-image: linear-gradient(to bottom, black calc(100% - 2.5rem), transparent);
+}
+
+.sidebar__scroll[data-overflow-y-start] {
+  mask-image: linear-gradient(to bottom, transparent, black 2.5rem);
+}
+
+.sidebar__scroll[data-overflow-y-start][data-overflow-y-end] {
+  mask-image: linear-gradient(to bottom, transparent, black 2.5rem, black calc(100% - 2.5rem), transparent);
+}
+
+.sidebar nav {
+  padding-block: 2rem;
+}
+
+.sidebar tp-tree-view {
+  --tp-tree-view-indent: 0.75rem;
+}
+
+.sidebar tp-tree-item::part(row) {
+  color: var(--tp-muted-foreground);
+}
+
+.sidebar tp-tree-item::part(row):hover,
+.sidebar tp-tree-item[data-selected]::part(row) {
+  color: var(--tp-foreground);
+}
+
+/* Section rows read as group headings; pressing one still collapses its pages. */
+.sidebar tp-tree-item[data-section]::part(row) {
+  color: var(--tp-foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sidebar tp-tree-item[data-section] + tp-tree-item[data-section] {
+  margin-block-start: 1.25rem;
+}
+
+.sidebar tp-tree-item > a {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* While the tree loads (SideNav keeps `motion-policy` on it), sections hold their height instead of opening from zero. */
+.sidebar tp-tree-view[motion-policy] tp-tree-item::part(group) {
+  block-size: auto;
+}
+
+/* Before the elements upgrade, hold the same list at the same row heights so the page doesn't jump. */
+.sidebar :is(tp-tree-view, tp-tree-item):not(:defined) {
+  display: block;
+  font-size: var(--tp-text-sm);
+}
+
+.sidebar tp-tree-item[data-section]:not(:defined) {
+  padding-inline-start: 2rem;
+  color: var(--tp-foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 2rem;
+}
+
+.sidebar tp-tree-item:not(:defined) tp-tree-item:not(:defined) {
+  margin-inline-start: 0.25rem;
+}
+
+.sidebar tp-tree-item:not(:defined) > a {
+  padding: 0.34375rem 0.5rem;
+  border-radius: var(--tp-radius-md);
+  color: var(--tp-muted-foreground);
+  font-size: var(--tp-text-sm);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.sidebar tp-tree-item:not(:defined) > a[aria-current='page'] {
+  background: var(--tp-muted);
+  color: var(--tp-foreground);
+  font-weight: 500;
+}
+
+tp-table-of-contents-item:not(:defined) {
   display: block;
   padding-block: 0.3rem;
   color: var(--tp-muted-foreground);
   font-size: var(--tp-text-sm);
-}
-
-tp-navigation-panel-group:not(:defined) + tp-navigation-panel-group:not(:defined) {
-  margin-block-start: 1.25rem;
-}
-
-.docs-nav {
-  padding-block: 1.5rem 2rem;
-}
-
-.docs-panel__trigger {
-  display: none;
-}
-
-.docs-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: clamp(2rem, 4vw, 4rem);
-  padding-inline-start: clamp(1.5rem, 3vw, 3rem);
-}
-
-.docs-body--toc {
-  grid-template-columns: minmax(0, 1fr) 12rem;
 }
 
 .docs-main {
@@ -377,8 +461,8 @@ tp-navigation-panel-group:not(:defined) + tp-navigation-panel-group:not(:defined
 }
 
 @media (width < 72rem) {
-  .docs-body--toc {
-    grid-template-columns: minmax(0, 1fr);
+  .docs-shell--toc {
+    grid-template-columns: 14rem minmax(0, 1fr);
   }
 
   .toc {
@@ -387,36 +471,71 @@ tp-navigation-panel-group:not(:defined) + tp-navigation-panel-group:not(:defined
 }
 
 @media (width < 48rem) {
-  .docs-panel:not(:defined) {
+  .docs-shell,
+  .docs-shell--toc {
     grid-template-columns: minmax(0, 1fr);
+    gap: 0;
   }
 
-  .docs-panel:not(:defined) > tp-navigation-panel-content {
+  .sidebar {
+    position: static;
+    border-block-end: 1px solid var(--site-line);
+  }
+
+  .sidebar__scroll {
+    block-size: auto;
+    mask-image: none;
+  }
+
+  .sidebar__summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-block-size: 3rem;
+    font-size: var(--tp-text-sm);
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .sidebar__summary::-webkit-details-marker {
     display: none;
   }
 
-  .docs-panel__trigger {
-    display: inline-flex;
-    margin-block: 0.75rem 0;
-    font-weight: 400;
-  }
-
-  .docs-panel__trigger-group {
+  .sidebar__summary-label {
     color: var(--tp-muted-foreground);
   }
 
-  .docs-panel__trigger-group::after {
+  .sidebar__summary-label::after {
     content: '/';
-    margin-inline: 0.5rem;
+    margin-inline-start: 0.5rem;
     color: var(--tp-border);
   }
 
-  .docs-panel__trigger-current {
+  .sidebar__summary-current {
+    flex: 1;
+    overflow: hidden;
     font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .docs-body {
-    padding-inline-start: 0;
+  .sidebar__summary svg {
+    flex: none;
+    inline-size: 1rem;
+    block-size: 1rem;
+    color: var(--tp-muted-foreground);
+    transition: transform 200ms var(--site-ease);
+  }
+
+  .sidebar__disclosure[open] .sidebar__summary svg {
+    transform: rotate(180deg);
+  }
+
+  .sidebar nav {
+    max-block-size: 60dvh;
+    overflow-y: auto;
+    padding-block: 0.5rem 1.25rem;
+    overscroll-behavior: contain;
   }
 }
 

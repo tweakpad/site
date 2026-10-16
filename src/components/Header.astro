@@ -4,7 +4,7 @@ import Search from './Search.astro';
 import { isActive, url } from '../lib/url';
 
 const sections = [
-  { label: 'Docs', path: '/docs', href: '/docs/getting-started/introduction' },
+  { label: 'Docs', path: '/docs' },
   { label: 'Patterns', path: '/patterns' },
   { label: 'Kits', path: '/kits' },
 ];
@@ -18,7 +18,7 @@ const current = Astro.url.pathname;
       {
         sections.map((section) => (
           <a
-            href={url(section.href ?? section.path)}
+            href={url(section.path)}
             aria-current={isActive(current, section.path) ? 'page' : undefined}
           >
             {section.label}

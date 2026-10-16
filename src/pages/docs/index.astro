@@ -1,55 +1,25 @@
 ---
+import { getEntry, render } from 'astro:content';
 import SectionHeader from '../../components/SectionHeader.astro';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { docsByGroup } from '../../lib/content';
-import { url } from '../../lib/url';
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { INTRO_ID } from '../../lib/content';
 
-const groups = await docsByGroup();
+// The introduction is the Docs landing page: the docs shell, with the section banner opening the article.
+const entry = await getEntry('docs', INTRO_ID);
+if (!entry) throw new Error(`Missing docs entry "${INTRO_ID}"`);
+const { Content, headings } = await render(entry);
 ---
 
-<BaseLayout title="Docs" description="Guides and component references for Tweakpad UI.">
+<DocsLayout title="Docs" description="Guides and component references for Tweakpad UI." headings={headings}>
   <SectionHeader
+    slot="banner"
+    embedded
     eyebrow="Docs"
     title="Everything you need"
     outline="to build"
     lede="Install the package, learn the theming model, then browse each component with live examples, compact and default density, and copyable code."
   />
-  <div class="container docs-index">
-    {
-      groups.map((group) => (
-        <section>
-          <h2>{group.label}</h2>
-          <div class="card-grid">
-            {group.entries.map((entry) => (
-              <a class="link-card" href={url(`/docs/${entry.id}`)}>
-                {entry.data.tag && <span class="chip">&lt;{entry.data.tag}&gt;</span>}
-                <h3>{entry.data.title}</h3>
-                <p>{entry.data.description}</p>
-                <span class="link-card__arrow" aria-hidden="true">
-                  →
-                </span>
-              </a>
-            ))}
-          </div>
-        </section>
-      ))
-    }
+  <div class="prose">
+    <Content />
   </div>
-</BaseLayout>
-
-<style>
-  .docs-index {
-    padding-block: 3rem 6rem;
-  }
-
-  .docs-index section + section {
-    margin-block-start: 3.5rem;
-  }
-
-  h2 {
-    margin: 0 0 1.25rem;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--tp-muted-foreground);
-  }
-</style>
+</DocsLayout>

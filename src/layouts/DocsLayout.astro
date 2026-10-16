@@ -1,7 +1,8 @@
 ---
 import type { MarkdownHeading } from 'astro';
+import SideNav from '../components/SideNav.astro';
 import BaseLayout from './BaseLayout.astro';
-import { docsByGroup } from '../lib/content';
+import { docPath, docsByGroup } from '../lib/content';
 import { url } from '../lib/url';
 
 interface Props {
@@ -10,128 +11,39 @@ interface Props {
   headings?: MarkdownHeading[];
 }
 const { title, description, headings = [] } = Astro.props;
-const groups = await docsByGroup();
 const current = Astro.url.pathname.replace(/\/$/, '');
 const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
-const currentGroup = groups.find((group) =>
-  group.entries.some((entry) => url(`/docs/${entry.id}`) === current),
-);
+const groups = (await docsByGroup()).map((group) => ({
+  id: group.id,
+  label: group.label,
+  items: group.entries.map((entry) => ({
+    id: entry.id,
+    title: entry.data.title,
+    href: url(docPath(entry)),
+  })),
+}));
 ---
 
 <BaseLayout title={title} description={description}>
-  <!--
-    The library's navigation panel owns the docs layout: the page list in a sticky column on wide
-    screens, and in a drawer opened from the trigger on phones. `compact` is set by the script
-    below before the elements upgrade, since the panel leaves the breakpoint to the page.
-  -->
-  <tp-navigation-panel
-    class="container docs-panel"
-    label="Documentation"
-    collapse-mode="none"
-    compact="false"
-    wide-width="15rem"
-  >
-    <tp-navigation-panel-trigger class="docs-panel__trigger" size="sm">
-      <span class="docs-panel__trigger-group">{currentGroup?.label ?? 'Docs'}</span>
-      <span class="docs-panel__trigger-current">{title}</span>
-    </tp-navigation-panel-trigger>
-    <tp-navigation-panel-content class="docs-nav">
-      {
-        groups.map((group) => (
-          <tp-navigation-panel-group>
-            <tp-navigation-panel-group-label>{group.label}</tp-navigation-panel-group-label>
-            <tp-navigation-panel-menu>
-              {group.entries.map((entry) => {
-                const href = url(`/docs/${entry.id}`);
-                return (
-                  <tp-navigation-panel-item>
-                    <tp-navigation-panel-link href={href} active={current === href ? '' : undefined}>
-                      {entry.data.title}
-                    </tp-navigation-panel-link>
-                  </tp-navigation-panel-item>
-                );
-              })}
-              {group.id === 'getting-started' && (
-                <tp-navigation-panel-item>
-                  <tp-navigation-panel-link href={url('/docs')}>All components</tp-navigation-panel-link>
-                </tp-navigation-panel-item>
-              )}
-            </tp-navigation-panel-menu>
-          </tp-navigation-panel-group>
-        ))
-      }
-    </tp-navigation-panel-content>
-    <tp-navigation-panel-inset>
-      <div class:list={['docs-body', { 'docs-body--toc': toc.length > 0 }]}>
-        <article class="docs-main">
-          <slot />
-        </article>
-        {
-          toc.length > 0 && (
-            <aside class="toc">
-              <tp-table-of-contents activation-offset="96">
-                {toc.map((heading) => (
-                  <tp-table-of-contents-item href={`#${heading.slug}`} depth={heading.depth - 1}>
-                    {heading.text}
-                  </tp-table-of-contents-item>
-                ))}
-              </tp-table-of-contents>
-            </aside>
-          )
-        }
-      </div>
-    </tp-navigation-panel-inset>
-  </tp-navigation-panel>
-  <script is:inline>
-    (() => {
-      const panel = document.querySelector('.docs-panel');
-      if (!panel) return;
-      const narrow = window.matchMedia('(width < 48rem)');
-      const sync = () => panel.setAttribute('compact', narrow.matches ? '' : 'false');
-      sync();
-      narrow.addEventListener('change', sync);
-
-      // The page list scrolls on its own. Keep its position across docs pages so following a link
-      // doesn't jump it back to the top; on a first visit, bring the current page into view. The
-      // panel moves the list into its own view when it upgrades, so this waits for that.
-      const key = 'tp-docs-sidebar-scroll';
-      // The list scrolls inside the content element's own `navigation-panel-content` part.
-      const list = () => {
-        const content = panel.querySelector('tp-navigation-panel-content');
-        return content?.shadowRoot?.querySelector('[part~="navigation-panel-content"]') ?? content;
-      };
-      const save = () => {
-        const scroller = list();
-        if (!scroller || narrow.matches) return;
-        try {
-          sessionStorage.setItem(key, String(scroller.scrollTop));
-        } catch {}
-      };
-      panel.addEventListener('click', (event) => {
-        if (event.target instanceof Element && event.target.closest('tp-navigation-panel-link')) save();
-      });
-      window.addEventListener('pagehide', save);
-
-      customElements
-        .whenDefined('tp-navigation-panel')
-        .then(() => panel.updateComplete)
-        .then(() => panel.querySelector('tp-navigation-panel-content')?.updateComplete)
-        .then(() => {
-          const scroller = list();
-          if (!scroller || narrow.matches) return;
-          let saved = null;
-          try {
-            saved = sessionStorage.getItem(key);
-          } catch {}
-          if (saved !== null) scroller.scrollTop = Number(saved);
-          const link = panel.querySelector('tp-navigation-panel-link[active]');
-          if (!link) return;
-          const box = scroller.getBoundingClientRect();
-          const rect = link.getBoundingClientRect();
-          if (rect.top < box.top || rect.bottom > box.bottom) {
-            scroller.scrollTop += rect.top - box.top - box.height / 2;
-          }
-        });
-    })();
-  </script>
+  <div class:list={['container', 'docs-shell', { 'docs-shell--toc': toc.length > 0 }]}>
+    <SideNav label="Documentation" groups={groups} current={current} />
+    <article class="docs-main">
+      <!-- The section landing page opens its article with the section banner. -->
+      <slot name="banner" />
+      <slot />
+    </article>
+    {
+      toc.length > 0 && (
+        <aside class="toc">
+          <tp-table-of-contents activation-offset="96">
+            {toc.map((heading) => (
+              <tp-table-of-contents-item href={`#${heading.slug}`} depth={heading.depth - 1}>
+                {heading.text}
+              </tp-table-of-contents-item>
+            ))}
+          </tp-table-of-contents>
+        </aside>
+      )
+    }
+  </div>
 </BaseLayout>

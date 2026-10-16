@@ -15,6 +15,8 @@ export default defineConfig({
   // Pages renamed by library releases keep their old address.
   redirects: {
     '/docs/components/list-item': '/docs/components/list',
+    // The introduction is the Docs landing page.
+    '/docs/getting-started/introduction': '/docs',
   },
   vite: {
     plugins: [literalCode()],

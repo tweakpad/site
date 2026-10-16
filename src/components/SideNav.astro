@@ -1,0 +1,173 @@
+---
+/**
+ * A section's page list: sections as expandable items, pages as leaves, the current page selected,
+ * on the library's Tree view. Each page is a real link inside its item. The tree leaves a press on
+ * a link to the link itself, so links work before the elements upgrade, open in new tabs and can
+ * be copied; the tree adds the single tab stop, arrow keys, typeahead and Enter.
+ *
+ * On wide screens it is a sticky column that scrolls inside the library's Scroll area, whose
+ * scrollbar shows only on hover; below 48rem it folds into a disclosure that names the current
+ * section and page, and the list scrolls natively.
+ */
+interface Props {
+  /** Accessible name of the navigation and the tree. */
+  label: string;
+  groups: { id: string; label: string; items: { id: string; title: string; href: string }[] }[];
+  /** The current page's path with no trailing slash, built like the item hrefs. */
+  current: string;
+  /** Session storage key for the scroll position kept across this section's pages. */
+  storageKey?: string;
+}
+const { label, groups, current, storageKey = 'tp-docs-sidebar-scroll' } = Astro.props;
+const currentGroup = groups.find((group) => group.items.some((item) => item.href === current));
+const currentItem = currentGroup?.items.find((item) => item.href === current);
+---
+
+<aside class="sidebar" data-storage-key={storageKey}>
+  <!--
+    One list for every width. It starts open, which is also the no-script state; the script below
+    closes it on narrow screens before paint and keeps it open on wide ones, where the summary is
+    hidden.
+  -->
+  <details class="sidebar__disclosure" open>
+    <summary class="sidebar__summary">
+      <span class="sidebar__summary-label">{currentGroup?.label ?? label}</span>
+      <span class="sidebar__summary-current">{currentItem?.title ?? 'Menu'}</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </summary>
+    <tp-scroll-area class="sidebar__scroll" scrollbar-visibility="on-hover">
+      <nav aria-label={label}>
+      <!--
+        The sections are open from the start. The tree would still slide them open on its first
+        render, so motion is off (the library's `motion-policy`) until the list has settled; the
+        script below turns it back on for collapsing and expanding by hand.
+      -->
+      <tp-tree-view
+        label={label}
+        size="sm"
+        guides="none"
+        motion-policy="reduce"
+        default-expanded={JSON.stringify(groups.map((group) => group.id))}
+        default-value={JSON.stringify(currentItem ? [currentItem.id] : [])}
+      >
+        {
+          groups.map((group) => (
+            <tp-tree-item value={group.id} data-section>
+              {group.label}
+              {group.items.map((item) => (
+                <tp-tree-item value={item.id}>
+                  <a href={item.href} aria-current={item.href === current ? 'page' : undefined}>
+                    {item.title}
+                  </a>
+                </tp-tree-item>
+              ))}
+            </tp-tree-item>
+          ))
+        }
+      </tp-tree-view>
+      </nav>
+    </tp-scroll-area>
+  </details>
+  <script is:inline>
+    (() => {
+      const sidebar = document.currentScript?.parentElement;
+      const disclosure = sidebar?.querySelector('details');
+      const nav = sidebar?.querySelector('nav');
+      const area = sidebar?.querySelector('tp-scroll-area');
+      const tree = sidebar?.querySelector('tp-tree-view');
+      if (!sidebar || !disclosure || !nav || !area || !tree) return;
+      const key = sidebar.dataset.storageKey;
+      const narrow = window.matchMedia('(width < 48rem)');
+      const currentLink = () => sidebar.querySelector('a[aria-current="page"]');
+      // Wide screens scroll the Scroll area's viewport; phones scroll the nav natively.
+      const scroller = () => (narrow.matches ? nav : (area.viewportElement ?? area));
+      const center = (scroller, link) => {
+        const box = scroller.getBoundingClientRect();
+        const rect = link.getBoundingClientRect();
+        scroller.scrollTop += rect.top - box.top - box.height / 2 + rect.height / 2;
+      };
+
+      const sync = () => (disclosure.open = !narrow.matches);
+      sync();
+      narrow.addEventListener('change', sync);
+
+      // Opening the menu on a phone shows where the current page sits in the list.
+      disclosure.addEventListener('toggle', () => {
+        const link = currentLink();
+        if (disclosure.open && narrow.matches && link) center(scroller(), link);
+      });
+
+      // On wide screens the sidebar scrolls on its own. Keep its position across the section's
+      // pages so following a link doesn't jump the list back to the top; on a first visit, bring
+      // the current page into view instead. Row heights settle once the tree upgrades, so the
+      // restore waits for that.
+      const save = () => {
+        if (narrow.matches) return;
+        try {
+          sessionStorage.setItem(key, String(scroller().scrollTop));
+        } catch {}
+      };
+      sidebar.addEventListener('click', (event) => {
+        if (event.target instanceof Element && event.target.closest('a')) save();
+      });
+      window.addEventListener('pagehide', save);
+
+      Promise.all([customElements.whenDefined('tp-tree-view'), customElements.whenDefined('tp-scroll-area')])
+        .then(() => Promise.all([tree.updateComplete, area.updateComplete]))
+        .then(() => Promise.all(Array.from(tree.querySelectorAll('tp-tree-item'), (item) => item.updateComplete)))
+        .then(() => {
+          // The tree is the one tab stop: arrows and typeahead move, Enter opens. The links stay
+          // for pointer use; until the upgrade they were also in the tab order.
+          for (const link of tree.querySelectorAll('tp-tree-item > a')) link.tabIndex = -1;
+          tree.addEventListener('tp-action', (event) => {
+            const value = event.detail?.value;
+            if (typeof value !== 'string') return;
+            const link = tree.querySelector(`tp-tree-item[value="${CSS.escape(value)}"] > a`);
+            if (!link) return;
+            save();
+            window.location.assign(link.href);
+          });
+
+          const place = () => {
+            let saved = null;
+            try {
+              saved = sessionStorage.getItem(key);
+            } catch {}
+            const viewport = scroller();
+            if (saved !== null) viewport.scrollTop = Number(saved);
+            const link = currentLink();
+            if (!link) return;
+            const box = viewport.getBoundingClientRect();
+            const rect = link.getBoundingClientRect();
+            if (rect.top < box.top || rect.bottom > box.bottom) center(viewport, link);
+          };
+          // Motion comes back once every section's panel reports itself open; until then the
+          // stylesheet holds the panels at their full height, so nothing slides or flashes.
+          const sectionsOpen = () =>
+            Array.from(tree.querySelectorAll('tp-tree-item[data-section]')).every((item) => {
+              const group = item.shadowRoot?.querySelector('[part~="group"]');
+              return group?.hasAttribute('data-open') && !group.hasAttribute('data-starting-style');
+            });
+          const restoreMotion = (tries = 0) => {
+            if (sectionsOpen() || tries > 120) tree.removeAttribute('motion-policy');
+            else requestAnimationFrame(() => restoreMotion(tries + 1));
+          };
+          // Rows take their height as each item renders, after the elements report their first
+          // update, so the list can grow for a few frames. Once its size has held still, place it.
+          const settle = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          let token = 0;
+          const observer = new ResizeObserver(async () => {
+            const current = ++token;
+            await settle();
+            if (current !== token) return;
+            observer.disconnect();
+            if (!narrow.matches) place();
+            restoreMotion();
+          });
+          observer.observe(tree);
+        });
+    })();
+  </script>
+</aside>
